@@ -1,0 +1,13 @@
+*.apdisk
+*.ap_
+*.sass-cache
+*.scssc
+*.log
+*.DS_Store
+*.bak
+.TemporaryItems
+dist/
+Thumbs.db
+thumbs.db
+.vagrant/
+node_modules/
