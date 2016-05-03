@@ -1,0 +1,47 @@
+name: Countries
+type: object
+key: _id
+data:
+  min: 500
+  max: 1000
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      transform: "return 'country_' + current_document.countryCode;"
+  gdp:
+    type: integer
+    description: The countries GDP
+    data:
+      build: "return faker.random.number({min: 1000, max: 75000})"
+  region-number:
+    type: integer
+    description: The countries region number
+    data:
+      build: >
+        var current_region_id = globals.countries_counter || 0;
+        current_region_id += 1;
+        globals.countries_counter = current_region_id;
+        return current_region_id;
+  countryCode:
+    type: string
+    description: The 2 letter ISO country code
+    data:
+      fake: "{{address.countryCode}}"
+  name:
+    type: string
+    description: The name of the country
+    data:
+      fake: "{{address.country}}"
+  updated:
+    type: string
+    description: The date the country was last updated
+    data:
+      fake: "{{date.past}}"
+      transform: "return new Date(current_value).toISOString();"
+  population:
+    type: integer
+    description: The countries population
+    data:
+      build: "return faker.random.number()"
