@@ -1,4 +1,4 @@
-app/
+dist/
 .gitignore
 .gitconfig
 .gitattributes
