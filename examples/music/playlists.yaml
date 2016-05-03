@@ -5,14 +5,14 @@ data:
   dependencies:
     - Users
     - Tracks
-  min: 100
-  max: 500
+  min: 1
+  max: 1
 properties:
   _id:
     type: string
     description: The document id
     data:
-      transform: "return 'playlist_' + current_document.id;"
+      post_build: "return 'playlist_' + current_document.id;"
   type:
     type: string
     description: The document type
@@ -22,20 +22,19 @@ properties:
     type: string
     description: Unique identifier representing a specific playlist
     data:
-        # this had to be done because faker.fake("{{random.uuid}}") errors
-        build: "return faker.random.uuid();"
+      build: "return faker.random.uuid();"
   created:
     type: string
     description: The date the track was created
     data:
       fake: "{{date.past}}"
-      transform: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(current_value).toISOString();"
   updated:
     type: string
     description: The date the track was updated
     data:
       fake: "{{date.recent}}"
-      transform: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(current_value).toISOString();"
   visibility:
     type: string
     description: The playlist visibility

@@ -9,7 +9,7 @@ properties:
     type: string
     description: The document id
     data:
-      transform: "return 'product_' + current_document.product_id;"
+      post_build: "return 'product_' + current_document.product_id;"
   doc_type:
     type: string
     description: The document type
@@ -31,7 +31,7 @@ properties:
     description: The product price
     data:
         build: "return parseFloat(faker.commerce.price()) + '.' + faker.random.number({min: 0, max: 99});"
-        transform: "return current_value > current_document.price ? 0 : current_value;"
+        post_build: "return current_value > current_document.price ? 0 : current_value;"
   display_name:
     type: string
     description: Display name of product.
@@ -67,12 +67,12 @@ properties:
     description: An epoch time of when the document was last modified
     data:
       fake: "{{date.recent}}"
-      transform: "return new Date(current_value).getTime();"
+      post_build: "return new Date(current_value).getTime();"
   product_slug:
     type: string
     description: The URL friendly version of the product name
     data:
-        transform: "return faker.helpers.slugify(current_document.display_name).toLowerCase();"
+        post_build: "return faker.helpers.slugify(current_document.display_name).toLowerCase();"
   category:
     type: string
     description: Category for the Product
@@ -82,7 +82,7 @@ properties:
     type: string
     description: The URL friendly version of the category name
     data:
-        transform: "return faker.helpers.slugify(current_document.category).toLowerCase();"
+        post_build: "return faker.helpers.slugify(current_document.category).toLowerCase();"
   image:
     type: string
     description: Image URL representing the product.
@@ -103,10 +103,10 @@ properties:
       description: An epoch time of when the document was first created
       data:
         fake: "{{date.past}}"
-        transform: "return new Date(current_value).getTime();"
+        post_build: "return new Date(current_value).getTime();"
   modified_on:
       type: integer
       description: An epoch time of when the document was last modified
       data:
         fake: "{{date.recent}}"
-        transform: "return new Date(current_value).getTime();"
+        post_build: "return new Date(current_value).getTime();"

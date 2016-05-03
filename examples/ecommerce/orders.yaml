@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      transform: "return 'order_' + current_document.order_id;"
+      post_build: "return 'order_' + current_document.order_id;"
   doc_type:
     type: string
     description: The document type
@@ -39,7 +39,7 @@ properties:
     description: An epoch time of when the order was placed
     data:
       fake: "{{date.past}}"
-      transform: "return new Date(current_value).getTime();"
+      post_build: "return new Date(current_value).getTime();"
   order_status:
     type: string
     description: The status of the order
@@ -55,7 +55,7 @@ properties:
     description: The billing phone
     data:
       fake: "{{phone.phoneNumber}}"
-      transform: "return current_value.replace(/x[0-9]+$/, '')"
+      post_build: "return current_value.replace(/x[0-9]+$/, '')"
   billing_email:
     type: string
     description: The billing email
@@ -167,7 +167,7 @@ properties:
     type: double
     description: The grand total of the order
     data:
-      transform: >
+      post_build: >
         var total = 0;
         total += current_document.tax;
         total += current_document.shipping_total;

@@ -2,14 +2,16 @@ name: Countries
 type: object
 key: _id
 data:
-  min: 500
-  max: 1000
+  fixed: 264
+  pre_run: >
+    globals.countries = chance.get('countries');
+    globals.current_country_index = 0;
 properties:
   _id:
     type: string
     description: The document id
     data:
-      transform: "return 'country_' + current_document.countryCode;"
+      post_build: "return 'country_' + current_document.countryCode;"
   gdp:
     type: integer
     description: The countries GDP
@@ -20,26 +22,32 @@ properties:
     description: The countries region number
     data:
       build: >
-        var current_region_id = globals.countries_counter || 0;
+        var current_region_id = globals.regions_counter || 0;
         current_region_id += 1;
-        globals.countries_counter = current_region_id;
+        globals.regions_counter = current_region_id;
         return current_region_id;
   countryCode:
     type: string
     description: The 2 letter ISO country code
     data:
-      fake: "{{address.countryCode}}"
+      pre_build: >
+        var abbreviation = globals.countries[globals.current_country_index].abbreviation;
+        globals.current_country_index = globals.current_country_index + 1;
+        return abbreviation;
   name:
     type: string
     description: The name of the country
     data:
-      fake: "{{address.country}}"
+      build: >
+        return globals.countries.filter(function(v){
+          return v.abbreviation === current_document.countryCode;
+        })[0] || "";
   updated:
     type: string
     description: The date the country was last updated
     data:
       fake: "{{date.past}}"
-      transform: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(current_value).toISOString();"
   population:
     type: integer
     description: The countries population

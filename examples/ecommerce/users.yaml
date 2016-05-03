@@ -9,7 +9,7 @@ properties:
     type: string
     description: The document id
     data:
-      transform: "return 'user_' + current_document.user_id;"
+      post_build: "return 'user_' + current_document.user_id;"
   doc_type:
     type: string
     description: The document type
@@ -44,13 +44,13 @@ properties:
     description: The users home phone
     data:
         fake: "{{phone.phoneNumber}}"
-        transform: "return current_value.replace(/x[0-9]+$/, '')"
+        post_build: "return current_value.replace(/x[0-9]+$/, '')"
   mobile_phone:
     type: string
     description: The users mobile phone
     data:
         fake: "{{phone.phoneNumber}}"
-        transform: "return current_value.replace(/x[0-9]+$/, '')"
+        post_build: "return current_value.replace(/x[0-9]+$/, '')"
   addresses:
     type: array
     description: An array of addresses
@@ -74,4 +74,4 @@ properties:
     description: An epoch time of when the user was created
     data:
       fake: "{{date.past}}"
-      transform: "return new Date(current_value).getTime();"
+      post_build: "return new Date(current_value).getTime();"

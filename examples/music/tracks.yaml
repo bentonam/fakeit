@@ -4,14 +4,14 @@ key: _id
 data:
   dependencies:
     - Users
-  min: 1000
-  max: 5000
+  min: 1
+  max: 2
 properties:
   _id:
     type: string
     description: The document id
     data:
-      transform: "return 'track_' + current_document.id;"
+      post_build: "return 'track_' + current_document.id;"
   type:
     type: string
     description: The document type
@@ -27,13 +27,13 @@ properties:
     description: The date the track was created
     data:
       fake: "{{date.past}}"
-      transform: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(current_value).toISOString();"
   updated:
     type: string
     description: The date the track was updated
     data:
       fake: "{{date.recent}}"
-      transform: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(current_value).toISOString();"
   artist:
     type: string
     description: The artist name title
@@ -48,7 +48,7 @@ properties:
     type: string
     description: The track mp3 url
     data:
-        transform: >
+        post_build: >
           return faker.internet.url() + '/' + faker.internet.domainWord() + '/' + faker.random.arrayElement(['files', 'audio', 'mp3', 'downloads']) + '/' + encodeURIComponent(current_document.title) + '.mp3';
   genre:
     type: string

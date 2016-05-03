@@ -17,6 +17,7 @@ const defaults = {
   bucket: 'default',
   password: ''
 };
+
 let models = {}; // global variable to hold parsed models
 let model_order = []; // global variable to hold the model run order
 let model_count = 0; // global variable to hold the number of available models
@@ -173,34 +174,59 @@ const load_yaml_file = (file) => new Promise((resolve, reject) => {
   });
 });
 
-// parse each of the model properties for a data block and prepare any function calls
+// parse each of the model properties for a build functions
 const parse_models = async () => {
   // console.log('parse_models');
   try {
+    let parsed = [];
     for (let model in models) { // loop over each model
       if (models.hasOwnProperty(model)) {
-        for (let property in models[model].properties) { // loop over each of the properties
-          // if there is a build property prepare the function
-          if (models[model].properties[property].data.build) {
-            models[model].properties[property].data.build = new Function(
-              'documents', 'globals', 'faker', 'chance',
-              models[model].properties[property].data.build
-            );
-          }
-          // if there is a transform property prepare the function
-          if (models[model].properties[property].data.transform) {
-            models[model].properties[property].data.transform = new Function(
-              'current_value', 'current_document', 'faker', 'chance',
-              models[model].properties[property].data.transform
-            );
-          }
-        }
+        parsed.push(parse_model_events(model));
+        parsed.push(parse_property_events(model));
       }
     }
-    return;
+    return Promise.all(parsed);
   } catch (e) {
     console.log('Error: parse_models', e);
     throw e;
+  }
+};
+
+// handles parsing of any of the models run / build functions
+const parse_model_events = async (model) => {
+  // console.log('parse_model_runs');
+  for (let key in models[model].data) {
+    // handle pre_run and post_run events, these events will be executed before and after the entire run
+    if (key.match(/_run$/)) {
+      models[model].data[key] = new Function(
+        'documents', 'globals', 'faker', 'chance',
+        models[model].data[key]
+      );
+    }
+    // handle pre_build and post_build events, these events will be executed before and after the each build of the model
+    if (key.match(/_build$/)) {
+      models[model].data[key] = new Function(
+        'current_document', 'documents', 'globals', 'faker', 'chance',
+        models[model].data[key]
+      );
+    }
+  }
+};
+
+// handles parsing of any of the model property build functions
+const parse_property_events = async (model) => {
+  // console.log('parse_model_runs');
+  for (let property in models[model].properties) { // loop over each of the properties
+    if (models[model].properties[property].data) { // if there is a data block
+      for (let key in models[model].properties[property].data) {
+        if (key.match(/build$/)) {
+          models[model].properties[property].data[key] = new Function(
+            'current_value', 'current_document', 'documents', 'globals', 'faker', 'chance',
+            models[model].properties[property].data[key]
+          );
+        }
+      }
+    }
   }
 };
 
@@ -256,9 +282,8 @@ const add_model_order = (model) => {
 
 const generate = async () => {
   // console.log('generate');
-  // define a key based on the model path to hold the generated documents for the model
   for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
-    documents[model_order[i]] = [];
+    documents[model_order[i]] = []; // define a key based on the model path to hold the generated documents for the model
     await run(model_order[i]); // eslint-disable-line babel/no-await-in-loop
   }
   return;
@@ -266,16 +291,23 @@ const generate = async () => {
 
 // executes the building of a model
 const run = async (model_name) => {
-  // console.log('run', model_name);
-  // define a key based on the model path to hold the generated documents for the model
+  // if there is a pre_run function call it
+  if (models[model_name].data && models[model_name].data.pre_run) {
+    models[model_name].data.pre_run(documents, globals, faker, chance);
+  }
   let builds = [];
-  let number = Math.floor(Math.random() * models[model_name].data.max) + models[model_name].data.min;
+  let number = models[model_name].data.fixed || Math.floor(Math.random() * models[model_name].data.max) + models[model_name].data.min;
   console.log(`Generating ${number} documents for ${model_name} model`);
   for (let i = 0; i < number; i++) { // loop over each model and execute in order of dependency
     builds.push(build(models[model_name]));
   }
   return await Promise
                 .all(builds)
+                .then(() => {
+                  if (models[model_name].data.post_run) {
+                    models[model_name].data.post_run(documents, globals, faker, chance);
+                  }
+                })
                 .catch((e) => {
                   throw e;
                 });
@@ -285,8 +317,9 @@ const build = async (current_model) => {
   try {
     documents_counter += 1;
     // generate the initial values
-    let generated_document = await build_properties(current_model);
-    generated_document = await build_transform(current_model, generated_document);
+    let generated_document = await initialize_properties(current_model);
+    generated_document = await build_properties(current_model, generated_document);
+    generated_document = await build_process(current_model, generated_document);
     documents[current_model.name].push(generated_document);
     await build_finalize(current_model, generated_document);
     return;
@@ -295,51 +328,90 @@ const build = async (current_model) => {
   }
 };
 
-const build_properties = async (current_model) => {
+const initialize_properties = async (current_model) => {
   // console.log('build_properties');
   let doc = {};
   let key;
   try {
     // generate the initial values
     for (key in current_model.properties) {
-      // if there is a faker block, attempt to fake the doc
-      if (current_model.properties[key].data) {
-        if (current_model.properties[key].data.fake) { // if we are generating fake doc
-          doc[key] = faker.fake(current_model.properties[key].data.fake);
-        } else if (current_model.properties[key].data.value) { // if there is a static value
-          doc[key] = current_model.properties[key].data.value;
-        } else if (current_model.properties[key].data.build) { // if there is a build function
-          doc[key] = current_model.properties[key].data.build(documents, globals, faker, chance);
-        } else { // nothing matched
-          doc[key] = null;
+      if (current_model.properties.hasOwnProperty(key)) {
+        doc[key] = initialize_value(current_model.properties[key].type);
+        // if there is a pre build function execute it
+        if (current_model.properties[key].data.pre_build) {
+          doc[key] = current_model.properties[key].data.pre_build(doc[key], null, documents, globals, faker, chance);
         }
-      } else { // there is not a faker block, but the key is defined so set it to null
-        doc[key] = null;
       }
     }
     return doc;
   } catch (e) {
-    throw new Error(`Error: Building Properties in Model: "${current_model.name}" for Key: "${key}", Reason: ${e.message}`);
+    throw new Error(`Error: Initializing Properties in Model: "${current_model.name}" for Key: "${key}", Reason: ${e.message}`);
     // reject(`Failed to build property "${key}" in model "${current_model.name}" Reason: ${e.message}`);
   }
 };
 
-const build_transform = async (current_model, generated_document) => {
-  // console.log('build_transform');
+const initialize_value = (data_type) => {
+  // console.log('build_properties');
+  let value;
+  if (data_type === 'string') {
+    value = '';
+  } else if (data_type === 'object') {
+    value = {};
+  } else if ('number,integer,double,long,float'.indexOf(data_type) !== -1) {
+    value = 0;
+  } else if (data_type === 'array') {
+    value = [];
+  } else {
+    value = null;
+  }
+  return value;
+};
+
+const build_properties = async (current_model, generated_document) => {
+  // console.log('build_properties');
+  let key;
+  try {
+    // generate the initial values
+    for (key in current_model.properties) {
+      // if there is a data block, attempt to generate the data for the property
+      if (current_model.properties.hasOwnProperty(key) && current_model.properties[key].data) {
+        if (current_model.properties[key].data.fake) { // if we are generating fake doc
+          generated_document[key] = faker.fake(current_model.properties[key].data.fake);
+        } else if (current_model.properties[key].data.value) { // if there is a static value
+          generated_document[key] = current_model.properties[key].data.value;
+        } else if (current_model.properties[key].data.build) { // if there is a build function
+          // 'current_value', 'current_document', 'documents', 'globals', 'faker', 'chance',
+          generated_document[key] = current_model.properties[key].data.build(
+            generated_document[key], generated_document, documents, globals, faker, chance
+          );
+        }
+      }
+    }
+    return generated_document;
+  } catch (e) {
+    console.log('errored', key, e);
+    throw new Error(`Error: Building Properties in Model: "${current_model.name}" for Key: "${key}", Reason: ${e.message}`);
+  }
+};
+
+const build_process = async (current_model, generated_document) => {
+  // console.log('build_process');
   let key;
   try {
     // loop over the generated results
     for (key in generated_document) {
-      // if there is a transform block
-      if (current_model.properties[key].data && current_model.properties[key].data.transform) {
-        generated_document[key] = current_model.properties[key].data.transform(generated_document[key], generated_document, faker, chance);
+      // if there is a post_build block
+      if (current_model.properties[key].data && current_model.properties[key].data.post_build) {
+        generated_document[key] = current_model.properties[key].data.post_build(
+          generated_document[key], generated_document, documents, globals, faker, chance
+        );
       }
       // if it is a number make sure it is treated as such
-      if (generated_document[key] && 'number,integer,long'.indexOf(current_model.properties[key].type) !== -1) {
+      if ('number,integer,long'.indexOf(current_model.properties[key].type) !== -1) {
         generated_document[key] = parseInt(generated_document[key]);
       }
       // if it is a number make sure it is treated as such
-      if (generated_document[key] && 'double,float'.indexOf(current_model.properties[key].type) !== -1) {
+      if ('double,float'.indexOf(current_model.properties[key].type) !== -1) {
         generated_document[key] = parseFloat(generated_document[key]);
       }
     }
@@ -374,13 +446,10 @@ const append_zip = async (current_model, data, entry_name) => {
         name: entry_name
       }
     );
-    // resolve(data);
     return data;
   } catch (e) {
-    console.log('Error: append_zip');
-    console.log(data, entry_name);
-    console.log(e);
-    // reject(e);
+    console.log('Error: append_zip', e);
+    throw e;
   }
 };
 
