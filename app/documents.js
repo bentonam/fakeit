@@ -4,6 +4,8 @@ import faker from 'faker';
 import Chance from 'chance';
 const chance = new Chance();
 import output from './output';
+import utils from './utils';
+import objectPath from 'object-path';
 
 const documents = {}; // global variable to keep track of the generated documents
 let documents_counter = 0; // global variable hold the total number of documents generated
@@ -20,9 +22,13 @@ const run = async (current_model) => {
   }
   let builds = [];
   let number = current_model.data.fixed || Math.floor(Math.random() * current_model.data.max) + current_model.data.min;
+  let model_paths = get_model_paths(current_model);
+  let document_paths = get_document_paths(current_model);
   console.log(`Generating ${number} documents for ${current_model.name} model`);
   for (let i = 0; i < number; i++) { // loop over each model and execute in order of dependency
-    builds.push(build(current_model));
+    builds.push(
+      build_document(current_model, model_paths, document_paths)
+    );
   }
   return await Promise
                 .all(builds)
@@ -36,51 +42,62 @@ const run = async (current_model) => {
                 });
 };
 
-const build = async (current_model) => {
+// builds a document and saves it to the global documents variable, the outputs the result
+const build_document = async (current_model, model_paths, document_paths) => {
   try {
     documents_counter += 1;
     // generate the initial values
-    let generated_document = await initialize_document(current_model);
-    // if there is a pre_build function call it
-    if (current_model.data && current_model.data.pre_build) {
-      current_model.data.pre_build(generated_document, documents, globals, faker, chance);
-    }
-    generated_document = await build_properties(current_model, generated_document);
-    generated_document = await build_process(current_model, generated_document);
+    let generated_document = build(current_model, model_paths, document_paths);
+    // console.log(generated_document);
     documents[current_model.name].push(generated_document);
     await output.flush(current_model, generated_document);
-    // if there is a post_build function call it
-    if (current_model.data && current_model.data.pre_build) {
-      current_model.data.post_build(generated_document, documents, globals, faker, chance);
-    }
   } catch (e) {
     throw e;
   }
 };
 
-const initialize_document = async (current_model) => {
-  // console.log('initialize_document');
-  let doc = {};
-  let key;
+// builds a document
+const build = (current_model, model_paths, document_paths) => {
   try {
     // generate the initial values
-    for (key in current_model.properties) {
-      if (current_model.properties.hasOwnProperty(key)) {
-        doc[key] = initialize_value(current_model.properties[key].type);
-        // if there is a pre build function execute it
-        if (current_model.properties[key].data.pre_build) {
-          doc[key] = current_model.properties[key].data.pre_build(doc[key], null, documents, globals, faker, chance);
-        }
-      }
+    let generated_document = initialize_document(current_model, model_paths, document_paths);
+    // if there is a pre_build function for the document call it
+    if (current_model.data && current_model.data.pre_build) {
+      current_model.data.pre_build(documents, globals, faker, chance, generated_document);
     }
-    return doc;
+    generated_document = build_object(current_model, generated_document, model_paths, document_paths);
+    generated_document = build_process(current_model, generated_document, model_paths, document_paths);
+    // if there is a post_build function for the document call it
+    if (current_model.data && current_model.data.post_build) {
+      current_model.data.post_build(generated_document, documents, globals, faker, chance);
+    }
+    return generated_document;
+  } catch (e) {
+    throw e;
+  }
+};
+
+// initializes a documents default values
+const initialize_document = (current_model, model_paths, document_paths) => {
+  let generated_document = {};
+  let key;
+  try {
+    model_paths.forEach((path, index) => {
+      key = document_paths[index]; // set a key for error messaging
+      objectPath.set(
+        generated_document,
+        key,
+        initialize_value(objectPath.get(current_model, path).type)
+      );
+    });
+    return generated_document;
   } catch (e) {
     throw new Error(`Error: Initializing Properties in Model: "${current_model.name}" for Key: "${key}", Reason: ${e.message}`);
   }
 };
 
+// generates the initial value for a variable based on the data type
 const initialize_value = (data_type) => {
-  // console.log('build_properties');
   let value;
   if (data_type === 'string') {
     value = '';
@@ -96,61 +113,134 @@ const initialize_value = (data_type) => {
   return value;
 };
 
-const build_properties = async (current_model, generated_document) => {
+// builds an object based on a model
+const build_object = (current_model, generated_document, model_paths, document_paths) => {
   // console.log('build_properties');
   let key;
   try {
-    // generate the initial values
-    for (key in current_model.properties) {
-      // if there is a data block, attempt to generate the data for the property
-      if (current_model.properties.hasOwnProperty(key) && current_model.properties[key].data) {
-        if (current_model.properties[key].data.fake) { // if we are generating fake doc
-          generated_document[key] = faker.fake(current_model.properties[key].data.fake);
-        } else if (current_model.properties[key].data.value) { // if there is a static value
-          generated_document[key] = current_model.properties[key].data.value;
-        } else if (current_model.properties[key].data.build) { // if there is a build function
-          // 'current_value', 'current_document', 'documents', 'globals', 'faker', 'chance',
-          generated_document[key] = current_model.properties[key].data.build(
-            generated_document[key], generated_document, documents, globals, faker, chance
-          );
-        }
-      }
-    }
+    model_paths.forEach((path, index) => {
+      key = document_paths[index]; // set a key for error messaging
+      let value = build_value(
+        generated_document,
+        objectPath.get(current_model, path),
+        objectPath.get(generated_document, key)
+      );
+      objectPath.set(generated_document, key, value);
+    });
     return generated_document;
   } catch (e) {
     throw new Error(`Error: Building Properties in Model: "${current_model.name}" for Key: "${key}", Reason: ${e.message}`);
   }
 };
 
-const build_process = async (current_model, generated_document) => {
-  // console.log('build_process');
+// builds a single value based on a property definition
+const build_value = (generated_document, property, value) => {
+  // console.log(property);
+  if (property.data) {
+    // if there is a pre_build block
+    if (property.data.pre_build) {
+      value = property.data.pre_build(
+        documents, globals, faker, chance, generated_document, value
+      );
+    }
+    if (property.data.fake) {
+      value = faker.fake(property.data.fake);
+    } else if (property.data.value) {
+      value = property.data.value;
+    } else if (property.data.build) {
+      value = property.data.build(
+        documents, globals, faker, chance, generated_document, value
+      );
+    }
+  } else if (property.type === 'array' && property.items) {
+    value = build_array(generated_document, property, value);
+  }
+  return value;
+};
+
+// builds an array
+const build_array = (generated_document, property, value) => {
+  let number = property.items.data.fixed || chance.integer({ min: property.items.data.min || 0, max: property.items.data.max || 0 });
+  if (property.items.type === 'object') {
+    value = build_array_complex(generated_document, property, value, number);
+  } else {
+    value = build_array_simple(generated_document, property, value, number);
+  }
+  return value;
+};
+
+// builds a simple array
+const build_array_complex = (generated_document, property, value, number) => {
+  let model_paths = get_model_paths(property.items);
+  let document_paths = get_document_paths(property.items);
+  for (let i = 0; i < number; i++) {
+    value[i] = build(property.items, model_paths, document_paths); // eslint-disable-line babel/no-await-in-loop
+  }
+  return value;
+};
+
+// builds a simple array
+const build_array_simple = (generated_document, property, value, number) => {
+  // console.log(number, property);
+  for (let i = 0; i < number; i++) {
+    value[i] = build_value(null, property.items, initialize_value(property.items.type)); // eslint-disable-line babel/no-await-in-loop
+  }
+  return value;
+};
+
+const build_process = (current_model, generated_document, model_paths, document_paths) => {
   let key;
   try {
-    // loop over the generated results
-    for (key in generated_document) {
-      // if there is a post_build block
-      if (current_model.properties[key].data && current_model.properties[key].data.post_build) {
-        generated_document[key] = current_model.properties[key].data.post_build(
-          generated_document[key], generated_document, documents, globals, faker, chance
-        );
-      }
-      // if it is a number make sure it is treated as such
-      if ('number,integer,long'.indexOf(current_model.properties[key].type) !== -1) {
-        generated_document[key] = parseInt(generated_document[key]);
-      }
-      // if it is a number make sure it is treated as such
-      if ('double,float'.indexOf(current_model.properties[key].type) !== -1) {
-        generated_document[key] = parseFloat(generated_document[key]);
-      }
-    }
+    model_paths.forEach((path, index) => {
+      key = document_paths[index]; // set a key for error messaging
+      objectPath.set(
+        generated_document,
+        key,
+        build_process_callback(
+          current_model,
+          generated_document,
+          objectPath.get(current_model, path),
+          objectPath.get(generated_document, key)
+        )
+      );
+    });
     return generated_document;
   } catch (e) {
     throw new Error(`Error: Transforming Properties in Model: "${current_model.name}" for Key: "${key}", Reason: ${e.message}`);
   }
 };
 
+const build_process_callback = (current_model, generated_document, property, value) => {
+  // if there is a post_build block
+  if (property.data && property.data.post_build) {
+    value = property.data.post_build(
+      documents, globals, faker, chance, generated_document, value
+    );
+  }
+  // if it is an integer make sure it is treated as such
+  if ('number,integer,long'.indexOf(property.type) !== -1) {
+    value = parseInt(value);
+  }
+  // if it is a double / float make sure it is treated as such
+  if ('double,float'.indexOf(property.type) !== -1) {
+    value = parseFloat(value);
+  }
+  return value;
+};
+
 const get_stats = () => {
   return documents_counter;
+};
+
+const get_model_paths = (current_model) => {
+  return utils.object_search(current_model, /^properties\.([^.]+|(?!items\.).+properties\.[^.]+)$/)
+    .filter((path) => {
+      return path.indexOf('items.properties') === -1;
+    });
+};
+
+const get_document_paths = (current_model) => {
+  return get_model_paths(current_model).join(',').replace(/properties\./g, '').split(',');
 };
 
 export default { run, get_stats };
