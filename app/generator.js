@@ -21,6 +21,9 @@ const start = (options = defaults) => new Promise((resolve, reject) => {
         output.error_cleanup()
           .then(() => {
             reject(err);
+          })
+          .catch(() => {
+            reject(err);
           });
       });
   } catch (e) {
