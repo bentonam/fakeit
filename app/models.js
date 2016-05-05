@@ -4,6 +4,9 @@ import yaml from 'yamljs';
 import path from 'path';
 import fs from 'fs';
 import documents from './documents';
+import utils from './utils';
+import objectMerge from 'object-merge';
+import objectPath from 'object-path';
 
 let models = {}; // global variable to hold parsed models
 let model_order = []; // global variable to hold the model run order
@@ -14,6 +17,7 @@ const prepare = () => {
   // console.log('models.prepare');
   return list()
           .then(load)
+          .then(validate)
           .then(parse)
           .then(resolve_dependencies)
           .catch((err) => {
@@ -62,17 +66,22 @@ const load_yaml_file = (file) => new Promise((resolve, reject) => {
   yaml.load(path.join(process.cwd(), file), (result) => {
     if (result) {
       // console.log(JSON.stringify(result, null, 2));
-      if (result.name) {
-        models[result.name] = result; // add the parsed model to the global object
-        resolve();
-      } else {
-        reject('Model must have a "name" property');
-      }
+      models[result.name || file] = result; // add the parsed model to the global object
+      resolve();
     } else {
       reject('Invalid YAML file');
     }
   });
 });
+
+const validate = async () => {
+  // console.log('models.validate');
+  for (let model in models) {
+    if (!models[model].name) {
+      throw new Error(`The model ${model} must have a "name" property.`);
+    }
+  }
+};
 
 // parse each of the model properties for a build functions
 const parse = async () => {
@@ -81,8 +90,7 @@ const parse = async () => {
     let parsed = [];
     for (let model in models) { // loop over each model
       if (models.hasOwnProperty(model)) {
-        parsed.push(parse_events(model));
-        parsed.push(parse_property_events(model));
+        parsed.push(parse_model(model));
       }
     }
     return Promise.all(parsed);
@@ -92,42 +100,40 @@ const parse = async () => {
   }
 };
 
-// handles parsing of any of the models run / build functions
-const parse_events = async (model) => {
-  // console.log('models.parse_events');
-  for (let key in models[model].data) {
-    // handle pre_run and post_run events, these events will be executed before and after the entire run
-    if (key.match(/_run$/)) {
-      models[model].data[key] = new Function(
-        'documents', 'globals', 'faker', 'chance',
-        models[model].data[key]
-      );
-    }
-    // handle pre_build and post_build events, these events will be executed before and after the each build of the model
-    if (key.match(/_build$/)) {
-      models[model].data[key] = new Function(
-        'current_document', 'documents', 'globals', 'faker', 'chance',
-        models[model].data[key]
-      );
-    }
-  }
+const parse_model = async (model) => {
+  // console.log('models.parse_model');
+  await parse_model_functions(model);
+  await parse_model_references(model);
 };
 
-// handles parsing of any of the model property build functions
-const parse_property_events = async (model) => {
-  // console.log('model.parse_property_events');
-  for (let property in models[model].properties) { // loop over each of the properties
-    if (models[model].properties[property].data) { // if there is a data block
-      for (let key in models[model].properties[property].data) {
-        if (key.match(/build$/)) {
-          models[model].properties[property].data[key] = new Function(
-            'current_value', 'current_document', 'documents', 'globals', 'faker', 'chance',
-            models[model].properties[property].data[key]
-          );
-        }
-      }
-    }
-  }
+// searches the model for any of the pre / post run and build functions and generates them
+const parse_model_functions = async (model) => {
+  // console.log('models.parse_model');
+  let results = utils.object_search(models[model], /((pre|post)_run)|(pre_|post_)?build$/);
+  results.forEach((function_path) => {
+    objectPath.set(
+      models[model],
+      function_path,
+      new Function(
+        'documents', 'globals', 'faker', 'chance', 'current_document', 'current_value',
+        objectPath.get(models[model], function_path)
+      )
+    );
+  });
+};
+
+// searches the model for any '$ref' values that are pointing to definitions, sub_models, etc. and copies the reference to the schema
+const parse_model_references = async (model) => {
+  // console.log('models.parse_model');
+  let pattern = /\.(schema|items).\$ref$/;
+  let results = utils.object_search(models[model], pattern);
+  results.forEach((reference_path) => {
+    let property_path = reference_path.replace(pattern, '') + (reference_path.indexOf('.items.') !== -1 ? '.items' : '');
+    let property = objectPath.get(models[model], property_path);
+    let defined_path = objectPath.get(models[model], reference_path).replace(/^#\//, '').replace('/', '.');
+    property = objectMerge({}, property, objectPath.get(models[model], defined_path));
+    objectPath.set(models[model], property_path, property);
+  });
 };
 
 // resolve the dependencies and establish the order the models should be parsed in
