@@ -33,7 +33,7 @@ properties:
   details:
     description: An object of the contacts details
     schema:
-        $ref: '#/definitions/Details'
+      $ref: '#/definitions/Details'
   phones:
     type: array
     description: An array of phone numbers

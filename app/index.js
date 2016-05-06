@@ -9,7 +9,7 @@ export default function() {
   program
     .version('0.0.1')
     .usage('generate [options]')
-    .option('-o, --output [value]', 'The output file to generate.  Supported formats are: zip, json, csv')
+    .option('-o, --output [value]', 'The output to generate.  Supported formats are: json, csv, yaml, console', 'console')
     .option('-a, --archive [value]', 'The archive file to generate.  Supported formats are: zip')
     .option('-s, --server [address]', 'Server address', '127.0.0.1')
     .option('-b, --bucket [name]', 'Bucket name', 'default')
