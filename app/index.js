@@ -9,7 +9,8 @@ export default function() {
   program
     .version('0.0.1')
     .usage('generate [options]')
-    .option('-z, --zip [value]', 'The path to a zip file to save the generated data in')
+    .option('-o, --output [value]', 'The output file to generate.  Supported formats are: zip, json, csv')
+    .option('-a, --archive [value]', 'The archive file to generate.  Supported formats are: zip')
     .option('-s, --server [address]', 'Server address', '127.0.0.1')
     .option('-b, --bucket [name]', 'Bucket name', 'default')
     .option('-p, --password [value]', 'Bucket password')

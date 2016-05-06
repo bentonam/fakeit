@@ -21,9 +21,11 @@ const run = async (current_model) => {
     current_model.data.pre_run(documents, globals, faker, chance);
   }
   let builds = [];
-  let number = current_model.data.fixed || Math.floor(Math.random() * current_model.data.max) + current_model.data.min;
+  let number = current_model.data.fixed || chance.integer({ min: current_model.data.min, max: current_model.data.max });
   let model_paths = get_model_paths(current_model);
   let document_paths = get_document_paths(current_model);
+  // set the number of entries to be processed to the output
+  output.set_entries_to_process(number);
   console.log(`Generating ${number} documents for ${current_model.name} model`);
   for (let i = 0; i < number; i++) { // loop over each model and execute in order of dependency
     builds.push(

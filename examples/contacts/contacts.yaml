@@ -2,8 +2,8 @@ name: Contacts
 type: object
 key: _id
 data:
-  min: 100
-  max: 500
+  min: 25
+  max: 100
 properties:
   _id:
     type: string
@@ -40,8 +40,8 @@ properties:
     items:
       $ref: '#/definitions/Phone'
       data:
-        min: 5
-        max: 10
+        min: 1
+        max: 4
   emails:
     type: array
     description: An array of emails

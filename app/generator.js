@@ -5,7 +5,6 @@ import models from './models';
 import output from './output';
 
 const defaults = {
-  zip: '',
   server: '127.0.0.1',
   bucket: 'default',
   password: ''
