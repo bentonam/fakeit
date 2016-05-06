@@ -2,7 +2,6 @@
 
 import yaml from 'yamljs';
 import path from 'path';
-import fs from 'fs';
 import documents from './documents';
 import utils from './utils';
 import objectMerge from 'object-merge';
@@ -15,6 +14,7 @@ let model_count = 0; // global variable to hold the number of available models
 // pre run setup / handle settings
 const prepare = (options) => {
   return list(options)
+          .then(filter)
           .then(load)
           .then(validate)
           .then(parse)
@@ -25,35 +25,30 @@ const prepare = (options) => {
 const list = (options) => new Promise((resolve, reject) => {
   // console.log('models.list');
   try {
-    if (options.models) { // if models were passed from the command line use them
-      let files = options.models.split(',').filter((file) => {
-        return file.match(/\.ya?ml$/i);
-      });
-      if (!files.length) {
-        reject('No models found');
-      } else {
+    utils.is_directory(options.models)
+      .then(utils.read_directory)
+      .then((files) => {
         resolve(files);
-      }
-    } else { // use the cwd directory to find the models
-      fs.readdir(process.cwd(), (err, files) => {
-        if (err) {
-          throw err;
-        } else {
-          files = files.filter((file) => {
-            return file.match(/\.ya?ml$/i);
-          });
-          if (!files.length) {
-            reject('No models found');
-          } else {
-            resolve(files);
-          }
-        }
+      })
+      .catch(() => {
+        resolve(options.models.split(','));
       });
-    }
   } catch (e) {
     reject(e);
   }
 });
+
+// filter files for valid models
+const filter = async (files) => {
+  // console.log('models.filter');
+  files = files.filter((file) => {
+    return file.match(/\.ya?ml$/i);
+  });
+  if (!files.length) {
+    throw new Error('No valid model files found.');
+  }
+  return files;
+};
 
 // loop over all of the found yaml files and load them
 const load = async (files) => {
@@ -79,6 +74,7 @@ const load_yaml_file = (file) => new Promise((resolve, reject) => {
   });
 });
 
+// validate the model
 const validate = async () => {
   // console.log('models.validate');
   for (let model in models) {
@@ -100,7 +96,6 @@ const parse = async () => {
     }
     return Promise.all(parsed);
   } catch (e) {
-    console.log('Error: parse', e);
     throw e;
   }
 };

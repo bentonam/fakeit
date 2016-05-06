@@ -7,9 +7,10 @@ import models from './models';
 import output from './output';
 
 const defaults = {
-  models: '',
+  models: process.cwd(),
   output: 'console',
   archive: '',
+  directory: process.cwd(),
   server: '127.0.0.1',
   bucket: 'default',
   password: ''
