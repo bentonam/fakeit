@@ -13,38 +13,44 @@ let model_order = []; // global variable to hold the model run order
 let model_count = 0; // global variable to hold the number of available models
 
 // pre run setup / handle settings
-const prepare = () => {
-  // console.log('models.prepare');
-  return list()
+const prepare = (options) => {
+  return list(options)
           .then(load)
           .then(validate)
           .then(parse)
-          .then(resolve_dependencies)
-          .catch((err) => {
-            console.log(err);
-          });
+          .then(resolve_dependencies);
 };
 
 // gets the available model yaml files from the current working directory
-const list = () => new Promise((resolve, reject) => {
+const list = (options) => new Promise((resolve, reject) => {
   // console.log('models.list');
   try {
-    fs.readdir(process.cwd(), (err, files) => {
-      if (err) {
-        throw err;
+    if (options.models) { // if models were passed from the command line use them
+      let files = options.models.split(',').filter((file) => {
+        return file.match(/\.ya?ml$/i);
+      });
+      if (!files.length) {
+        reject('No models found');
       } else {
-        files = files.filter((file) => {
-          return file.match(/\.yaml$/i);
-        });
-        if (!files.length) {
-          reject('No models found');
-        } else {
-          resolve(files);
-        }
+        resolve(files);
       }
-    });
+    } else { // use the cwd directory to find the models
+      fs.readdir(process.cwd(), (err, files) => {
+        if (err) {
+          throw err;
+        } else {
+          files = files.filter((file) => {
+            return file.match(/\.ya?ml$/i);
+          });
+          if (!files.length) {
+            reject('No models found');
+          } else {
+            resolve(files);
+          }
+        }
+      });
+    }
   } catch (e) {
-    console.log('Error: get_models', e);
     reject(e);
   }
 });
@@ -63,9 +69,8 @@ const load = async (files) => {
 // load and conver a yaml file to a json object
 const load_yaml_file = (file) => new Promise((resolve, reject) => {
   // console.log('models.load_yaml_file');
-  yaml.load(path.join(process.cwd(), file), (result) => {
+  yaml.load(path.resolve(file), (result) => {
     if (result) {
-      // console.log(JSON.stringify(result, null, 2));
       models[result.name || file] = result; // add the parsed model to the global object
       resolve();
     } else {

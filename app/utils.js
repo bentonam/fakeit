@@ -1,5 +1,8 @@
 'use strict';
 
+import path from 'path';
+import fs from 'fs';
+
 const object_search = (data, pattern, current_path, paths = []) => {
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
@@ -23,10 +26,24 @@ const object_search = (data, pattern, current_path, paths = []) => {
   return paths;
 };
 
-const append_path = (path, index) => {
-  path = path ? path + '.' + index : '' + index;
-  path = path.replace(/^\.|\.$|\.{2,}/, '');
-  return path;
+const append_path = (opath, index) => {
+  opath = opath ? opath + '.' + index : '' + index;
+  opath = opath.replace(/^\.|\.$|\.{2,}/, '');
+  return opath;
 };
 
-export default { object_search };
+const exists = (file_path) => new Promise((resolve, reject) => {
+  try {
+    fs.exists(path.resolve(file_path), (found) => {
+      if (found) {
+        resolve();
+      } else {
+        reject(`${file_path} does not exist`);
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+export default { object_search, exists };

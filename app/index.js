@@ -11,6 +11,7 @@ export default function() {
     .usage('generate [options]')
     .option('-o, --output [value]', 'The output to generate.  Supported formats are: json, csv, yaml, console', 'console')
     .option('-a, --archive [value]', 'The archive file to generate.  Supported formats are: zip')
+    .option('-m, --models [value]', 'A comma-delimited list of models to use, by default all models in a directory are used.')
     .option('-s, --server [address]', 'Server address', '127.0.0.1')
     .option('-b, --bucket [name]', 'Bucket name', 'default')
     .option('-p, --password [value]', 'Bucket password')
