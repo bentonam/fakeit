@@ -5,6 +5,7 @@ import fs from 'fs';
 import archiver from 'archiver';
 import documents from './documents';
 import csv from 'csv';
+import yaml from 'yamljs';
 
 let settings = {}; // global variable to hold the options + defaults
 
@@ -27,9 +28,11 @@ const prepare = async (options, resolve, reject) => {
     output_format = path.extname(settings.output).replace(/^\./, '') || settings.output;
   }
 
-  if (output_format === 'zip') {
+  if (settings.archive) {
     await setup_zip();
-  } else if (output_format === 'csv') {
+  }
+
+  if (output_format === 'csv') {
     await setup_csv();
   }
 };
@@ -73,7 +76,7 @@ const setup_csv = async () => {
 const setup_zip = async () => {
   // console.log('output.setup_zip');
   try {
-    archive_out = fs.createWriteStream(path.resolve(settings.output));
+    archive_out = fs.createWriteStream(path.resolve(settings.archive));
     archive = archiver('zip');
     archive.pipe(archive_out);
     // event listener to keep track of entries into the zip stream
@@ -119,6 +122,13 @@ const flush_file = async (current_model, data) => {
     );
   } else if (output_format === 'csv') {
     await append_csv(data);
+  } else if (output_format === 'yaml' || output_format === 'yml') {
+    fs.writeFile(
+      path.join(
+        path.resolve(settings.directory || process.cwd()), data[current_model.key] + '.' + output_format
+      ), // yaml files will use the key as the file name
+      yaml.stringify(data, 4)
+    );
   }
 };
 
@@ -129,8 +139,12 @@ const flush_archive = async (current_model, data) => {
       JSON.stringify(data, null, 2),
       data[current_model.key] + '.json'
     );
+  } else if (output_format === 'yaml' || output_format === 'yml') {
+    await append_zip(
+      yaml.stringify(data, 4),
+      data[current_model.key] + '.' + output_format
+    );
   }
-  return;
 };
 
 const append_csv = async (data) => {
