@@ -1,0 +1,13 @@
+{
+  "presets": [
+    "es2015",
+    "stage-0"
+  ],
+  "plugins": [
+    "syntax-async-functions",
+    "transform-async-to-generator",
+    "transform-decorators-legacy",
+    "transform-regenerator",
+    "transform-runtime"
+  ]
+}
