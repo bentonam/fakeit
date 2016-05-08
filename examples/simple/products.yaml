@@ -88,16 +88,6 @@ properties:
     description: Image URL representing the product.
     data:
       fake: "{{image.image}}"
-  alternate_images:
-    type: array
-    description: An array of alternate images for the product
-    data:
-      build: >
-        var images = [];
-        for (var i = 0, rand = Math.floor(Math.random() * 4) + 1; i < rand; i++) {
-          images.push(faker.image.image());
-        }
-        return images;
   created_on:
     type: integer
     description: An epoch time of when the document was first created
