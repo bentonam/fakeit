@@ -3,72 +3,40 @@
 import path from 'path';
 import fs from 'fs';
 import archiver from 'archiver';
-import documents from './documents';
-import csv from 'csv';
+import csv_stringify from 'csv-stringify';
 import yaml from 'yamljs';
 
-let settings = {}; // global variable to hold the options + defaults
-
-let archive_entries_added = 0;
-let archive_entries_processed = 0;
-let entries_to_process = 0;
-
-let output_format = '';
-
-let archive, archive_out, csv_stringifier;
+let settings, total_entries_to_process, entries_to_process, archive_entries_to_process, archive_entries_processed, archive, archive_out;
 
 // pre run setup / handle settings
-const prepare = async (options, resolve, reject) => {
+const prepare = async (options, resolve, reject, model_documents_count) => {
   // console.log('output.prepare');
   settings = options;
   settings.resolve = resolve;
   settings.reject = reject;
 
-  if (settings.output) {
-    output_format = path.extname(settings.output).replace(/^\./, '') || settings.output;
-  }
+  entries_to_process = model_documents_count;
+
+  set_total_entries_to_process(model_documents_count);
 
   if (settings.archive) {
-    await setup_zip();
-  }
-
-  if (output_format === 'csv') {
-    await setup_csv();
+    set_archive_entries_to_process();
+    await setup_zip(options);
   }
 };
 
-// prepare a csv stream for the destination output
-const setup_csv = async () => {
-  // console.log('output.setup_zip');
-  try {
-    archive_out = fs.createWriteStream(path.resolve(settings.output));
-    csv_stringifier = csv.stringify();
-    csv_stringifier.on('readable', () => {
-      let data = csv_stringifier.read();
-      while (data) {
-        archive_out.write(data);
-        data = csv_stringifier.read();
-        archive_entries_processed += 1;
-        if (archive_entries_processed === entries_to_process) {
-          csv_stringifier.end();
-        }
-      }
-    });
+const set_total_entries_to_process = () => {
+  total_entries_to_process = 0;
+  Object.keys(entries_to_process).forEach((v) => {
+    total_entries_to_process += entries_to_process[v];
+  });
+};
 
-    csv_stringifier.on('finish', () => {
-      archive_out.end();
-    });
-
-    // event listener to handle when the write stream is closed
-    archive_out.on('close', () => {
-      // only resolve once the stream has been closed
-      // console.log('write stream has closed');
-      settings.resolve(documents.get_stats());
-    });
-
-    return;
-  } catch (e) {
-    console.log('Error: setup_csv', e);
+const set_archive_entries_to_process = () => {
+  if (settings.output === 'csv') { // if we are dealing w/ a csv we will only process the # of model entries
+    archive_entries_to_process = Object.keys(entries_to_process).length;
+  } else { // otherwise we are dealing with every document for a model
+    archive_entries_to_process = total_entries_to_process;
   }
 };
 
@@ -76,13 +44,14 @@ const setup_csv = async () => {
 const setup_zip = async () => {
   // console.log('output.setup_zip');
   try {
-    archive_out = fs.createWriteStream(path.resolve(settings.archive));
+    archive_entries_processed = 0;
+    archive_out = fs.createWriteStream(path.join(settings.directory, settings.archive));
     archive = archiver('zip');
     archive.pipe(archive_out);
     // event listener to keep track of entries into the zip stream
     archive.on('entry', () => {
       archive_entries_processed += 1;
-      if (archive_entries_processed === archive_entries_added) {
+      if (archive_entries_processed === archive_entries_to_process) {
         // console.log('all zipped entries processed');
         archive.finalize();
       }
@@ -91,7 +60,7 @@ const setup_zip = async () => {
     archive_out.on('close', () => {
       // only resolve once the stream has been closed
       // console.log('write stream has closed');
-      settings.resolve(documents.get_stats());
+      settings.resolve();
     });
     // archive listener to handle errors
     archive.on('error', (err) => {
@@ -104,81 +73,145 @@ const setup_zip = async () => {
   }
 };
 
-const flush = async (current_model, data) => {
-  // if we are archiving (zipping) the results
-  if (settings.archive) {
-    await flush_archive(current_model, data);
-  } else { // if we are just writing out files
-    await flush_file(current_model, data);
+const save = async (model, documents) => {
+  if (settings.archive) { // if we are generating an archive
+    await save_archive(model, documents);
+  } else if (settings.output === 'csv') { // write model to csv
+    await save_csv(model, documents);
+  } else { // save output files
+    await save_files(model, documents);
   }
 };
 
-const flush_file = async (current_model, data) => {
-  // if we are just writing the output to files
-  if (output_format === 'json') {
-    fs.writeFile(
-      path.join(path.resolve(settings.directory || process.cwd()), data[current_model.key] + '.json'), // json files will use the key as the file name
-      JSON.stringify(data, null, 2)
-    );
-  } else if (output_format === 'csv') {
-    await append_csv(data);
-  } else if (output_format === 'yaml' || output_format === 'yml') {
-    fs.writeFile(
-      path.join(
-        path.resolve(settings.directory || process.cwd()), data[current_model.key] + '.' + output_format
-      ), // yaml files will use the key as the file name
-      yaml.stringify(data, 4)
-    );
-  }
-};
-
-const flush_archive = async (current_model, data) => {
-  // if we are archiving (zipping) the results
-  if (output_format === 'json') {
-    await append_zip(
-      JSON.stringify(data, null, 2),
-      data[current_model.key] + '.json'
-    );
-  } else if (output_format === 'yaml' || output_format === 'yml') {
-    await append_zip(
-      yaml.stringify(data, 4),
-      data[current_model.key] + '.' + output_format
-    );
-  }
-};
-
-const append_csv = async (data) => {
+// formats the data based on the output type
+const save_archive = (model, documents) => new Promise((resolve, reject) => {
   try {
-    if (!archive_entries_added) { // add the header if no entries have been previously added
-      entries_to_process += 1; // since we are adding the headers we need a faux entry
-      csv_stringifier.write(
-        Object.keys(data)
-      );
+    let filename, result;
+    if (settings.output === 'csv') { // write model to csv
+      filename = model.name + '.' + settings.output;
+      result = create_csv(documents)
+                .then((formatted_data) => append_zip(formatted_data, filename))
+                .then(resolve);
+    } else { // save output files
+      result = [];
+      for (let i = 0; i < documents.length; i++) {
+        filename = documents[i][model.key] + '.' + settings.output;
+        result.push(
+          format_data(documents[i])
+            .then((formatted_data) => append_zip(formatted_data, filename)) // eslint-disable-line no-loop-func
+        );
+      }
+      Promise.all(result)
+              .then(resolve);
     }
-    archive_entries_added += 1;
-    csv_stringifier.write(
-      data
-    );
-    return data;
   } catch (e) {
-    throw e;
+    console.log('Error: save_archive', e);
+    reject(e);
   }
-};
+});
 
-const append_zip = async (data, entry_name) => {
+const append_zip = (data, entry_name) => new Promise((resolve, reject) => {
+  // console.log('output.append_zip');
   try {
-    archive_entries_added += 1;
     archive.append(
       data,
       {
         name: entry_name
       }
     );
-    return data;
+    resolve();
   } catch (e) {
-    throw e;
+    reject(e);
   }
+});
+
+// saves each document to an individual file
+const save_files = async (model, documents) => {
+  // console.log('save_files', documents);
+  var writes = [];
+  for (let i = 0; i < documents.length; i++) {
+    let filename = documents[i][model.key] + '.' + settings.output;
+    writes.push(
+      format_data(documents[i])
+        .then((formatted_data) => write_file(filename, formatted_data))
+    );
+  }
+  return Promise.all(writes);
 };
+
+// saves each document to an single csv file {
+const save_csv = (model, documents) => new Promise((resolve, reject) => {
+  // console.log('save_csv', documents);
+  try {
+    create_csv(documents)
+      .then((transformed_data) => write_file(model.name + '.' + settings.output, transformed_data))
+      .then(resolve)
+      .catch(reject);
+  } catch (e) {
+    reject(e);
+  }
+});
+
+const create_csv = (documents) => new Promise((resolve, reject) => {
+  // console.log('create_csv', documents);
+  try {
+    csv_stringify(documents, { header: true }, (err, transformed_data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(transformed_data);
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+// formats the data based on the output type
+const format_data = (data) => new Promise((resolve, reject) => {
+  try {
+    if (settings.output === 'json') {
+      resolve(JSON.stringify(data, null, settings.format));
+    } else if (settings.output === 'yaml' || settings.output === 'yml') {
+      resolve(yaml.stringify(data, settings.format));
+    }
+  } catch (e) {
+    reject(e);
+  }
+});
+
+const write_file = (filename, data) => new Promise((resolve, reject) => {
+  try {
+    fs.writeFile(path.join(settings.directory, filename), data, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+
+
+const flush = async (current_model, data) => {
+  return format_data(data)
+          .then((formatted_data) => buffer_data(formatted_data))
+          .then((buffer) => save(current_model, data, buffer));
+};
+
+// create a buffer for the data so it can be written
+const buffer_data = (data) => new Promise((resolve, reject) => {
+  try {
+    console.log('buffer_data');
+    resolve(Buffer.from(data));
+  } catch (e) {
+    console.log('error?');
+    reject(e);
+  }
+});
 
 // error cleanup to delete generated files, etc.
 const error_cleanup = () => new Promise((resolve, reject) => {
@@ -203,8 +236,4 @@ const error_cleanup = () => new Promise((resolve, reject) => {
   }
 });
 
-const set_entries_to_process = (number) => {
-  entries_to_process = number;
-};
-
-export default { prepare, flush, error_cleanup, set_entries_to_process };
+export default { prepare, save, flush, error_cleanup };

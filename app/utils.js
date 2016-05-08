@@ -1,5 +1,8 @@
 'use strict';
 
+import path from 'path';
+import fs from 'fs';
+
 const object_search = (data, pattern, current_path, paths = []) => {
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
@@ -23,10 +26,56 @@ const object_search = (data, pattern, current_path, paths = []) => {
   return paths;
 };
 
-const append_path = (path, index) => {
-  path = path ? path + '.' + index : '' + index;
-  path = path.replace(/^\.|\.$|\.{2,}/, '');
-  return path;
+const append_path = (opath, index) => {
+  opath = opath ? opath + '.' + index : '' + index;
+  opath = opath.replace(/^\.|\.$|\.{2,}/, '');
+  return opath;
 };
 
-export default { object_search };
+const exists = (file_path) => new Promise((resolve, reject) => {
+  try {
+    fs.exists(path.resolve(file_path), (found) => {
+      if (found) {
+        resolve();
+      } else {
+        reject(`${file_path} does not exist`);
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+const is_directory = (dir_path) => new Promise((resolve, reject) => {
+  try {
+    dir_path = path.resolve(dir_path);
+    fs.stat(dir_path, (err, stats) => {
+      if (err || !stats.isDirectory()) {
+        reject();
+      } else {
+        resolve(dir_path);
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+const read_directory = (dir_path) => new Promise((resolve, reject) => {
+  try {
+    fs.readdir(dir_path, (err, files) => {
+      if (err) {
+        throw err;
+      } else {
+        files = files.map((current) => {
+          return path.join(dir_path, current);
+        });
+        resolve(files);
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+export default { object_search, exists, is_directory, read_directory };
