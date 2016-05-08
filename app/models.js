@@ -2,6 +2,8 @@
 
 import yaml from 'yamljs';
 import path from 'path';
+import Chance from 'chance';
+const chance = new Chance();
 import documents from './documents';
 import utils from './utils';
 import objectMerge from 'object-merge';
@@ -10,6 +12,7 @@ import objectPath from 'object-path';
 let models = {}; // global variable to hold parsed models
 let model_order = []; // global variable to hold the model run order
 let model_count = 0; // global variable to hold the number of available models
+let model_documents_count = {}; // global variable to hold the number of documents to generate for each model
 
 // pre run setup / handle settings
 const prepare = (options) => {
@@ -18,7 +21,8 @@ const prepare = (options) => {
           .then(load)
           .then(validate)
           .then(parse)
-          .then(resolve_dependencies);
+          .then(resolve_dependencies)
+          .then(set_document_counts);
 };
 
 // gets the available model yaml files from the current working directory
@@ -69,7 +73,7 @@ const load_yaml_file = (file) => new Promise((resolve, reject) => {
       models[result.name || file] = result; // add the parsed model to the global object
       resolve();
     } else {
-      reject('Invalid YAML file');
+      reject(`Invalid YAML file: ${file}`);
     }
   });
 });
@@ -186,13 +190,33 @@ const add_model_order = (model) => {
   return;
 };
 
+// resolve the dependencies and establish the order the models should be parsed in
+const get_document_counts = () => {
+  return model_documents_count;
+};
+
+// resolve the dependencies and establish the order the models should be parsed in
+const set_document_counts = async () => {
+  // console.log('models.set_document_counts');
+  model_order.forEach((v) => {
+    let current_model = models[v];
+    model_documents_count[v] = current_model.data.fixed || chance.integer({ min: current_model.data.min, max: current_model.data.max });
+  });
+  return model_documents_count;
+};
+
 // handles generation of data for each model
 const generate = async () => {
   // console.log('models.generate');
   for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
-    await documents.run(models[model_order[i]]); // eslint-disable-line babel/no-await-in-loop
+    await documents.run(models[model_order[i]], model_documents_count[models[model_order[i]].name]); // eslint-disable-line babel/no-await-in-loop
   }
   return;
 };
 
-export default { prepare, generate };
+// handles generation of data for each model
+const get_model_names = () => {
+  return Object.keys(models);
+};
+
+export default { prepare, generate, get_model_names, get_document_counts };

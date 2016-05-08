@@ -20,8 +20,8 @@ const start = (options = defaults) => new Promise((resolve, reject) => {
   try {
     // console.log('start');
     validate(options)
-      .then(() => output.prepare(options, resolve, reject))
       .then(() => models.prepare(options))
+      .then((model_documents_count) => output.prepare(options, resolve, reject, model_documents_count))
       .then(models.generate)
       .catch((err) => {
         console.log(err);
@@ -41,7 +41,7 @@ const start = (options = defaults) => new Promise((resolve, reject) => {
 const validate = (options) => new Promise((resolve, reject) => {
   if ('console,json,csv,yaml'.indexOf(options.output) === -1) { // validate output format
     reject('Unsupported output type');
-  } else if (options.archive && path.extname(options.archive) !== 'zip') { // validate archive format
+  } else if (options.archive && path.extname(options.archive) !== '.zip') { // validate archive format
     reject('The archive must be a zip file');
   } else if (options.directory) { // validate output directory exists
     utils.exists(path.resolve(options.directory))
