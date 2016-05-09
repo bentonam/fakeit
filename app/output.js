@@ -5,11 +5,12 @@ import fs from 'fs';
 import archiver from 'archiver';
 import csv_stringify from 'csv-stringify';
 import yaml from 'yamljs';
+import couchbase from 'couchbase';
 import utils from './utils';
 
-let settings, archive, archive_out;
+let settings, archive, archive_out, couchbase_bucket;
 
-let total_entries_to_process = 0; // the total number of documents to output
+let total_entries_to_process = 0; // the total number of documents to be output
 let entries_to_process = {}; // an object with each models document count to output
 let models_to_process = 0; // the number of models to be processed
 let models_processed = 0; // the number of models that have been processed
@@ -31,14 +32,19 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
 
   set_total_entries_to_process(model_documents_count);
 
-  if (settings.destination !== 'console') {
+  if (settings.destination !== 'console' && settings.destination !== 'couchbase') {
     // resolve the destination directory
     settings.destination = path.resolve(settings.destination);
     // create any directories that do not exist
     await utils.make_directory(settings.destination);
   }
 
-  if (settings.archive) {
+  if (settings.destination === 'couchbase') {
+    await setup_couchbase(options)
+            .catch((err) => {
+              settings.reject(err);
+            });
+  } else if (settings.archive) {
     set_archive_entries_to_process();
     await setup_zip(options);
   }
@@ -60,6 +66,24 @@ const set_archive_entries_to_process = () => {
     archive_entries_to_process = total_entries_to_process;
   }
 };
+
+// prepare the connection to couchbase
+const setup_couchbase = () => new Promise((resolve, reject) => {
+  // console.log('output.setup_couchbase');
+  try {
+    const cluster = new couchbase.Cluster(settings.server);
+    couchbase_bucket = cluster.openBucket(settings.bucket, settings.password || '', (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        // console.log(`Connection to "${settings.bucket}" bucket at "${settings.server}" was successful`);
+        resolve();
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
 
 // prepare a zip stream for the destination output
 const setup_zip = async () => {
@@ -94,13 +118,16 @@ const setup_zip = async () => {
 
 // handles saving a model after a run
 const save = (model, documents) => new Promise((resolve, reject) => {
+  // console.log('output.save');
   try {
     models_processed += 1; // keep track of the number of models processed
     let result;
     if (settings.archive) { // if we are generating an archive
       save_archive(model, documents).then(resolve);
     } else {
-      if (settings.destination === 'console') { // flush the output to the console
+      if (settings.destination === 'couchbase') { // send the output to couchbase
+        result = save_couchbase(model, documents);
+      } else if (settings.destination === 'console') { // flush the output to the console
         result = flush_console(model, documents);
       } else if (settings.output === 'csv') { // write model to csv
         result = save_csv(model, documents);
@@ -114,14 +141,34 @@ const save = (model, documents) => new Promise((resolve, reject) => {
   }
 });
 
-// determines whether or not the entire generation can be finalized
-const finalize = async () => {
-  if (!settings.archive) { // if we are generating an archive
-    if (models_to_process === models_processed) {
-      settings.resolve();
-    }
+// saves each document to an individual file
+const save_couchbase = async (model, documents) => {
+  // console.log('output.save_couchbase');
+  var writes = [];
+  for (let i = 0; i < documents.length; i++) {
+    writes.push(upsert(documents[i][model.key], documents[i]));
   }
+  return Promise.all(writes)
+                  .catch((err) => {
+                    settings.reject(err);
+                  });
 };
+
+// upserts a document into couchbase
+const upsert = (key, data) => new Promise((resolve, reject) => {
+  // console.log('output.upsert');
+  try {
+    couchbase_bucket.upsert(key.toString(), data, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
 
 // formats the data based on the output type
 const save_archive = (model, documents) => new Promise((resolve, reject) => {
@@ -182,7 +229,7 @@ const save_files = async (model, documents) => {
         .then((formatted_data) => write_file(filename, formatted_data))
     );
   }
-  return Promise.all(writes).then(finalize);
+  return Promise.all(writes);
 };
 
 // saves each document to an single csv file {
@@ -217,7 +264,7 @@ const create_csv = (documents) => new Promise((resolve, reject) => {
 
 // creates a csv string from the documents
 const flush_console = (model, documents) => new Promise((resolve, reject) => {
-  // console.log('output.create_csv');
+  // console.log('output.flush_console');
   try {
     let writes = [];
     if (settings.output === 'csv') {
@@ -240,6 +287,18 @@ const flush_console = (model, documents) => new Promise((resolve, reject) => {
     reject(e);
   }
 });
+
+// determines whether or not the entire generation can be finalized
+const finalize = async () => {
+  if (!settings.archive) { // if we are generating an archive
+    if (models_to_process === models_processed) {
+      if (!settings.destination === 'couchbase' && couchbase_bucket.connected) {
+        couchbase_bucket.disconnect();
+      }
+      settings.resolve();
+    }
+  }
+};
 
 // formats the data based on the output type
 const format_data = (data) => new Promise((resolve, reject) => {
@@ -273,7 +332,7 @@ const write_file = (filename, data) => new Promise((resolve, reject) => {
 const error_cleanup = () => new Promise((resolve, reject) => {
   // console.log('output.error_cleanup');
   try {
-    if (settings.zip) {
+    if (settings.archive) {
       // prevent the close method from being called to the generation is not resolved
       archive_out.removeAllListeners('close');
       // attach a new close event to delete the zip file
@@ -286,8 +345,11 @@ const error_cleanup = () => new Promise((resolve, reject) => {
           }
         });
       });
+    } else if (settings.destination === 'couchbase') {
+      couchbase_bucket.connected && couchbase_bucket.disconnect();
     }
   } catch (e) {
+    console.log('error?');
     reject(e);
   }
 });
