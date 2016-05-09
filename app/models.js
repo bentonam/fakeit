@@ -22,7 +22,7 @@ const prepare = (options) => {
           .then(validate)
           .then(parse)
           .then(resolve_dependencies)
-          .then(set_document_counts);
+          .then(() => set_document_counts(options));
 };
 
 // gets the available model yaml files from the current working directory
@@ -195,11 +195,14 @@ const get_document_counts = () => {
 };
 
 // resolve the dependencies and establish the order the models should be parsed in
-const set_document_counts = async () => {
+const set_document_counts = async (options) => {
   // console.log('models.set_document_counts');
   model_order.forEach((v) => {
     let current_model = models[v];
-    model_documents_count[v] = current_model.data.fixed || chance.integer({ min: current_model.data.min, max: current_model.data.max });
+    model_documents_count[v] = options.number ||
+                                current_model.data.fixed ||
+                                chance.integer({ min: current_model.data.min, max: current_model.data.max });
+    console.log(model_documents_count[v]);
   });
   return model_documents_count;
 };
