@@ -164,8 +164,7 @@ const resolve_dependencies = async () => {
       // update error to include which models could not be resolved
       throw new Error('Model dependencies could not be resolved.');
     } else {
-      console.log('Models will be generated in the following order: %s', model_order.join(', '));
-      return;
+      // console.log('Models will be generated in the following order: %s', model_order.join(', '));
     }
   } catch (e) {
     throw new Error(`Error: resolve_dependencies ${e.message}`);
