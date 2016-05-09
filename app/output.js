@@ -7,8 +7,9 @@ import csv_stringify from 'csv-stringify';
 import yaml from 'yamljs';
 import couchbase from 'couchbase';
 import utils from './utils';
+import request from 'request';
 
-let settings, archive, archive_out, couchbase_bucket;
+let settings, archive, archive_out, couchbase_bucket, sync_session;
 
 let total_entries_to_process = 0; // the total number of documents to be output
 let entries_to_process = {}; // an object with each models document count to output
@@ -32,7 +33,7 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
 
   set_total_entries_to_process(model_documents_count);
 
-  if (settings.destination !== 'console' && settings.destination !== 'couchbase') {
+  if ('console,couchbase,sync-gateway'.indexOf(settings.destination) === -1) {
     // resolve the destination directory
     settings.destination = path.resolve(settings.destination);
     // create any directories that do not exist
@@ -41,6 +42,11 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
 
   if (settings.destination === 'couchbase') {
     await setup_couchbase(options)
+            .catch((err) => {
+              settings.reject(err);
+            });
+  } else if (settings.destination === 'sync-gateway') {
+    await setup_syncgateway(options)
             .catch((err) => {
               settings.reject(err);
             });
@@ -80,6 +86,41 @@ const setup_couchbase = () => new Promise((resolve, reject) => {
         resolve();
       }
     });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+// prepare the connection to the sync gateway
+const setup_syncgateway = () => new Promise((resolve, reject) => {
+  // console.log('output.setup_syncgateway');
+  try {
+    // there might not need to be authentication if the sync db is allowing guest
+    if (settings.sync_gateway_admin && settings.username && settings.password) {
+      let options = {
+        url: settings.sync_gateway_admin + '/' + settings.bucket + '/_session',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: settings.username, password: settings.password })
+      };
+      request(options, (err, res, body) => {
+        if (err) {
+          reject(err);
+        } else {
+          body = JSON.parse(body);
+          if (body.error) {
+            reject(body.error);
+          } else {
+            sync_session = body;
+            resolve();
+          }
+        }
+      });
+    } else {
+      resolve();
+    }
   } catch (e) {
     reject(e);
   }
@@ -127,6 +168,8 @@ const save = (model, documents) => new Promise((resolve, reject) => {
     } else {
       if (settings.destination === 'couchbase') { // send the output to couchbase
         result = save_couchbase(model, documents);
+      } else if (settings.destination === 'sync-gateway') {
+        result = save_syncgateway(model, documents);
       } else if (settings.destination === 'console') { // flush the output to the console
         result = flush_console(model, documents);
       } else if (settings.output === 'csv') { // write model to csv
@@ -141,7 +184,7 @@ const save = (model, documents) => new Promise((resolve, reject) => {
   }
 });
 
-// saves each document to an individual file
+// saves each document to a couchbase instance
 const save_couchbase = async (model, documents) => {
   // console.log('output.save_couchbase');
   var writes = [];
@@ -161,6 +204,49 @@ const upsert = (key, data) => new Promise((resolve, reject) => {
     couchbase_bucket.upsert(key.toString(), data, (err) => {
       if (err) {
         reject(err);
+      } else {
+        resolve();
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+// saves each document to a sync gateway
+const save_syncgateway = async (model, documents) => {
+  // console.log('output.save_syncgateway');
+  var writes = [];
+  for (let i = 0; i < documents.length; i++) {
+    writes.push(syncgateway_send(documents[i][model.key], documents[i]));
+  }
+  return Promise.all(writes)
+                  .catch((err) => {
+                    settings.reject(err);
+                  });
+};
+
+const syncgateway_send = (key, data) => new Promise((resolve, reject) => {
+  // console.log('output.syncgateway_send');
+  try {
+    let options = {
+      url: settings.server + '/' + settings.bucket + '/' + encodeURIComponent(key),
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    };
+    // if there is a an authenticated sync session use it
+    if (sync_session) {
+      let jar = request.jar();
+      let cookie = request.cookie(sync_session.cookie_name + '=' + sync_session.session_id);
+      jar.setCookie(cookie, settings.server);
+      options.jar = jar;
+    }
+    request(options, (err) => {
+      if (err) {
+        reject();
       } else {
         resolve();
       }
@@ -349,7 +435,6 @@ const error_cleanup = () => new Promise((resolve, reject) => {
       couchbase_bucket.connected && couchbase_bucket.disconnect();
     }
   } catch (e) {
-    console.log('error?');
     reject(e);
   }
 });
