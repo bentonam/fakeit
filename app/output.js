@@ -40,7 +40,7 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
 const set_total_entries_to_process = () => {
   total_entries_to_process = 0;
   Object.keys(entries_to_process).forEach((v) => {
-    total_entries_to_process += entries_to_process[v];
+    total_entries_to_process += parseInt(entries_to_process[v]);
   });
 };
 
@@ -127,13 +127,19 @@ const save_archive = (model, documents) => new Promise((resolve, reject) => {
     } else { // save output files
       result = [];
       for (let i = 0; i < documents.length; i++) {
-        filename = documents[i][model.key] + '.' + settings.output;
         result.push(
-          format_data(documents[i])
-            .then((formatted_data) => append_zip(formatted_data, filename)) // eslint-disable-line no-loop-func
+          format_data(documents[i]) // eslint-disable-line no-loop-func
         );
       }
       Promise.all(result)
+              .then((formatted) => {
+                result = [];
+                formatted.forEach((v, i) => {
+                  filename = documents[i][model.key] + '.' + settings.output;
+                  result.push(append_zip(v, filename));
+                });
+                return Promise.all(result);
+              })
               .then(resolve);
     }
   } catch (e) {
@@ -143,7 +149,7 @@ const save_archive = (model, documents) => new Promise((resolve, reject) => {
 
 // appends files to the zip archive
 const append_zip = (data, entry_name) => new Promise((resolve, reject) => {
-  // console.log('output.append_zip');
+  // console.log('output.append_zip', entry_name);
   try {
     archive.append(
       data,
@@ -189,7 +195,7 @@ const save_csv = (model, documents) => new Promise((resolve, reject) => {
 const create_csv = (documents) => new Promise((resolve, reject) => {
   // console.log('output.create_csv');
   try {
-    csv_stringify(documents, { header: true }, (err, transformed_data) => {
+    csv_stringify(documents, { header: true, quotedString: true }, (err, transformed_data) => {
       if (err) {
         reject(err);
       } else {

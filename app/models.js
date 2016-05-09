@@ -119,7 +119,7 @@ const parse_model_functions = async (model) => {
       models[model],
       function_path,
       new Function(
-        'documents', 'globals', 'faker', 'chance', 'current_document', 'current_value',
+        'documents', 'globals', 'inputs', 'faker', 'chance', 'current_document', 'current_value',
         objectPath.get(models[model], function_path)
       )
     );
@@ -202,7 +202,6 @@ const set_document_counts = async (options) => {
     model_documents_count[v] = options.number ||
                                 current_model.data.fixed ||
                                 chance.integer({ min: current_model.data.min, max: current_model.data.max });
-    console.log(model_documents_count[v]);
   });
   return model_documents_count;
 };

@@ -78,4 +78,18 @@ const read_directory = (dir_path) => new Promise((resolve, reject) => {
   }
 });
 
-export default { object_search, exists, is_directory, read_directory };
+const read_file = (file_path) => new Promise((resolve, reject) => {
+  try {
+    fs.readFile(file_path, (err, data) => {
+      if (err) {
+        throw err;
+      } else {
+        resolve(data.toString());
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+export default { object_search, exists, is_directory, read_directory, read_file };
