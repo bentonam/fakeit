@@ -2,6 +2,7 @@
 
 import path from 'path';
 import fs from 'fs';
+import mkdirp from 'mkdirp';
 
 const object_search = (data, pattern, current_path, paths = []) => {
   if (Array.isArray(data)) {
@@ -92,4 +93,18 @@ const read_file = (file_path) => new Promise((resolve, reject) => {
   }
 });
 
-export default { object_search, exists, is_directory, read_directory, read_file };
+const make_directory = (dir_path) => new Promise((resolve, reject) => {
+  try {
+    mkdirp(dir_path, (err) => {
+      if (err) {
+        throw err;
+      } else {
+        resolve();
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+export default { object_search, exists, is_directory, read_directory, read_file, make_directory };
