@@ -1,0 +1,172 @@
+name: Contacts
+type: object
+key: _id
+data:
+  min: 1
+  max: 4
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'contact_' + current_document.contact_id;"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "contact"
+  contact_id:
+    type: string
+    description: The contact_id
+    data:
+      build: "return chance.guid();"
+  created_on:
+    type: integer
+    description: An epoch time of when the contact was created
+    data:
+      build: "return new Date(faker.date.past()).getTime();"
+  modified_on:
+    type: integer
+    description: An epoch time of when the contact was last modified
+    data:
+      build: "return new Date(faker.date.recent()).getTime();"
+  details:
+    description: An object of the contacts details
+    schema:
+      $ref: '#/definitions/Details'
+  phones:
+    type: array
+    description: An array of phone numbers
+    items:
+      $ref: '#/definitions/Phone'
+      data:
+        min: 1
+        max: 4
+  emails:
+    type: array
+    description: An array of emails
+    items:
+      $ref: '#/definitions/Email'
+      data:
+        min: 0
+        max: 3
+  addresses:
+    type: array
+    description: An array of addresses
+    items:
+      $ref: '#/definitions/Address'
+      data:
+        min: 0
+        max: 3
+  tags:
+    type: array
+    items:
+      type: string
+      data:
+        min: 1
+        max: 6
+        build: "return faker.random.word();"
+definitions:
+  Email:
+    type: string
+    data:
+      build: "return faker.internet.email();"
+  Phone:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The phone type
+        data:
+          build: "return faker.random.arrayElement(['Home', 'Work', 'Mobile', 'Main', 'Other']);"
+      phone_number:
+        type: string
+        description: The phone number
+        data:
+          build: "return faker.phone.phoneNumber().replace(/x[0-9]+$/, '');"
+      extension:
+        type: string
+        description: The phone extension
+        data:
+          build: "return chance.bool({likelihood: 20}) ? '' + chance.integer({min: 1000, max: 9999}) : '';"
+  Address:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The address type
+        data:
+          build: "return faker.random.arrayElement(['Home', 'Work', 'Other']);"
+      address_1:
+        type: string
+        description: The address 1
+        data:
+          build: "return faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+      address_2:
+        type: string
+        description: The address_2
+        data:
+          build: "return chance.bool({likelihood: 35}) ? faker.address.secondaryAddress() : '';"
+      locality:
+        type: string
+        description: The locality
+        data:
+          build: "return faker.address.city();"
+      region:
+        type: string
+        description: The region / state / province
+        data:
+          build: "return faker.address.stateAbbr();"
+      postal_code:
+        type: string
+        description: The zip code / postal code
+        data:
+          build: "return faker.address.zipCode();"
+      country:
+        type: string
+        description: The country code
+        data:
+          build: "return faker.address.countryCode();"
+  Details:
+    type: object
+    properties:
+      prefix:
+        type: string
+        description: The contacts prefix
+        data:
+          build: "return chance.bool() ? chance.prefix() : '';"
+      first_name:
+        type: string
+        description: The contacts first_name
+        data:
+          fake: "{{name.firstName}}"
+      middle_name:
+        type: string
+        description: The contacts middle_name
+        data:
+          build: "return chance.bool() ? chance.name({middle: true}).split(' ')[1] : '';"
+      last_name:
+        type: string
+        description: The contacts last_name
+        data:
+          build: "return chance.bool({likelihood: 70})  ? faker.name.lastName() : '';"
+      company:
+        type: string
+        description: The contacts company
+        data:
+          build: "return chance.bool({likelihood: 30})  ? faker.company.companyName() : '';"
+      job_title:
+        type: string
+        description: The contacts job_title
+        data:
+          build: "return chance.bool({likelihood: 30})  ? faker.name.jobTitle() : '';"
+      dob:
+        type: string
+        description: The contacts dob
+        data:
+          build: "return chance.bool() ? new Date(faker.date.past()).toISOString().split('T')[0] : '';"
+      nickname:
+        type: string
+        description: The contacts nickname
+        data:
+          build: "return chance.bool({likelihood: 10})  ? faker.random.word() : '';"

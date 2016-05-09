@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+'use strict';
+
+var path = require('path');
+require(path.join('..', 'dist', 'index.js')).default();
