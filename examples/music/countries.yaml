@@ -2,10 +2,18 @@ name: Countries
 type: object
 key: _id
 data:
-  fixed: 264
+  fixed: 246
   pre_run: >
-    globals.countries = chance.get('countries');
     globals.current_country_index = 0;
+    if (inputs.countries) {
+      globals.countries = inputs.countries;
+    } else {
+      globals.countries = [];
+      chance.get('countries').forEach(function (v, i) {
+        v.region_number = i;
+        globals.countries.push(v);
+      });
+    }
 properties:
   _id:
     type: string
@@ -17,31 +25,31 @@ properties:
     description: The countries GDP
     data:
       build: "return faker.random.number({min: 1000, max: 75000})"
-  region-number:
-    type: integer
-    description: The countries region number
-    data:
-      build: >
-        var current_region_id = globals.regions_counter || 0;
-        current_region_id += 1;
-        globals.regions_counter = current_region_id;
-        return current_region_id;
   countryCode:
     type: string
     description: The 2 letter ISO country code
     data:
       pre_build: >
-        var abbreviation = globals.countries[globals.current_country_index].abbreviation;
+        var abbreviation = globals.countries[globals.current_country_index].iso_2;
         globals.current_country_index = globals.current_country_index + 1;
         return abbreviation;
+  region-number:
+    type: string
+    description: The countries region number
+    data:
+      build: >
+        var key = globals.countries.filter(function(v){
+          return v.iso_2 === current_document.countryCode;
+        })[0];
+        return key.iso_m49 || key.region_number || change.integer({min: 1, max: 999});
   name:
     type: string
     description: The name of the country
     data:
       build: >
         return globals.countries.filter(function(v){
-          return v.abbreviation === current_document.countryCode;
-        })[0] || "";
+          return v.iso_2 === current_document.countryCode;
+        })[0].name || "";
   updated:
     type: string
     description: The date the country was last updated

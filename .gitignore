@@ -6,7 +6,6 @@
 *.DS_Store
 *.bak
 *.zip
-*.json
 *.csv
 export/
 .TemporaryItems

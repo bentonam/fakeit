@@ -2,5 +2,4 @@
 'use strict';
 
 var path = require('path');
-var root = process.cwd();
-require(path.join(root, '..', '..', 'dist', 'index.js')).default();
+require(path.join('..', 'dist', 'index.js')).default();
