@@ -2,7 +2,6 @@
 
 // import couchbase from 'couchbase';
 import path from 'path';
-import utils from './utils';
 import input from './input';
 import models from './models';
 import output from './output';
@@ -43,10 +42,6 @@ const validate = (options) => new Promise((resolve, reject) => {
     reject('Unsupported output type');
   } else if (options.archive && path.extname(options.archive) !== '.zip') { // validate archive format
     reject('The archive must be a zip file');
-  } else if (options.destination && options.destination !== 'console') { // validate output directory exists
-    utils.exists(path.resolve(options.destination))
-      .then(() => resolve())
-      .catch((err) => reject(err));
   } else {
     resolve();
   }

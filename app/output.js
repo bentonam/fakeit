@@ -5,6 +5,7 @@ import fs from 'fs';
 import archiver from 'archiver';
 import csv_stringify from 'csv-stringify';
 import yaml from 'yamljs';
+import utils from './utils';
 
 let settings, archive, archive_out;
 
@@ -29,6 +30,13 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
   models_to_process = Object.keys(entries_to_process).length;
 
   set_total_entries_to_process(model_documents_count);
+
+  if (settings.destination !== 'console') {
+    // resolve the destination directory
+    settings.destination = path.resolve(settings.destination);
+    // create any directories that do not exist
+    await utils.make_directory(settings.destination);
+  }
 
   if (settings.archive) {
     set_archive_entries_to_process();
