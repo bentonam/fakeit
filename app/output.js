@@ -6,7 +6,14 @@ import archiver from 'archiver';
 import csv_stringify from 'csv-stringify';
 import yaml from 'yamljs';
 
-let settings, total_entries_to_process, entries_to_process, archive_entries_to_process, archive_entries_processed, archive, archive_out;
+let settings, archive, archive_out;
+
+let total_entries_to_process = 0; // the total number of documents to output
+let entries_to_process = {}; // an object with each models document count to output
+let models_to_process = 0; // the number of models to be processed
+let models_processed = 0; // the number of models that have been processed
+let archive_entries_to_process = 0; // the total number of entries to add to the archive before finalizing
+let archive_entries_processed = 0; // the number of entries that have been successfully added to the archive
 
 // pre run setup / handle settings
 const prepare = async (options, resolve, reject, model_documents_count) => {
@@ -15,7 +22,11 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
   settings.resolve = resolve;
   settings.reject = reject;
 
+  settings.format = parseInt(settings.format); // ensure that the spacing is a number
+
+  // save the number of entries for each models documents
   entries_to_process = model_documents_count;
+  models_to_process = Object.keys(entries_to_process).length;
 
   set_total_entries_to_process(model_documents_count);
 
@@ -25,6 +36,7 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
   }
 };
 
+// sets the total number of entries to process
 const set_total_entries_to_process = () => {
   total_entries_to_process = 0;
   Object.keys(entries_to_process).forEach((v) => {
@@ -32,6 +44,7 @@ const set_total_entries_to_process = () => {
   });
 };
 
+// sets the number of archive entries to process
 const set_archive_entries_to_process = () => {
   if (settings.output === 'csv') { // if we are dealing w/ a csv we will only process the # of model entries
     archive_entries_to_process = Object.keys(entries_to_process).length;
@@ -45,41 +58,60 @@ const setup_zip = async () => {
   // console.log('output.setup_zip');
   try {
     archive_entries_processed = 0;
-    archive_out = fs.createWriteStream(path.join(settings.directory, settings.archive));
+    archive_out = fs.createWriteStream(path.join(settings.destination, settings.archive));
     archive = archiver('zip');
     archive.pipe(archive_out);
     // event listener to keep track of entries into the zip stream
     archive.on('entry', () => {
       archive_entries_processed += 1;
       if (archive_entries_processed === archive_entries_to_process) {
-        // console.log('all zipped entries processed');
+        // if we have processed all the zip entries, finalize the archive so the write stream
+        // can be closed and we can resolve the promise
         archive.finalize();
       }
     });
     // event listener to handle when the write stream is closed
     archive_out.on('close', () => {
       // only resolve once the stream has been closed
-      // console.log('write stream has closed');
       settings.resolve();
     });
     // archive listener to handle errors
     archive.on('error', (err) => {
       settings.reject(err);
-      console.log('Archive Error:', err);
     });
-    return;
   } catch (e) {
-    console.log('Error: setup_zip', e);
+    settings.reject(e);
   }
 };
 
-const save = async (model, documents) => {
-  if (settings.archive) { // if we are generating an archive
-    await save_archive(model, documents);
-  } else if (settings.output === 'csv') { // write model to csv
-    await save_csv(model, documents);
-  } else { // save output files
-    await save_files(model, documents);
+// handles saving a model after a run
+const save = (model, documents) => new Promise((resolve, reject) => {
+  try {
+    models_processed += 1; // keep track of the number of models processed
+    let result;
+    if (settings.archive) { // if we are generating an archive
+      save_archive(model, documents).then(resolve);
+    } else {
+      if (settings.destination === 'console') { // flush the output to the console
+        result = flush_console(model, documents);
+      } else if (settings.output === 'csv') { // write model to csv
+        result = save_csv(model, documents);
+      } else { // save output files
+        result = save_files(model, documents);
+      }
+      result.then(finalize).then(resolve);
+    }
+  } catch (e) {
+    reject(e);
+  }
+});
+
+// determines whether or not the entire generation can be finalized
+const finalize = async () => {
+  if (!settings.archive) { // if we are generating an archive
+    if (models_to_process === models_processed) {
+      settings.resolve();
+    }
   }
 };
 
@@ -105,11 +137,11 @@ const save_archive = (model, documents) => new Promise((resolve, reject) => {
               .then(resolve);
     }
   } catch (e) {
-    console.log('Error: save_archive', e);
     reject(e);
   }
 });
 
+// appends files to the zip archive
 const append_zip = (data, entry_name) => new Promise((resolve, reject) => {
   // console.log('output.append_zip');
   try {
@@ -136,7 +168,7 @@ const save_files = async (model, documents) => {
         .then((formatted_data) => write_file(filename, formatted_data))
     );
   }
-  return Promise.all(writes);
+  return Promise.all(writes).then(finalize);
 };
 
 // saves each document to an single csv file {
@@ -145,6 +177,7 @@ const save_csv = (model, documents) => new Promise((resolve, reject) => {
   try {
     create_csv(documents)
       .then((transformed_data) => write_file(model.name + '.' + settings.output, transformed_data))
+      .then(finalize)
       .then(resolve)
       .catch(reject);
   } catch (e) {
@@ -152,8 +185,9 @@ const save_csv = (model, documents) => new Promise((resolve, reject) => {
   }
 });
 
+// creates a csv string from the documents
 const create_csv = (documents) => new Promise((resolve, reject) => {
-  // console.log('create_csv', documents);
+  // console.log('output.create_csv');
   try {
     csv_stringify(documents, { header: true }, (err, transformed_data) => {
       if (err) {
@@ -162,6 +196,32 @@ const create_csv = (documents) => new Promise((resolve, reject) => {
         resolve(transformed_data);
       }
     });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+// creates a csv string from the documents
+const flush_console = (model, documents) => new Promise((resolve, reject) => {
+  // console.log('output.create_csv');
+  try {
+    let writes = [];
+    if (settings.output === 'csv') {
+      writes.push(create_csv(documents));
+    } else {
+      documents.forEach((d) => {
+        writes.push(
+          format_data(d)
+        );
+      });
+    }
+    Promise.all(writes)
+      .then((result) => {
+        result.forEach((v) => {
+          console.log(v);
+        });
+      })
+      .then(resolve);
   } catch (e) {
     reject(e);
   }
@@ -180,9 +240,10 @@ const format_data = (data) => new Promise((resolve, reject) => {
   }
 });
 
+// handles writing a file to disk
 const write_file = (filename, data) => new Promise((resolve, reject) => {
   try {
-    fs.writeFile(path.join(settings.directory, filename), data, (err) => {
+    fs.writeFile(path.join(settings.destination, filename), data, (err) => {
       if (err) {
         reject(err);
       } else {
@@ -194,28 +255,9 @@ const write_file = (filename, data) => new Promise((resolve, reject) => {
   }
 });
 
-
-
-const flush = async (current_model, data) => {
-  return format_data(data)
-          .then((formatted_data) => buffer_data(formatted_data))
-          .then((buffer) => save(current_model, data, buffer));
-};
-
-// create a buffer for the data so it can be written
-const buffer_data = (data) => new Promise((resolve, reject) => {
-  try {
-    console.log('buffer_data');
-    resolve(Buffer.from(data));
-  } catch (e) {
-    console.log('error?');
-    reject(e);
-  }
-});
-
 // error cleanup to delete generated files, etc.
 const error_cleanup = () => new Promise((resolve, reject) => {
-  // console.log('error_cleanup');
+  // console.log('output.error_cleanup');
   try {
     if (settings.zip) {
       // prevent the close method from being called to the generation is not resolved
@@ -236,4 +278,4 @@ const error_cleanup = () => new Promise((resolve, reject) => {
   }
 });
 
-export default { prepare, save, flush, error_cleanup };
+export default { prepare, save, error_cleanup };

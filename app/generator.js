@@ -10,7 +10,8 @@ const defaults = {
   models: process.cwd(),
   output: 'console',
   archive: '',
-  directory: process.cwd(),
+  destination: process.cwd(),
+  format: 2,
   server: '127.0.0.1',
   bucket: 'default',
   password: ''
@@ -43,8 +44,8 @@ const validate = (options) => new Promise((resolve, reject) => {
     reject('Unsupported output type');
   } else if (options.archive && path.extname(options.archive) !== '.zip') { // validate archive format
     reject('The archive must be a zip file');
-  } else if (options.directory) { // validate output directory exists
-    utils.exists(path.resolve(options.directory))
+  } else if (options.destination && options.destination !== 'console') { // validate output directory exists
+    utils.exists(path.resolve(options.destination))
       .then(() => resolve())
       .catch((err) => reject(err));
   } else {
