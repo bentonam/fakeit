@@ -201,7 +201,8 @@ const set_document_counts = async (options) => {
     let current_model = models[v];
     model_documents_count[v] = options.number ||
                                 current_model.data.fixed ||
-                                chance.integer({ min: current_model.data.min, max: current_model.data.max });
+                                chance.integer({ min: current_model.data.min, max: current_model.data.max }) ||
+                                1;
   });
   return model_documents_count;
 };
