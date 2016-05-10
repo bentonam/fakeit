@@ -9,7 +9,7 @@ export default function() {
   program
     .version(version)
     .usage('fakeit [options]')
-    .option('-o, --output [value]', '(optional) The output format to generate.  Supported formats are: json, csv, yaml', 'json')
+    .option('-o, --output [value]', '(optional) The output format to generate.  Supported formats are: json, csv, yaml, cson', 'json')
     .option('-a, --archive [value]', '(optional) The archive file to generate.  Supported formats are: zip')
     .option('-m, --models [value]', '(optional) (optional) A directory or comma-delimited list of files models to use.', process.cwd())
     .option('-d, --destination [value]', '(optional) The output destination.  Values can be: couchbase, console or a directory path.', process.cwd())
