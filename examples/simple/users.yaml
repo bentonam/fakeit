@@ -1,6 +1,6 @@
 name: Users
 type: object
-key: _id
+key: id
 data:
   min: 50
   max: 100

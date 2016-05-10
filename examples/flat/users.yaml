@@ -2,8 +2,8 @@ name: Users
 type: object
 key: user_id
 data:
-  min: 1
-  max: 4
+  min: 100
+  max: 400
 properties:
   user_id:
     type: integer
