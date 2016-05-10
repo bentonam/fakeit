@@ -23,8 +23,7 @@ export default function() {
     .parse(process.argv);
 
   // run the program
-  generator
-    .start(program)
+  generator(program)
     .then(() => {
       // console.log('Data Generation Complete');
       process.exit();
