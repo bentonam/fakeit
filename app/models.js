@@ -85,6 +85,12 @@ const validate = async () => {
     if (!models[model].name) {
       throw new Error(`The model ${model} must have a "name" property.`);
     }
+    if (!models[model].type) {
+      throw new Error(`The model ${model} must have a "type" property.`);
+    }
+    if (!models[model].key) {
+      throw new Error(`The model ${model} must have a "key" property.`);
+    }
   }
 };
 
