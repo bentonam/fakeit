@@ -6,11 +6,13 @@ import models from './models';
 import output from './output';
 
 const defaults = {
-  models: process.cwd(),
   output: 'console',
   archive: '',
+  models: process.cwd(),
   destination: process.cwd(),
-  format: 2
+  format: 2,
+  server: '127.0.0.1',
+  bucket: 'default'
 };
 
 export default function start(options = {}) {
