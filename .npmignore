@@ -1,4 +1,6 @@
-dist/
-.gitignore
-.gitconfig
-.gitattributes
+app/
+.git*
+examples
+test
+.eslint*
+Makefile
