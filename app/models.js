@@ -108,11 +108,12 @@ const parse_model = async (model) => {
   // console.log('models.parse_model');
   await parse_model_functions(model);
   await parse_model_references(model);
+  await parse_model_types(model);
 };
 
 // searches the model for any of the pre / post run and build functions and generates them
 const parse_model_functions = async (model) => {
-  // console.log('models.parse_model');
+  // console.log('models.parse_model_functions');
   let results = utils.object_search(models[model], /((pre|post)_run)|(pre_|post_)?build$/);
   results.forEach((function_path) => {
     objectPath.set(
@@ -128,7 +129,7 @@ const parse_model_functions = async (model) => {
 
 // searches the model for any '$ref' values that are pointing to definitions, sub_models, etc. and copies the reference to the schema
 const parse_model_references = async (model) => {
-  // console.log('models.parse_model');
+  // console.log('models.parse_model_references');
   let pattern = /\.(schema|items).\$ref$/;
   let results = utils.object_search(models[model], pattern);
   results.forEach((reference_path) => {
@@ -137,6 +138,20 @@ const parse_model_references = async (model) => {
     let defined_path = objectPath.get(models[model], reference_path).replace(/^#\//, '').replace('/', '.');
     property = objectMerge({}, property, objectPath.get(models[model], defined_path));
     objectPath.set(models[model], property_path, property);
+  });
+};
+
+// searches the model for any properties or items and makes sure the defaults exist
+const parse_model_types = async (model) => {
+  // console.log('models.parse_model_properties');
+  let results = utils.object_search(models[model], /.*properties\.[^.]+(\.items)?$/);
+  results.forEach((type_path) => {
+    let property = objectPath.get(models[model], type_path);
+    // make sure there is a type property set
+    if (!property.hasOwnProperty('type')) {
+      property.type = 'undefined';
+      objectPath.set(models[model], type_path, property);
+    }
   });
 };
 
