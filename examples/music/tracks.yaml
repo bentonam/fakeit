@@ -4,8 +4,8 @@ key: _id
 data:
   dependencies:
     - Users
-  min: 1
-  max: 2
+  min: 500
+  max: 800
 properties:
   _id:
     type: string

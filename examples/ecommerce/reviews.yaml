@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'product_' + current_document.product_id + '_review_' + current_document.review_id"
+      post_build: "return 'review_' + current_document.review_id;"
   doc_type:
     type: string
     description: The document type
@@ -22,7 +22,6 @@ properties:
     type: string
     description: Unique identifier representing a specific review
     data:
-      # this had to be done because faker.fake("{{random.uuid}}") errors
       build: "return faker.random.uuid();"
   product_id:
     type: string
