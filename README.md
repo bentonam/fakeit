@@ -386,7 +386,7 @@ These could have been defined inline but that would make it more difficult to se
 
 ## Examples
 
-The following examples have been provided, and can be downloaded as a Zip from [examples.zip](blob/master/examples/examples.zip)
+The following examples have been provided, and can be downloaded as a Zip from [examples.zip](https://github.com/bentonam/fakeit/raw/master/examples/examples.zip)
 
 - [ecommerce](examples/ecommerce)
 - [contacts](examples/contacts)
