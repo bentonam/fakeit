@@ -2,6 +2,7 @@
 
 import path from 'path';
 import yaml from 'yamljs';
+import cson from 'cson';
 import utils from './utils';
 import csv_parse from 'csv-parse';
 
@@ -45,7 +46,7 @@ const list = (options) => new Promise((resolve, reject) => {
 const filter = async (files) => {
   // console.log('input.filter');
   files = files.filter((file) => {
-    return file.match(/\.(csv|json|ya?ml)$/i);
+    return file.match(/\.(csv|json|cson|ya?ml)$/i);
   });
   if (!files.length) {
     throw new Error('No valid input files found.');
@@ -58,12 +59,15 @@ const load = async (files) => {
   // console.log('input.load', files);
   let tmp = [];
   files.forEach((v) => {
+    v = path.resolve(v);
     if (v.match(/.json$/i)) {
-      tmp.push(load_json_file(path.resolve(v)));
+      tmp.push(load_json_file(v));
     } else if (v.match(/\.ya?ml$/i)) {
-      tmp.push(load_yaml_file(path.resolve(v)));
+      tmp.push(load_yaml_file(v));
     } else if (v.match(/\.csv$/i)) {
-      tmp.push(load_csv_file(path.resolve(v)));
+      tmp.push(load_csv_file(v));
+    } else if (v.match(/\.cson$/i)) {
+      tmp.push(load_cson_file(v));
     }
   });
   return await Promise.all(tmp);
@@ -113,6 +117,19 @@ const load_csv_file = (file) => new Promise((resolve, reject) => {
         }
       });
     });
+});
+
+// load and convert a cson file to a json object
+const load_cson_file = (file) => new Promise((resolve, reject) => {
+  // console.log('input.load_cson_file');
+  cson.load(file, (err, result) => {
+    if (err) {
+      reject(`Invalid CSON file: ${file}`);
+    } else {
+      inputs[path.parse(file).name] = result;
+      resolve();
+    }
+  });
 });
 
 const get_inputs = () => {

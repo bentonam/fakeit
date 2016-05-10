@@ -85,6 +85,12 @@ const validate = async () => {
     if (!models[model].name) {
       throw new Error(`The model ${model} must have a "name" property.`);
     }
+    if (!models[model].type) {
+      throw new Error(`The model ${model} must have a "type" property.`);
+    }
+    if (!models[model].key) {
+      throw new Error(`The model ${model} must have a "key" property.`);
+    }
   }
 };
 
@@ -98,7 +104,7 @@ const parse = async () => {
         parsed.push(parse_model(model));
       }
     }
-    return Promise.all(parsed);
+    return await Promise.all(parsed);
   } catch (e) {
     throw e;
   }
@@ -120,7 +126,7 @@ const parse_model_functions = async (model) => {
       models[model],
       function_path,
       new Function(
-        'documents', 'globals', 'inputs', 'faker', 'chance', 'current_document', 'current_value',
+        'documents', 'globals', 'inputs', 'faker', 'chance',
         objectPath.get(models[model], function_path)
       )
     );

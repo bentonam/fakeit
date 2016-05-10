@@ -19,7 +19,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'country_' + current_document.countryCode;"
+      post_build: "return 'country_' + this.countryCode;"
   gdp:
     type: integer
     description: The countries GDP
@@ -39,7 +39,7 @@ properties:
     data:
       build: >
         var key = globals.countries.filter(function(v){
-          return v.iso_2 === current_document.countryCode;
+          return v.iso_2 === this.countryCode;
         })[0];
         return key.iso_m49 || key.region_number || chance.integer({min: 1, max: 999});
   name:
@@ -48,14 +48,14 @@ properties:
     data:
       build: >
         return globals.countries.filter(function(v){
-          return v.iso_2 === current_document.countryCode;
+          return v.iso_2 === this.countryCode;
         })[0].name || "";
   updated:
     type: string
     description: The date the country was last updated
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.updated).toISOString();"
   population:
     type: integer
     description: The countries population
