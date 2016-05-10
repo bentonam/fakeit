@@ -1,11 +1,8 @@
 *.apdisk
 *.ap_
-*.sass-cache
-*.scssc
 *.log
 *.DS_Store
 *.bak
-*.zip
 *.csv
 export/
 .TemporaryItems
