@@ -9,7 +9,7 @@ data:
 properties:
   id:
     data:
-      post_build: "return 'user_' + current_document.user_id;"
+      post_build: "return 'user_' + this.user_id;"
   type:
     data:
       value: "user"
@@ -35,4 +35,4 @@ properties:
   created_on:
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.created_on).toISOString();"

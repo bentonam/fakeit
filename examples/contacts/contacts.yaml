@@ -9,7 +9,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'contact_' + current_document.contact_id;"
+      post_build: "return 'contact_' + this.contact_id;"
   doc_type:
     type: string
     description: The document type

@@ -72,13 +72,13 @@ Each model can have it's own `pre_(run|build)` and `post_(run|build)` functions,
 
 Each one of these functions is passed the following variables that can be used at the time of its execution:
 
+For the `run` functions `this` refers to the current model, for the `build` functions `this` refers to the document currently being generated.
+
 - `documents` - An object containing a key for each model whose value is an array of each document that has been generated
 - `globals` - An object containing any global variables that may have been set by any of the run or build functions
 - `inputs` - An object containing a key for each input file used whose value is the deserialized version of the files data
 - `faker` - A reference to [FakerJS](http://marak.github.io/faker.js/)
 - `chance` - A reference to [ChanceJS](http://chancejs.com/)
-- `current_document` - The currently generated document
-- `current_value` - The currently generated value
 
 #### Example users.yaml Model
 
@@ -95,7 +95,7 @@ properties:
   id:
     type: string
     data:
-      post_build: "return 'user_' + current_document.user_id;"
+      post_build: "return 'user_' + this.user_id;"
   type:
     type: string
     data:
@@ -125,7 +125,7 @@ properties:
     type: string
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.created_on).toISOString();"
 ```
 
 We can generate data for this model by executing the following command:
