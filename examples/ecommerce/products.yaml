@@ -19,7 +19,6 @@ properties:
     type: string
     description: Unique identifier representing a specific product
     data:
-      # this had to be done because faker.fake("{{random.uuid}}") errors
       build: "return faker.random.uuid();"
   price:
     type: double

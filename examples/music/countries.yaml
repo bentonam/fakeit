@@ -30,7 +30,7 @@ properties:
     description: The 2 letter ISO country code
     data:
       pre_build: >
-        var abbreviation = globals.countries[globals.current_country_index].iso_2;
+        var abbreviation = globals.countries[globals.current_country_index].iso_2 || globals.countries[globals.current_country_index].countryCode;
         globals.current_country_index = globals.current_country_index + 1;
         return abbreviation;
   region-number:
@@ -41,7 +41,7 @@ properties:
         var key = globals.countries.filter(function(v){
           return v.iso_2 === current_document.countryCode;
         })[0];
-        return key.iso_m49 || key.region_number || change.integer({min: 1, max: 999});
+        return key.iso_m49 || key.region_number || chance.integer({min: 1, max: 999});
   name:
     type: string
     description: The name of the country

@@ -2,8 +2,8 @@ name: Users
 type: object
 key: _id
 data:
-  min: 1
-  max: 2
+  min: 400
+  max: 600
 properties:
   _id:
     type: string
