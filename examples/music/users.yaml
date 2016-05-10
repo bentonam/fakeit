@@ -9,7 +9,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'user_' + current_document.username;"
+      post_build: "return 'user_' + this.username;"
   type:
     type: string
     description: The document type
@@ -70,7 +70,7 @@ properties:
           phones.push({
             type: faker.random.arrayElement(['home', 'work', 'mobile', 'other', 'main']),
             verified: new Date(faker.date.past()).toISOString(),
-            number: chance.phone({ country: current_document.address.countryCode.toLowerCase() }) || faker.phone.phoneNumber().replace(/x[0-9]+$/, '')
+            number: chance.phone({ country: this.address.countryCode.toLowerCase() }) || faker.phone.phoneNumber().replace(/x[0-9]+$/, '')
           });
         }
         return phones;
@@ -103,13 +103,13 @@ properties:
     description: The date the user was created
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.created).toISOString();"
   updated:
     type: string
     description: The date the user document was last updated
     data:
       fake: "{{date.recent}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.created).toISOString();"
   picture:
     type: object
     description: User thumbnails / pictures

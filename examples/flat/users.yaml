@@ -34,13 +34,13 @@ properties:
     description: The users home phone
     data:
         fake: "{{phone.phoneNumber}}"
-        post_build: "return current_value.replace(/x[0-9]+$/, '')"
+        post_build: "return this.home_phone.replace(/x[0-9]+$/, '')"
   mobile_phone:
     type: string
     description: The users mobile phone
     data:
         fake: "{{phone.phoneNumber}}"
-        post_build: "return current_value.replace(/x[0-9]+$/, '')"
+        post_build: "return this.mobile_phone.replace(/x[0-9]+$/, '')"
   address_1:
     type: string
     description: The address 1

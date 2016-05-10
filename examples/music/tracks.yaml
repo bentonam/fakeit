@@ -11,7 +11,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'track_' + current_document.id;"
+      post_build: "return 'track_' + this.id;"
   type:
     type: string
     description: The document type
@@ -27,13 +27,13 @@ properties:
     description: The date the track was created
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.created).toISOString();"
   updated:
     type: string
     description: The date the track was updated
     data:
       fake: "{{date.recent}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.updated).toISOString();"
   artist:
     type: string
     description: The artist name title
@@ -49,7 +49,7 @@ properties:
     description: The track mp3 url
     data:
         post_build: >
-          return faker.internet.url() + '/' + faker.internet.domainWord() + '/' + faker.random.arrayElement(['files', 'audio', 'mp3', 'downloads']) + '/' + encodeURIComponent(current_document.title) + '.mp3';
+          return faker.internet.url() + '/' + faker.internet.domainWord() + '/' + faker.random.arrayElement(['files', 'audio', 'mp3', 'downloads']) + '/' + encodeURIComponent(this.title) + '.mp3';
   genre:
     type: string
     description: The track genre

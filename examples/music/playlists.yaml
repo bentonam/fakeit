@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'playlist_' + current_document.id;"
+      post_build: "return 'playlist_' + this.id;"
   type:
     type: string
     description: The document type
@@ -28,13 +28,13 @@ properties:
     description: The date the track was created
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.created).toISOString();"
   updated:
     type: string
     description: The date the track was updated
     data:
       fake: "{{date.recent}}"
-      post_build: "return new Date(current_value).toISOString();"
+      post_build: "return new Date(this.updated).toISOString();"
   visibility:
     type: string
     description: The playlist visibility
