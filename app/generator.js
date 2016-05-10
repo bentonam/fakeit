@@ -42,7 +42,7 @@ export default function start(options = {}) {
 };
 
 const validate = (options) => {
-  if ('json,csv,yml,yaml,couchbase,sync-gateway'.indexOf(options.output) === -1) { // validate output format
+  if ('json,cson,csv,yml,yaml,couchbase,sync-gateway'.indexOf(options.output) === -1) { // validate output format
     throw new Error('Unsupported output type');
   } else if (options.archive && path.extname(options.archive) !== '.zip') { // validate archive format
     throw new Error('The archive must be a zip file');

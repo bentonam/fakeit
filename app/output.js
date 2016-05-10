@@ -5,6 +5,7 @@ import fs from 'fs';
 import archiver from 'archiver';
 import csv_stringify from 'csv-stringify';
 import yaml from 'yamljs';
+import cson from 'cson';
 import couchbase from 'couchbase';
 import utils from './utils';
 import request from 'request';
@@ -393,6 +394,8 @@ const format_data = (data) => new Promise((resolve, reject) => {
       resolve(JSON.stringify(data, null, settings.format));
     } else if (settings.output === 'yaml' || settings.output === 'yml') {
       resolve(yaml.stringify(data, settings.format));
+    } else if (settings.output === 'cson') {
+      resolve(cson.stringify(data, null, settings.format));
     }
   } catch (e) {
     reject(e);
