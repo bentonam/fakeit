@@ -4,6 +4,8 @@ key: _id
 data:
   min: 200
   max: 500
+  pre_run: >
+    globals.user_counter = 0;
 properties:
   _id:
     type: string
@@ -19,11 +21,7 @@ properties:
     type: integer
     description: The users id
     data:
-        build: >
-          var current_user_id = globals.user_counter || 0;
-          current_user_id += 1;
-          globals.user_counter = current_user_id;
-          return current_user_id;
+        build: "return ++globals.user_counter;"
   first_name:
     type: string
     description: The users first name

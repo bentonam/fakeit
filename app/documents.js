@@ -231,6 +231,10 @@ const build_process_callback = (current_model, generated_document, property, val
   if ('double,float'.indexOf(property.type) !== -1) {
     value = parseFloat(value);
   }
+  // if it is a double / float make sure it is treated as such
+  if (property.type === 'string' && typeof value !== 'undefined' && value !== null) {
+    value = value.toString();
+  }
   return value;
 };
 
