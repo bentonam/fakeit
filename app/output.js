@@ -57,6 +57,17 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
   }
 };
 
+// updates the entry totals, if a model being generated set new values this would be called
+const update_entry_totals = (model_name, number) => {
+  let old_entries_to_process = entries_to_process[model_name];
+  total_entries_to_process -= old_entries_to_process;
+  total_entries_to_process += number;
+  // if the entries are being archived and not in csv format updated the archive_entries_to_process
+  if (settings.archive && settings.output !== 'csv') {
+    archive_entries_to_process = total_entries_to_process;
+  }
+};
+
 // sets the total number of entries to process
 const set_total_entries_to_process = () => {
   total_entries_to_process = 0;
@@ -442,4 +453,4 @@ const error_cleanup = () => new Promise((resolve, reject) => {
   }
 });
 
-export default { prepare, save, error_cleanup };
+export default { prepare, save, update_entry_totals, error_cleanup };

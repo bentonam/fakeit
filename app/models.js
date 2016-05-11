@@ -13,9 +13,11 @@ let models = {}; // global variable to hold parsed models
 let model_order = []; // global variable to hold the model run order
 let model_count = 0; // global variable to hold the number of available models
 let model_documents_count = {}; // global variable to hold the number of documents to generate for each model
+let settings; // global variable to hold the available options / settings
 
 // pre run setup / handle settings
 const prepare = (options) => {
+  settings = options;
   return list(options)
           .then(filter)
           .then(load)
@@ -250,14 +252,17 @@ const get_document_counts = () => {
 };
 
 // resolve the dependencies and establish the order the models should be parsed in
-const set_document_counts = async (options) => {
+const set_document_counts = async () => {
   // console.log('models.set_document_counts');
   model_order.forEach((v) => {
     let current_model = models[v];
-    model_documents_count[v] = options.number ||
-                                current_model.data.fixed ||
-                                chance.integer({ min: current_model.data.min, max: current_model.data.max }) ||
-                                1;
+    let number;
+    if (settings.number) {
+      number = parseInt(settings.number);
+    } else {
+      number = current_model.data.fixed || chance.integer({ min: current_model.data.min, max: current_model.data.max }) || 1;
+    }
+    model_documents_count[v] = number;
   });
   return model_documents_count;
 };
@@ -266,7 +271,11 @@ const set_document_counts = async (options) => {
 const generate = async () => {
   // console.log('models.generate');
   for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
-    await documents.run(models[model_order[i]], model_documents_count[models[model_order[i]].name]); // eslint-disable-line babel/no-await-in-loop
+    await documents.run(// eslint-disable-line babel/no-await-in-loop
+      models[model_order[i]],
+      model_documents_count[models[model_order[i]].name],
+      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0
+    ); // eslint-disable-line babel/no-await-in-loop
   }
   return;
 };
