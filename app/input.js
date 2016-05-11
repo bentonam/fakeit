@@ -108,7 +108,7 @@ const load_csv_file = (file) => new Promise((resolve, reject) => {
   // console.log('input.load_csv_file');
   utils.read_file(file)
     .then((content) => {
-      csv_parse(content, (err, result) => {
+      csv_parse(content, { columns: true }, (err, result) => {
         if (err) {
           reject(err);
         } else {
