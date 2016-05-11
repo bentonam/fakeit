@@ -19,6 +19,7 @@ export default function() {
     .option('-s, --server [address]', '(optional) Couchbase Server or Sync-Gateway address', '127.0.0.1')
     .option('-b, --bucket [name]', '(optional) The name of a Couchbase Bucket.  The default value is: default', 'default')
     .option('-p, --password [value]', '(optional) Bucket password')
+    .option('-t, --timeout [value]', '(optional) A timeout value for database operations', 5000)
     .option('-g, --sync_gateway_admin [value]', '(optional) The sync-gateway admin address')
     .option('-u, --username [name]', '(optional) The sync-gateway username')
     .parse(process.argv);

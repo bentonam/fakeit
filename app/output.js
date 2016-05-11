@@ -94,6 +94,9 @@ const setup_couchbase = () => new Promise((resolve, reject) => {
       if (err) {
         reject(err);
       } else {
+        if (settings.timeout && parseInt(settings.timeout)) {
+          couchbase_bucket.connectionTimeout = parseInt(settings.timeout);
+        }
         // console.log(`Connection to "${settings.bucket}" bucket at "${settings.server}" was successful`);
         resolve();
       }
