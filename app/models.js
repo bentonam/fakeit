@@ -115,6 +115,7 @@ const parse_model = async (model) => {
   await parse_model_functions(model);
   await parse_model_references(model);
   await parse_model_types(model);
+  await parse_model_defaults(model);
 };
 
 // searches the model for any of the pre / post run and build functions and generates them
@@ -158,6 +159,39 @@ const parse_model_types = async (model) => {
       property.type = 'undefined';
       objectPath.set(models[model], type_path, property);
     }
+  });
+};
+
+// sets any model defaults that are not defined
+const parse_model_defaults = async (model) => {
+  // console.log('models.parse_model_defaults');
+  // find properties or items that do not have a data block and assign it
+  let results = utils.object_search(models[model], /^(.*properties\.[^.]+)$/);
+  results.forEach((data_path) => {
+    let property = objectPath.get(models[model], data_path);
+    // if the property is an array that has an items block but not a data block, default it
+    if (property.type === 'array') {
+      if (property.items && !property.items.data) {
+        property.items.data = {};
+      }
+    } else if (!property.data) {
+      property.data = {};
+    }
+    objectPath.set(models[model], data_path, property);
+  });
+  // find any data property at the root or that is a child of items and make sure it has the defaults for min, max, fixed
+  results = utils.object_search(models[model], /^(.*properties\.[^.]+\.items\.data|(data))$/);
+  const data_defaults = {
+    min: 0,
+    max: 0,
+    fixed: 0
+  };
+  results.forEach((data_path) => {
+    objectPath.set(
+      models[model],
+      data_path,
+      Object.assign({}, data_defaults, objectPath.get(models[model], data_path))
+    );
   });
 };
 
