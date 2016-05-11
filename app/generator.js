@@ -26,7 +26,6 @@ export default function start(options = {}) {
         .then((model_documents_count) => output.prepare(options, resolve, reject, model_documents_count))
         .then(models.generate)
         .catch((err) => {
-          console.log(err);
           output.error_cleanup()
             .then(() => {
               reject(err);

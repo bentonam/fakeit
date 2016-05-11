@@ -111,6 +111,8 @@ const initialize_value = (data_type) => {
     value = 0;
   } else if (data_type === 'array') {
     value = [];
+  } else if ('boolean,bool'.indexOf(data_type) !== -1) {
+    value = false;
   } else {
     value = null;
   }
@@ -215,22 +217,33 @@ const build_process = (current_model, generated_document, model_paths, document_
 };
 
 // callback the is used by build_process
-const build_process_callback = (current_model, generated_document, property, value, document_index) => {
+const build_process_callback = (current_model, generated_document, property, value, document_index) => { // eslint-disable-line complexity
   // if there is a post_build block
   if (property.data && property.data.post_build) {
     value = property.data.post_build.apply(generated_document, [ documents, globals, inputs, faker, chance, document_index ]);
   }
-  // if it is an integer make sure it is treated as such
-  if ('number,integer,long'.indexOf(property.type) !== -1) {
-    value = parseInt(value);
-  }
-  // if it is a double / float make sure it is treated as such
-  if ('double,float'.indexOf(property.type) !== -1) {
-    value = parseFloat(value);
-  }
-  // if it is a double / float make sure it is treated as such
-  if (property.type === 'string' && typeof value !== 'undefined' && value !== null) {
-    value = value.toString();
+  // if the value is not null try to convert it to the correct type
+  if (value !== null) {
+    // if it is an integer make sure it is treated as such
+    if ('number,integer,long'.indexOf(property.type) !== -1) {
+      value = parseInt(value);
+    }
+    // if it is a double / float make sure it is treated as such
+    if ('double,float'.indexOf(property.type) !== -1) {
+      value = parseFloat(value);
+    }
+    // if it is a string make sure it is treated as such
+    if (property.type === 'string' && typeof value !== 'undefined') {
+      value = value.toString();
+    }
+    // if it is a string make sure it is treated as such
+    if ('boolean,bool'.indexOf(property.type) !== -1 && typeof value !== 'undefined') {
+      // if the value is a string that is 'false', '0', 'undefined', or 'null' as a string set a boolean false
+      if (typeof value === 'string' && (value === 'false' || value === '0' || value === 'undefined' || value === 'null')) {
+        value = false;
+      }
+      value = Boolean(value);
+    }
   }
   return value;
 };

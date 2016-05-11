@@ -16,7 +16,10 @@ const prepare = (options) => new Promise((resolve, reject) => {
       list(options)
         .then(filter)
         .then(load)
-        .then(resolve);
+        .then(resolve)
+        .catch((err) => {
+          reject(err);
+        });
     } else {
       resolve();
     }
