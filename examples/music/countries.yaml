@@ -2,7 +2,6 @@ name: Countries
 type: object
 key: _id
 data:
-  fixed: 246
   pre_run: >
     globals.current_country_index = 0;
     if (inputs.countries) {
@@ -14,6 +13,9 @@ data:
         globals.countries.push(v);
       });
     }
+    this.data.fixed = globals.countries.length;
+  post_build: >
+    globals.current_country_index += 1;
 properties:
   _id:
     type: string
@@ -30,26 +32,21 @@ properties:
     description: The 2 letter ISO country code
     data:
       pre_build: >
-        var abbreviation = globals.countries[globals.current_country_index].iso_2 || globals.countries[globals.current_country_index].countryCode;
-        globals.current_country_index = globals.current_country_index + 1;
-        return abbreviation;
+        var key = inputs.countries ? 'iso_2' : 'abbreviation';
+        var code = globals.countries[globals.current_country_index][key];
+        return code;
   region-number:
     type: string
     description: The countries region number
     data:
       build: >
-        var key = globals.countries.filter(function(v){
-          return v.iso_2 === this.countryCode;
-        })[0];
-        return key.iso_m49 || key.region_number || chance.integer({min: 1, max: 999});
+        return globals.countries[globals.current_country_index].iso_m49 || globals.countries[globals.current_country_index].region_number || chance.integer({min: 1, max: 999});
   name:
     type: string
     description: The name of the country
     data:
       build: >
-        return globals.countries.filter(function(v){
-          return v.iso_2 === this.countryCode;
-        })[0].name || "";
+        return globals.countries[globals.current_country_index].name || globals.countries[globals.current_country_index].name || chance.country();
   updated:
     type: string
     description: The date the country was last updated
