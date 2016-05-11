@@ -97,7 +97,7 @@
       }
     ],
     "max-nested-callbacks": [2, 4],
-    "max-params": [ 1, 4 ],
+    "max-params": [ 1, 5 ],
     "max-statements": [ 1, 15 ],
     # "new-cap": 2,
     "new-parens": 2,

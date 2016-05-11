@@ -127,7 +127,7 @@ const parse_model_functions = async (model) => {
       models[model],
       function_path,
       new Function(
-        'documents', 'globals', 'inputs', 'faker', 'chance',
+        'documents', 'globals', 'inputs', 'faker', 'chance', 'document_index',
         objectPath.get(models[model], function_path)
       )
     );
