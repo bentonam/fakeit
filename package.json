@@ -4,7 +4,7 @@
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Command-line utility that generates output data in JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
   "scripts": {
     "test": "make test",
