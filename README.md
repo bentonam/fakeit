@@ -280,7 +280,7 @@ documents.Products = [...]; // the name of the products.yaml model
 
 It can be beneficial to define definitions that can be referenced one or more times throughout a model.  This can be accomplished by using the `$ref:` property.  Consider the following example:
 
-**[contacts.yaml](https://github.com/bentonam/fakeit-examples/tree/master/contacts/contacts.yaml)**
+**[contacts.yaml](https://github.com/bentonam/fakeit-examples/tree/master/contacts/models/contacts.yaml)**
 
 ```yaml
 name: Contacts
