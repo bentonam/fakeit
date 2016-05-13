@@ -423,101 +423,15 @@ data:
 
 ## Examples
 
-The following examples have been provided, and can be downloaded as a Zip from [examples.zip](https://github.com/bentonam/fakeit/raw/master/examples/examples.zip)
+The following examples have been provided for fakeit [https://github.com/bentonam/fakeit-examples](), with multiple usage examples for each.  They can be downloaded as a [Zip](https://github.com/bentonam/fakeit-examples/archive/master.zip) or by cloning the repository.
 
-- [ecommerce](examples/ecommerce)
-- [contacts](examples/contacts)
-- [flat](examples/flat)
-- [music](examples/music)
-- [simple](examples/simple)
-
-Generate JSON files and output them to a `data/` directory
-
-```bash
-[~]$ cd examples/contacts
-[~/examples/contacts]$ fakeit -d data/
-[~/examples/contacts]$ ls | awk '{print "\011",$NF}'                                       
-	 contact_2040b03c-db18-5c85-95b0-37544a2804b1.json
-	 contact_239c719f-950e-5411-afd8-dd964c3446bf.json
-	 contact_3974b731-792b-5cdd-adc0-0fb56f125dfd.json
-	 contact_56284d21-a10f-59bd-8a11-0016329098bd.json
-	 contact_8c43f9a6-adcf-5baa-ae78-dd02b8c60944.json
+```
+git clone https://github.com/bentonam/fakeit-examples.git
 ```
 
----
-
-Generate JSON files and output them to a zip file
-
-```bash
-[~]$ cd examples/ecommerce
-[~/examples/ecommerce]$ fakeit -a export.zip
-[~/examples/ecommerce]$ ls | awk '{print "\011",$NF}'
-	 export.zip
-	 orders.yaml
-	 products.yaml
-	 reviews.yaml
-	 users.yaml
-```
-
----
-
-Generate JSON files, passing input data, then output them to a zip file in an output directory
-
-```bash
-[~]$ fakeit -m ~/examples/music -i ~/examples/music/input -d ~/examples/music/output -a music.zip
-[~]$ ls ~/examples/music/output | awk '{print "\011",$NF}'
-	 music.zip
-```
-
----
-
-Generate CSV files for each model and output them to a directory
-
-```bash
-[~]$ fakeit -o csv -m ~/examples/flat -d ~/csv
-[~]$ ls ~/csv | awk '{print "\011",$NF}'
-	 Products.csv
-	 Users.csv
-```
-
----
-
-Generate CSV files for each model and save them to a zip file
-
-```bash
-[~]$ fakeit -o csv -m ~/examples/flat -d ~/csv -a export.zip
-[~]$ ls ~/csv | awk '{print "\011",$NF}'
-	 export.zip
-```
-
----
-
-Generate JSON documents and output them to Couchbase using the defaults of a server running at `127.0.0.1` in the bucket `default`
-
-```bash
-[~]$ fakeit -d couchbase -m ~/examples/music
-```
-
----
-
-Generate JSON documents and output them to Couchbase Server running at `192.168.1.101` in the bucket `music` with the password of `secret`
-
-```bash
-[~]$ fakeit -d couchbase -m ~/examples/music -s 192.168.1.101 -b music -p secret
-```
-
----
-
-Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost` into a `contacts` bucket with guest access enabled.
-
-```bash
-[~]$ fakeit -d sync-gateway -m ~/examples/contacts -s http://localhost:4984 -b contacts
-```
-
----
-
-Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost:4984` into a `contacts` bucket using [Custom (Indirect) Authentication](http://developer.couchbase.com/documentation/mobile/current/develop/guides/sync-gateway/administering-sync-gateway/authenticating-users/index.html).
-
-```bash
-[~]$ fakeit -d sync-gateway -m ~/examples/contacts -s http://localhost:4984 -b contacts -g http://localhost:4985 -u jdoe -p supersecret
-```
+- [Contacts](https://github.com/bentonam/fakeit-examples/tree/master/contacts)
+- [Ecommerce](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce)
+- [Flat](https://github.com/bentonam/fakeit-examples/tree/master/flat)
+- [Flight Data](https://github.com/bentonam/fakeit-examples/tree/master/flight-data)
+- [Music](https://github.com/bentonam/fakeit-examples/tree/master/music)
+- [Simple](https://github.com/bentonam/fakeit-examples/tree/master/simple)
