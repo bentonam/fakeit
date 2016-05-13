@@ -224,9 +224,9 @@ The **orders** model needs to reference generated documents from both **products
 fakeit -d output/ -m users.yaml,products.yaml,orders.yaml
 ```
 
-While this works, it would require you to remember this order and specify it anytime you would to regenerate the models.  A better approach would be to define the dependencies as part of the model definitions as seen in the [ecommerce example](examples/ecommerce):
+While this works, it would require you to remember this order and specify it anytime you would to regenerate the models.  A better approach would be to define the dependencies as part of the model definitions as seen in the [ecommerce example](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce):
 
-**[orders.yaml](examples/ecommerce/orders.yaml)**
+**[orders.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/orders.yaml)**
 
 ```yaml
 name: Orders
@@ -239,7 +239,7 @@ data:
 ...
 ```
 
-**[products.yaml](examples/ecommerce/products.yaml)**
+**[products.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/products.yaml)**
 
 ```yaml
 name: Products
@@ -248,7 +248,7 @@ key: _id
 ...
 ```
 
-**[users.yaml](examples/ecommerce/users.yaml)**
+**[users.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/users.yaml)**
 
 ```yaml
 name: Users
@@ -280,7 +280,7 @@ documents.Products = [...]; // the name of the products.yaml model
 
 It can be beneficial to define definitions that can be referenced one or more times throughout a model.  This can be accomplished by using the `$ref:` property.  Consider the following example:
 
-**[contacts.yaml](examples/contacts/contacts.yaml)**
+**[contacts.yaml](https://github.com/bentonam/fakeit-examples/tree/master/contacts/contacts.yaml)**
 
 ```yaml
 name: Contacts
