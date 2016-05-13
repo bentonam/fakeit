@@ -36,6 +36,8 @@ fakeit [options]
 - `-s, --server [address]` *(optional)* A Couchbase Server or Sync-Gateway Address.  The default value is **127.0.0.1**
 - `-b, --bucket [name]` *(optional)* The name of a Couchbase Bucket.  The default value is **default**
 - `-p, --password [value]` *(optional)* A Couchbase Bucket or Sync Gateway user password
+- `-t, --timeout [value]` *(optional)* A timeout for database operations, the default is 5000
+- `-l, --limit [value]` *(optional)* Limit the number of save operations at a time.  Default: 1000
 - `-g, --sync_gateway_admin [value]` *(optional)* A Sync Gateway Admin address.  
 - `-u, --username [value]` *(optional)* A Sync Gateway username.  
 - `-h, --help` Displays available options
@@ -80,6 +82,7 @@ For the `run` functions `this` refers to the current model, for the `build` func
 - `inputs` - An object containing a key for each input file used whose value is the deserialized version of the files data
 - `faker` - A reference to [FakerJS](http://marak.github.io/faker.js/)
 - `chance` - A reference to [ChanceJS](http://chancejs.com/)
+- `document_index` This is a number that represents the currently generated documents position in the run order
 
 #### Example users.yaml Model
 
@@ -383,6 +386,40 @@ For this model we used 4 references:
 - `$ref: '#/definitions/Address'`
 
 These could have been defined inline but that would make it more difficult to see our model definition and each of these definitions can be reused.  References are processed and included before a model is ran and its documents are generated.
+
+### Overriding Model Defaults
+
+The model defaults can be overwritten at run time by executing the `pre_run` function.  The `this` keyword in both the `pre_run` and `post_run` functions is the processed model.  Below are some examples of changing the number of documents to generate for the model before the generation process starts.
+
+```yaml
+name: Users
+type: object
+key: _id
+data:
+  pre_run: >
+    this.data.fixed = 100;
+...
+```
+
+This becomes beneficial if you are providing input data and want to generate a fixed # of documents.  Take the following command for example:
+
+```bash
+[~]$ fakeit -m countries.yaml -i countries.csv -a export.zip
+```
+
+Here we want to genereate a countries model but we might not necessarily know the exact amount of data being provided by the input.  We can reference the input data in our model's `pre_run` function and set the number to generated based on the input array.  
+
+```yaml
+name: Countries
+type: object
+key: _id
+data:
+  pre_run: >
+    if (!inputs.countries) {
+      throw new Error('countries must be provided as an input');
+    }
+    this.data.fixed = inputs.countries.length;
+```
 
 ## Examples
 

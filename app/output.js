@@ -9,6 +9,7 @@ import cson from 'cson';
 import couchbase from 'couchbase';
 import utils from './utils';
 import request from 'request';
+import PromisePool from 'es6-promise-pool';
 
 let settings, archive, archive_out, couchbase_bucket, sync_session;
 
@@ -20,13 +21,16 @@ let archive_entries_to_process = 0; // the total number of entries to add to the
 let archive_entries_processed = 0; // the number of entries that have been successfully added to the archive
 
 // pre run setup / handle settings
-const prepare = async (options, resolve, reject, model_documents_count) => {
+const prepare = async ({ format, limit, timeout, ...options }, resolve, reject, model_documents_count) => {
   // console.log('output.prepare');
-  settings = options;
-  settings.resolve = resolve;
-  settings.reject = reject;
-
-  settings.format = parseInt(settings.format); // ensure that the spacing is a number
+  settings = {
+    ...options,
+    resolve,
+    reject,
+    format: parseInt(format) || 2, // ensure that the spacing is a number
+    limit: parseInt(limit) || 1000, // ensure that the limit is a number
+    timeout: parseInt(timeout) || 5000 // ensure that the timeout is a number
+  };
 
   // save the number of entries for each models documents
   entries_to_process = model_documents_count;
@@ -57,6 +61,17 @@ const prepare = async (options, resolve, reject, model_documents_count) => {
   }
 };
 
+// updates the entry totals, if a model being generated set new values this would be called
+const update_entry_totals = (model_name, number) => {
+  let old_entries_to_process = entries_to_process[model_name];
+  total_entries_to_process -= old_entries_to_process;
+  total_entries_to_process += number;
+  // if the entries are being archived and not in csv format updated the archive_entries_to_process
+  if (settings.archive && settings.output !== 'csv') {
+    archive_entries_to_process = total_entries_to_process;
+  }
+};
+
 // sets the total number of entries to process
 const set_total_entries_to_process = () => {
   total_entries_to_process = 0;
@@ -83,6 +98,9 @@ const setup_couchbase = () => new Promise((resolve, reject) => {
       if (err) {
         reject(err);
       } else {
+        if (settings.timeout && parseInt(settings.timeout)) {
+          couchbase_bucket.connectionTimeout = parseInt(settings.timeout);
+        }
         // console.log(`Connection to "${settings.bucket}" bucket at "${settings.server}" was successful`);
         resolve();
       }
@@ -188,11 +206,15 @@ const save = (model, documents) => new Promise((resolve, reject) => {
 // saves each document to a couchbase instance
 const save_couchbase = async (model, documents) => {
   // console.log('output.save_couchbase');
-  var writes = [];
-  for (let i = 0; i < documents.length; i++) {
-    writes.push(upsert(documents[i][model.key], documents[i]));
-  }
-  return Promise.all(writes)
+  const generate_calls = function * (docs) { // generator function to handling saving to cb
+    for (let i = 0; i < docs.length; i++) {
+      yield upsert(docs[i][model.key], docs[i]);
+    }
+  };
+
+  const iterator = generate_calls(documents); // initialize the generator function
+  const pool = new PromisePool(iterator, settings.limit); // create a promise pool
+  return await pool.start()
                   .catch((err) => {
                     settings.reject(err);
                   });
@@ -217,11 +239,15 @@ const upsert = (key, data) => new Promise((resolve, reject) => {
 // saves each document to a sync gateway
 const save_syncgateway = async (model, documents) => {
   // console.log('output.save_syncgateway');
-  var writes = [];
-  for (let i = 0; i < documents.length; i++) {
-    writes.push(syncgateway_send(documents[i][model.key], documents[i]));
-  }
-  return Promise.all(writes)
+  const generate_calls = function * (docs) { // generator function to handling saving to sg
+    for (let i = 0; i < docs.length; i++) {
+      yield syncgateway_send(docs[i][model.key], docs[i]);
+    }
+  };
+
+  const iterator = generate_calls(documents); // initialize the generator function
+  const pool = new PromisePool(iterator, settings.limit); // create a promise pool
+  return await pool.start()
                   .catch((err) => {
                     settings.reject(err);
                   });
@@ -245,11 +271,19 @@ const syncgateway_send = (key, data) => new Promise((resolve, reject) => {
       jar.setCookie(cookie, settings.server);
       options.jar = jar;
     }
-    request(options, (err) => {
+    request(options, (err, res, body) => {
       if (err) {
         reject();
       } else {
-        resolve();
+        body = JSON.parse(body);
+        if (body.error) {
+          if (body.reason === 'Document exists') {
+            body.reason = `The '${key}' document exists`;
+          }
+          reject(new Error(body.reason));
+        } else {
+          resolve();
+        }
       }
     });
   } catch (e) {
@@ -377,6 +411,7 @@ const flush_console = (model, documents) => new Promise((resolve, reject) => {
 
 // determines whether or not the entire generation can be finalized
 const finalize = async () => {
+  // console.log('output.finalize');
   if (!settings.archive) { // if we are generating an archive
     if (models_to_process === models_processed) {
       if (!settings.destination === 'couchbase' && couchbase_bucket.connected) {
@@ -442,4 +477,4 @@ const error_cleanup = () => new Promise((resolve, reject) => {
   }
 });
 
-export default { prepare, save, error_cleanup };
+export default { prepare, save, update_entry_totals, error_cleanup };

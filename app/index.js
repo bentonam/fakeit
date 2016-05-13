@@ -15,10 +15,12 @@ export default function() {
     .option('-d, --destination [value]', '(optional) The output destination.  Values can be: couchbase, console or a directory path.', process.cwd())
     .option('-f, --format [value]', '(optional) The spacing format to use for JSON and YAML file generation.  Default is 2', 2)
     .option('-n, --number [value]', '(optional) Overrides the number of documents to generate specified by the model.')
-    .option('-i, --input [value]', 'A directory or comma-delimited list of files to use as inputs.  Support formats are: json, yaml, csv')
+    .option('-i, --input [value]', '(optional) A directory or comma-delimited list of files to use as inputs.  Support formats are: json, yaml, csv')
     .option('-s, --server [address]', '(optional) Couchbase Server or Sync-Gateway address', '127.0.0.1')
     .option('-b, --bucket [name]', '(optional) The name of a Couchbase Bucket.  The default value is: default', 'default')
     .option('-p, --password [value]', '(optional) Bucket password')
+    .option('-t, --timeout [value]', '(optional) A timeout value for database operations', 5000)
+    .option('-l, --limit [value]', '(optional) Limit the number of save operations at a time.  Default: 1000', 1000)
     .option('-g, --sync_gateway_admin [value]', '(optional) The sync-gateway admin address')
     .option('-u, --username [name]', '(optional) The sync-gateway username')
     .parse(process.argv);

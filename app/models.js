@@ -13,17 +13,23 @@ let models = {}; // global variable to hold parsed models
 let model_order = []; // global variable to hold the model run order
 let model_count = 0; // global variable to hold the number of available models
 let model_documents_count = {}; // global variable to hold the number of documents to generate for each model
+let settings; // global variable to hold the available options / settings
 
 // pre run setup / handle settings
-const prepare = (options) => {
+const prepare = (options) => new Promise((resolve, reject) => {
+  settings = options;
   return list(options)
           .then(filter)
           .then(load)
           .then(validate)
           .then(parse)
           .then(resolve_dependencies)
-          .then(() => set_document_counts(options));
-};
+          .then(() => set_document_counts(options))
+          .then(resolve)
+          .catch((err) => {
+            reject(err);
+          });
+});
 
 // gets the available model yaml files from the current working directory
 const list = (options) => new Promise((resolve, reject) => {
@@ -73,7 +79,7 @@ const load_yaml_file = (file) => new Promise((resolve, reject) => {
       models[result.name || file] = result; // add the parsed model to the global object
       resolve();
     } else {
-      reject(`Invalid YAML file: ${file}`);
+      reject(new Error(`Invalid YAML file: ${file}`));
     }
   });
 });
@@ -115,6 +121,7 @@ const parse_model = async (model) => {
   await parse_model_functions(model);
   await parse_model_references(model);
   await parse_model_types(model);
+  await parse_model_defaults(model);
 };
 
 // searches the model for any of the pre / post run and build functions and generates them
@@ -126,7 +133,7 @@ const parse_model_functions = async (model) => {
       models[model],
       function_path,
       new Function(
-        'documents', 'globals', 'inputs', 'faker', 'chance',
+        'documents', 'globals', 'inputs', 'faker', 'chance', 'document_index',
         objectPath.get(models[model], function_path)
       )
     );
@@ -158,6 +165,39 @@ const parse_model_types = async (model) => {
       property.type = 'undefined';
       objectPath.set(models[model], type_path, property);
     }
+  });
+};
+
+// sets any model defaults that are not defined
+const parse_model_defaults = async (model) => {
+  // console.log('models.parse_model_defaults');
+  // find properties or items that do not have a data block and assign it
+  let results = utils.object_search(models[model], /^(.*properties\.[^.]+)$/);
+  results.forEach((data_path) => {
+    let property = objectPath.get(models[model], data_path);
+    // if the property is an array that has an items block but not a data block, default it
+    if (property.type === 'array') {
+      if (property.items && !property.items.data) {
+        property.items.data = {};
+      }
+    } else if (!property.data) {
+      property.data = {};
+    }
+    objectPath.set(models[model], data_path, property);
+  });
+  // find any data property at the root or that is a child of items and make sure it has the defaults for min, max, fixed
+  results = utils.object_search(models[model], /^(.*properties\.[^.]+\.items\.data|(data))$/);
+  const data_defaults = {
+    min: 0,
+    max: 0,
+    fixed: 0
+  };
+  results.forEach((data_path) => {
+    objectPath.set(
+      models[model],
+      data_path,
+      Object.assign({}, data_defaults, objectPath.get(models[model], data_path))
+    );
   });
 };
 
@@ -216,14 +256,17 @@ const get_document_counts = () => {
 };
 
 // resolve the dependencies and establish the order the models should be parsed in
-const set_document_counts = async (options) => {
+const set_document_counts = async () => {
   // console.log('models.set_document_counts');
   model_order.forEach((v) => {
     let current_model = models[v];
-    model_documents_count[v] = options.number ||
-                                current_model.data.fixed ||
-                                chance.integer({ min: current_model.data.min, max: current_model.data.max }) ||
-                                1;
+    let number;
+    if (settings.number) {
+      number = parseInt(settings.number);
+    } else {
+      number = current_model.data.fixed || chance.integer({ min: current_model.data.min, max: current_model.data.max }) || 1;
+    }
+    model_documents_count[v] = number;
   });
   return model_documents_count;
 };
@@ -231,10 +274,17 @@ const set_document_counts = async (options) => {
 // handles generation of data for each model
 const generate = async () => {
   // console.log('models.generate');
-  for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
-    await documents.run(models[model_order[i]], model_documents_count[models[model_order[i]].name]); // eslint-disable-line babel/no-await-in-loop
+  try {
+    for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
+      await documents.run(// eslint-disable-line babel/no-await-in-loop
+        models[model_order[i]],
+        model_documents_count[models[model_order[i]].name],
+        typeof settings.number !== 'undefined' && parseInt(settings.number) > 0
+      ); // eslint-disable-line babel/no-await-in-loop
+    }
+  } catch (e) {
+    settings.reject(e);
   }
-  return;
 };
 
 // handles generation of data for each model
