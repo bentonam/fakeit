@@ -31,7 +31,7 @@ const run = async (current_model, number_to_generate, number_override) => {
   let builds = [];
   let model_paths = get_model_paths(current_model);
   let document_paths = get_document_paths(current_model);
-  // console.log(`Generating ${number_to_generate} documents for ${current_model.name} model`);
+  console.log(`Generating ${number_to_generate} documents for ${current_model.name} model`);
   for (let i = 0; i < number_to_generate; i++) { // loop over each model and execute in order of dependency
     builds.push(
       build_document(current_model, model_paths, document_paths, i)
@@ -200,6 +200,7 @@ const build_array_simple = (generated_document, property, value, number, documen
 
 // processes a document after generation
 const build_process = (current_model, generated_document, model_paths, document_paths, document_index) => {
+  // console.log('documents.build_process');
   let key;
   try {
     model_paths.forEach((path, index) => {

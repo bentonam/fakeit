@@ -16,7 +16,7 @@ let model_documents_count = {}; // global variable to hold the number of documen
 let settings; // global variable to hold the available options / settings
 
 // pre run setup / handle settings
-const prepare = (options) => {
+const prepare = (options) => new Promise((resolve, reject) => {
   settings = options;
   return list(options)
           .then(filter)
@@ -24,8 +24,12 @@ const prepare = (options) => {
           .then(validate)
           .then(parse)
           .then(resolve_dependencies)
-          .then(() => set_document_counts(options));
-};
+          .then(() => set_document_counts(options))
+          .then(resolve)
+          .catch((err) => {
+            reject(err);
+          });
+});
 
 // gets the available model yaml files from the current working directory
 const list = (options) => new Promise((resolve, reject) => {
@@ -75,7 +79,7 @@ const load_yaml_file = (file) => new Promise((resolve, reject) => {
       models[result.name || file] = result; // add the parsed model to the global object
       resolve();
     } else {
-      reject(`Invalid YAML file: ${file}`);
+      reject(new Error(`Invalid YAML file: ${file}`));
     }
   });
 });
@@ -270,14 +274,17 @@ const set_document_counts = async () => {
 // handles generation of data for each model
 const generate = async () => {
   // console.log('models.generate');
-  for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
-    await documents.run(// eslint-disable-line babel/no-await-in-loop
-      models[model_order[i]],
-      model_documents_count[models[model_order[i]].name],
-      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0
-    ); // eslint-disable-line babel/no-await-in-loop
+  try {
+    for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
+      await documents.run(// eslint-disable-line babel/no-await-in-loop
+        models[model_order[i]],
+        model_documents_count[models[model_order[i]].name],
+        typeof settings.number !== 'undefined' && parseInt(settings.number) > 0
+      ); // eslint-disable-line babel/no-await-in-loop
+    }
+  } catch (e) {
+    settings.reject(e);
   }
-  return;
 };
 
 // handles generation of data for each model
