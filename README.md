@@ -226,7 +226,7 @@ fakeit -d output/ -m users.yaml,products.yaml,orders.yaml
 
 While this works, it would require you to remember this order and specify it anytime you would to regenerate the models.  A better approach would be to define the dependencies as part of the model definitions as seen in the [ecommerce example](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce):
 
-**[orders.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/orders.yaml)**
+**[orders.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/models/orders.yaml)**
 
 ```yaml
 name: Orders
@@ -239,7 +239,7 @@ data:
 ...
 ```
 
-**[products.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/products.yaml)**
+**[products.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/models/products.yaml)**
 
 ```yaml
 name: Products
@@ -248,7 +248,7 @@ key: _id
 ...
 ```
 
-**[users.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/users.yaml)**
+**[users.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/models/users.yaml)**
 
 ```yaml
 name: Users
