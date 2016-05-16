@@ -60,7 +60,7 @@ At the root of a model the following keys are used:
   - `post_build:` *(optional)* A function to be ran after each document is generated
   - `post_run:` *(optional)* A function to be ran after all documents for a model have been generated
 - `properties:` *(required)* The properties for a model.  Each property can have the following:
-  - `type:` *(optional)* The data type of the property.  Values can be: `string`, `number`, `integer`, `long`, `double`, `float`, `array`, `object`
+  - `type:` *(optional)* The data type of the property.  Values can be: `string`, `number`, `integer`, `long`, `double`, `float`, `array`, `object`, `bool`, `boolean`
   - `description:` *(optional)* A description of the property
   - `data:` *(optional)* Defines the how the data should be generated.  The following properties can be used:
     - `value:` A static value to be used

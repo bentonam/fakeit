@@ -26,13 +26,11 @@ export default function start(options = {}) {
         .then((model_documents_count) => output.prepare(options, resolve, reject, model_documents_count))
         .then(() => models.generate(reject))
         .catch((err) => {
-          output.error_cleanup()
-            .then(() => {
-              reject(err);
-            })
-            .catch(() => {
-              reject(err);
-            });
+          try {
+            output.error_cleanup();
+          } finally {
+            reject(err);
+          }
         });
     } catch (e) {
       reject(e);
