@@ -5,6 +5,7 @@ import yaml from 'yamljs';
 import cson from 'cson';
 import utils from './utils';
 import csv_parse from 'csv-parse';
+import AdmZip from 'adm-zip';
 
 let inputs = {};
 
@@ -28,7 +29,7 @@ const prepare = (options) => new Promise((resolve, reject) => {
   }
 });
 
-// gets the available input json and yaml files from the current working directory
+// gets the available input files
 const list = (options) => new Promise((resolve, reject) => {
   // console.log('input.list');
   try {
@@ -45,11 +46,11 @@ const list = (options) => new Promise((resolve, reject) => {
   }
 });
 
-// filter files for valid models
+// filter files for valid input formats: csv, json, cson, yaml and zip
 const filter = async (files) => {
   // console.log('input.filter');
   files = files.filter((file) => {
-    return file.match(/\.(csv|json|cson|ya?ml)$/i);
+    return file.match(/\.(csv|json|cson|ya?ml|zip)$/i);
   });
   if (!files.length) {
     throw new Error('No valid input files found.');
@@ -60,77 +61,117 @@ const filter = async (files) => {
 // loop over all of the found yaml files and load them
 const load = async (files) => {
   // console.log('input.load', files);
-  let tmp = [];
-  files.forEach((v) => {
-    v = path.resolve(v);
-    if (v.match(/.json$/i)) {
-      tmp.push(load_json_file(v));
-    } else if (v.match(/\.ya?ml$/i)) {
-      tmp.push(load_yaml_file(v));
-    } else if (v.match(/\.csv$/i)) {
-      tmp.push(load_csv_file(v));
-    } else if (v.match(/\.cson$/i)) {
-      tmp.push(load_cson_file(v));
+  let data = [];
+  files.forEach((file) => {
+    file = path.resolve(file); // resolve the full path
+    let info = path.parse(file); // parse the full path to get the name and extension
+    if (info.ext === '.zip') { // if it is a zip file, load each of the zip archives entries
+      data.push(load_zip_file(file));
+    } else { // read the file and parse its contents
+      data.push(
+        utils.read_file(file)
+          .then((content) => parse(info.name, info.ext.replace(/^\./, ''), content))
+      );
     }
   });
-  return await Promise.all(tmp);
+  return await Promise.all(data);
 };
 
-// loop over all of the found yaml files and load them
-const load_json_file = (file) => new Promise((resolve, reject) => {
-  // console.log('input.load_json', file);
+// handles parsing each of the supported formats
+const parse = (name, type, content) => new Promise((resolve, reject) => {
+  // console.log('input.parse');
+  let result;
+  switch (type) {
+  case 'json':
+    result = parse_json(content);
+    break;
+  case 'yaml':
+  case 'yml':
+    result = parse_yaml(content);
+    break;
+  case 'csv':
+    result = parse_csv(content);
+    break;
+  case 'cson':
+    result = parse_cson(content);
+    break;
+  default:
+    reject(new Error(`No valid parser could be found for "${name}.${type}"`));
+  }
+  result
+    .then((data) => { // after it has been parsed save it to the inputs
+      inputs[name] = data;
+    })
+    .then(resolve)
+    .catch(() => { // something went wrong throw an error
+      reject(new Error(`Unable to parse input file "${name}.${type}"`));
+    });
+});
+
+// handles processing a zip archive entries and parsing their contents
+const load_zip_file = (file) => new Promise((resolve, reject) => {
+  // console.log('input.load_zip_file');
   try {
-    return utils.read_file(file)
-      .then((data) => {
-        return JSON.parse(data);
-      })
-      .then((data) => {
-        inputs[path.parse(file).name] = data;
-      })
-      .then(resolve);
+    let zip = new AdmZip(file);
+    let entries = [];
+    zip.getEntries().forEach((entry) => {
+      if (!entry.isDirectory && !entry.entryName.match(/^(\.|__MACOSX)/)) {
+        let info = path.parse(entry.entryName);
+        entries.push(
+          parse(info.name, info.ext.replace(/^\./, ''), zip.readAsText(entry.entryName))
+        );
+      }
+    });
+    Promise.all(entries)
+            .then(resolve)
+            .catch((err) => {
+              reject(err);
+            });
+  } catch (e) {
+    reject(new Error(`Error loading: ${file}`));
+  }
+});
+
+// parses a json string
+const parse_json = (content) => new Promise((resolve, reject) => {
+  // console.log('input.parse_json');
+  try {
+    resolve(JSON.parse(content));
   } catch (e) {
     reject(e);
   }
 });
 
-// load and convert a yaml file to a json object
-const load_yaml_file = (file) => new Promise((resolve, reject) => {
-  // console.log('input.load_yaml_file');
-  yaml.load(file, (result) => {
-    if (result) {
-      inputs[path.parse(file).name] = result;
-      resolve();
+// parses a yaml string
+const parse_yaml = (content) => new Promise((resolve, reject) => {
+  // console.log('input.parse_yaml');
+  try {
+    resolve(yaml.parse(content));
+  } catch (e) {
+    reject(e);
+  }
+});
+
+// parses a csv string
+const parse_csv = (content) => new Promise((resolve, reject) => {
+  // console.log('input.parse_csv');
+  csv_parse(content, { columns: true }, (err, result) => {
+    if (err) {
+      reject(err);
     } else {
-      reject(`Invalid YAML file: ${file}`);
+      resolve(result);
     }
   });
 });
 
-// load and convert a csv file to a json object
-const load_csv_file = (file) => new Promise((resolve, reject) => {
-  // console.log('input.load_csv_file');
-  utils.read_file(file)
-    .then((content) => {
-      csv_parse(content, { columns: true }, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          inputs[path.parse(file).name] = result;
-          resolve();
-        }
-      });
-    });
-});
-
-// load and convert a cson file to a json object
-const load_cson_file = (file) => new Promise((resolve, reject) => {
+// parses a cson string
+const parse_cson = (content) => new Promise((resolve, reject) => {
   // console.log('input.load_cson_file');
-  cson.load(file, (err, result) => {
+  cson.parse(content, (err, result) => {
     if (err) {
-      reject(`Invalid CSON file: ${file}`);
+      reject(err);
     } else {
-      inputs[path.parse(file).name] = result;
-      resolve();
+      resolve(result);
     }
   });
 });

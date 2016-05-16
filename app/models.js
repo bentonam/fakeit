@@ -6,7 +6,6 @@ import Chance from 'chance';
 const chance = new Chance();
 import documents from './documents';
 import utils from './utils';
-import objectMerge from 'object-merge';
 import objectPath from 'object-path';
 
 let models = {}; // global variable to hold parsed models
@@ -154,7 +153,7 @@ const parse_model_references = async (model) => {
     let property_path = reference_path.replace(pattern, '') + (reference_path.indexOf('.items.') !== -1 ? '.items' : '');
     let property = objectPath.get(models[model], property_path);
     let defined_path = objectPath.get(models[model], reference_path).replace(/^#\//, '').replace('/', '.');
-    property = objectMerge({}, property, objectPath.get(models[model], defined_path));
+    property = Object.assign({}, property, objectPath.get(models[model], defined_path));
     objectPath.set(models[model], property_path, property);
   });
 };
