@@ -18,6 +18,7 @@ let settings; // global variable to hold the available options / settings
 // pre run setup / handle settings
 const prepare = (options) => new Promise((resolve, reject) => {
   settings = options;
+
   return list(options)
           .then(filter)
           .then(load)
@@ -129,14 +130,18 @@ const parse_model_functions = async (model) => {
   // console.log('models.parse_model_functions');
   let results = utils.object_search(models[model], /((pre|post)_run)|(pre_|post_)?build$/);
   results.forEach((function_path) => {
-    objectPath.set(
-      models[model],
-      function_path,
-      new Function(
-        'documents', 'globals', 'inputs', 'faker', 'chance', 'document_index',
-        objectPath.get(models[model], function_path)
-      )
-    );
+    try {
+      objectPath.set(
+        models[model],
+        function_path,
+        new Function(
+          'documents', 'globals', 'inputs', 'faker', 'chance', 'document_index',
+          objectPath.get(models[model], function_path)
+        )
+      );
+    } catch (e) {
+      throw new Error(`Function Error in model "${models[model].name}", for property: ${function_path}, Reason: ${e.message}`);
+    }
   });
 };
 
@@ -224,9 +229,8 @@ const resolve_dependencies = async () => {
     if (model_order.length !== model_count) {
       // update error to include which models could not be resolved
       throw new Error('Model dependencies could not be resolved.');
-    } else {
-      // console.log('Models will be generated in the following order: %s', model_order.join(', '));
     }
+    // console.log('Models will be generated in the following order: %s', model_order.join(', '));
   } catch (e) {
     throw new Error(`Error: resolve_dependencies ${e.message}`);
   }
@@ -274,16 +278,12 @@ const set_document_counts = async () => {
 // handles generation of data for each model
 const generate = async () => {
   // console.log('models.generate');
-  try {
-    for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
-      await documents.run(// eslint-disable-line babel/no-await-in-loop
-        models[model_order[i]],
-        model_documents_count[models[model_order[i]].name],
-        typeof settings.number !== 'undefined' && parseInt(settings.number) > 0
-      ); // eslint-disable-line babel/no-await-in-loop
-    }
-  } catch (e) {
-    settings.reject(e);
+  for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
+    await documents.run(// eslint-disable-line babel/no-await-in-loop
+      models[model_order[i]],
+      model_documents_count[models[model_order[i]].name],
+      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0
+    ); // eslint-disable-line babel/no-await-in-loop
   }
 };
 

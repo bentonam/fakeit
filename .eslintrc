@@ -133,7 +133,7 @@
     "no-multiple-empty-lines": [ 2, { "max": 3, "maxEOF": 1 } ],
     "no-native-reassign": 2,
     "no-nested-ternary": 2,
-    #"no-new-func": 2,
+    # "no-new-func": 2,
     "no-new-object": 2,
     "no-new-wrappers": 2,
     "no-new": 2,
