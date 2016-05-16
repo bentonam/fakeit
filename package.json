@@ -4,8 +4,8 @@
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
-  "version": "0.0.2",
-  "description": "Command-line utility that generates output data in JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
+  "version": "0.1.2",
+  "description": "Command-line utility that generates fake data which can be output as JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
   "scripts": {
     "test": "make test",
     "watch": "make build -- --watch"
@@ -34,6 +34,7 @@
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
+    "adm-zip": "^0.4.7",
     "archiver": "^1.0.0",
     "babel-runtime": "^6.6.1",
     "chance": "^1.0.3",

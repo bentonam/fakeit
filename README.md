@@ -32,7 +32,7 @@ fakeit [options]
 - `-d, --destination [value]` *(optional)* The output destination.  Values can be: couchbase, console or a directory path.  The default value is the current working directory.  If the directory path does not exist, it will be created automatically.
 - `-f, --format [value]` *(optional)* The spacing format to use for JSON and YAML file generation.  The default value is 2
 - `-n, --number [value]` *(optional)* Overrides the number of documents to generate specified by the model
-- `-i, --input [value]` *(optional)* A directory of files or a comma-delimited list of files to use as inputs.  Support formats are: json, yaml, csv
+- `-i, --input [value]` *(optional)* A directory of files or a comma-delimited list of files to use as inputs.  Support file types are: json, yaml, csv, cson, or a zip of the previous formats
 - `-s, --server [address]` *(optional)* A Couchbase Server or Sync-Gateway Address.  The default value is **127.0.0.1**
 - `-b, --bucket [name]` *(optional)* The name of a Couchbase Bucket.  The default value is **default**
 - `-p, --password [value]` *(optional)* A Couchbase Bucket or Sync Gateway user password
