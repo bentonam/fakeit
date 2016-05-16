@@ -435,3 +435,4 @@ git clone https://github.com/bentonam/fakeit-examples.git
 - [Flight Data](https://github.com/bentonam/fakeit-examples/tree/master/flight-data)
 - [Music](https://github.com/bentonam/fakeit-examples/tree/master/music)
 - [Simple](https://github.com/bentonam/fakeit-examples/tree/master/simple)
+- [Zip Input](https://github.com/bentonam/fakeit-examples/tree/master/zip-input)
