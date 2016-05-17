@@ -38,8 +38,9 @@ fakeit [options]
 - `-p, --password [value]` *(optional)* A Couchbase Bucket or Sync Gateway user password
 - `-t, --timeout [value]` *(optional)* A timeout for database operations, the default is 5000
 - `-l, --limit [value]` *(optional)* Limit the number of save operations at a time.  Default: 1000
-- `-g, --sync_gateway_admin [value]` *(optional)* A Sync Gateway Admin address.  
-- `-u, --username [value]` *(optional)* A Sync Gateway username.  
+- `-g, --sync_gateway_admin [value]` *(optional)* A Sync Gateway Admin address
+- `-u, --username [value]` *(optional)* A Sync Gateway username.
+- `-e, --exclude [model]` *(optional)* A comma-delimited list of model names to exclude from output  
 - `-h, --help` Displays available options
 
 ## Models
