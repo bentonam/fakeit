@@ -21,22 +21,21 @@ let archive_entries_to_process = 0; // the total number of entries to add to the
 let archive_entries_processed = 0; // the number of entries that have been successfully added to the archive
 
 // pre run setup / handle settings
-const prepare = async ({ format, limit, timeout, ...options }, resolve, reject, model_documents_count) => {
+const prepare = async ({ format, limit, timeout, exclude, ...options }, resolve, reject, model_documents_count) => {
   // console.log('output.prepare');
   settings = {
     ...options,
     resolve,
     reject,
-    format: parseInt(format) || 2, // ensure that the spacing is a number
+    format: typeof format !== 'undefined' && !isNaN(parseInt(format)) ? parseInt(format) : 2, // ensure that the spacing is a number
     limit: parseInt(limit) || 1000, // ensure that the limit is a number
-    timeout: parseInt(timeout) || 5000 // ensure that the timeout is a number
+    timeout: parseInt(timeout) || 5000, // ensure that the timeout is a number
+    exclude: exclude.split(',')
   };
 
-  // save the number of entries for each models documents
-  entries_to_process = model_documents_count;
-  models_to_process = Object.keys(entries_to_process).length;
+  set_entries_to_process(model_documents_count); // save the number of entries for each models documents
 
-  set_total_entries_to_process(model_documents_count);
+  set_total_entries_to_process(model_documents_count); // set the total number of entries for all models documents
 
   if ('console,couchbase,sync-gateway'.indexOf(settings.destination) === -1) {
     // resolve the destination directory
@@ -63,13 +62,27 @@ const prepare = async ({ format, limit, timeout, ...options }, resolve, reject, 
 
 // updates the entry totals, if a model being generated set new values this would be called
 const update_entry_totals = (model_name, number) => {
-  let old_entries_to_process = entries_to_process[model_name];
-  total_entries_to_process -= old_entries_to_process;
-  total_entries_to_process += number;
-  // if the entries are being archived and not in csv format updated the archive_entries_to_process
-  if (settings.archive && settings.output !== 'csv') {
-    archive_entries_to_process = total_entries_to_process;
+  if (settings.exclude.indexOf(model_name) === -1) {
+    let old_entries_to_process = entries_to_process[model_name];
+    total_entries_to_process -= old_entries_to_process;
+    total_entries_to_process += number;
+    // if the entries are being archived and not in csv format updated the archive_entries_to_process
+    if (settings.archive && settings.output !== 'csv') {
+      archive_entries_to_process = total_entries_to_process;
+    }
   }
+};
+
+// sets the total number of entries to process
+const set_entries_to_process = (entries) => {
+  // filter out an excluded models from the available models
+  Object.keys(entries).forEach((v) => {
+    if (settings.exclude.indexOf(v) === -1) {
+      entries_to_process[v] = parseInt(entries[v]);
+    }
+  });
+  // save each of the models to be processed
+  models_to_process = Object.keys(entries_to_process).length;
 };
 
 // sets the total number of entries to process
@@ -99,7 +112,7 @@ const setup_couchbase = () => new Promise((resolve, reject) => {
         reject(err);
       } else {
         if (settings.timeout && parseInt(settings.timeout)) {
-          couchbase_bucket.connectionTimeout = parseInt(settings.timeout);
+          couchbase_bucket.operationTimeout = parseInt(settings.timeout);
         }
         // console.log(`Connection to "${settings.bucket}" bucket at "${settings.server}" was successful`);
         resolve();
@@ -180,23 +193,28 @@ const setup_zip = async () => {
 const save = (model, documents) => new Promise((resolve, reject) => {
   // console.log('output.save');
   try {
-    models_processed += 1; // keep track of the number of models processed
-    let result;
-    if (settings.archive) { // if we are generating an archive
-      save_archive(model, documents).then(resolve);
-    } else {
-      if (settings.destination === 'couchbase') { // send the output to couchbase
-        result = save_couchbase(model, documents);
-      } else if (settings.destination === 'sync-gateway') {
-        result = save_syncgateway(model, documents);
-      } else if (settings.destination === 'console') { // flush the output to the console
-        result = flush_console(model, documents);
-      } else if (settings.output === 'csv') { // write model to csv
-        result = save_csv(model, documents);
-      } else { // save output files
-        result = save_files(model, documents);
+    if (settings.exclude.indexOf(model.name) === -1) {
+      // console.log(`Saving ${documents.length} documents for ${model.name} model`);
+      models_processed += 1; // keep track of the number of models processed
+      let result;
+      if (settings.archive) { // if we are generating an archive
+        save_archive(model, documents).then(resolve);
+      } else {
+        if (settings.destination === 'couchbase') { // send the output to couchbase
+          result = save_couchbase(model, documents);
+        } else if (settings.destination === 'sync-gateway') {
+          result = save_syncgateway(model, documents);
+        } else if (settings.destination === 'console') { // flush the output to the console
+          result = flush_console(model, documents);
+        } else if (settings.output === 'csv') { // write model to csv
+          result = save_csv(model, documents);
+        } else { // save output files
+          result = save_files(model, documents);
+        }
+        result.then(finalize).then(resolve);
       }
-      result.then(finalize).then(resolve);
+    } else {
+      resolve();
     }
   } catch (e) {
     reject(e);
