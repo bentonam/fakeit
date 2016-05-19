@@ -15,7 +15,7 @@ let inputs; // a global variable to hold any input data
 // executes the building of a model
 const run = async (current_model, number_to_generate, number_override) => {
   // console.log('documents.run');
-  inputs = inputs || input.get_inputs();// set the inputs if they aren't set yet
+  inputs = inputs || input.get_inputs(); // set the inputs if they aren't set yet
   // define a key based on the model path to hold the generated documents and document_index for the model
   documents[current_model.name] = [];
   // if there is a pre_run function call it
@@ -193,7 +193,12 @@ const build_array_complex = (generated_document, property, value, number, docume
 const build_array_simple = (generated_document, property, value, number, document_index) => {
   // console.log('documents.build_array_simple');
   for (let i = 0; i < number; i++) {
-    value[i] = build_value(null, property.items, initialize_value(property.items.type), document_index); // eslint-disable-line babel/no-await-in-loop
+    value[i] = build_value(
+      generated_document,
+      property.items,
+      initialize_value(property.items.type),
+      document_index
+    ); // eslint-disable-line babel/no-await-in-loop
   }
   return value;
 };
