@@ -20,7 +20,7 @@ export default function() {
     .option('-b, --bucket [name]', 'The name of a Couchbase Bucket.  The default value is: default', 'default')
     .option('-p, --password [value]', 'Bucket password')
     .option('-t, --timeout [value]', 'A timeout value for database operations', 5000)
-    .option('-l, --limit [value]', 'Limit the number of save operations at a time.  Default: 1000', 1000)
+    .option('-l, --limit [value]', 'Limit the number of save operations at a time.  Default: 100', 100)
     .option('-g, --sync_gateway_admin [value]', 'The Sync-Gateway Admin address')
     .option('-u, --username [name]', 'The sync-gateway username')
     .option('-e, --exclude [model]', 'A comma-delimited list of model names to exclude from output', '')
