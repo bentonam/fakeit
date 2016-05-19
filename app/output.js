@@ -27,11 +27,12 @@ const prepare = async ({ format, limit, timeout, exclude, ...options }, resolve,
     ...options,
     resolve,
     reject,
-    format: parseInt(format) || 2, // ensure that the spacing is a number
+    format: typeof format !== 'undefined' && !isNaN(parseInt(format)) ? parseInt(format) : 2, // ensure that the spacing is a number
     limit: parseInt(limit) || 1000, // ensure that the limit is a number
     timeout: parseInt(timeout) || 5000, // ensure that the timeout is a number
     exclude: exclude.split(',')
   };
+
   set_entries_to_process(model_documents_count); // save the number of entries for each models documents
 
   set_total_entries_to_process(model_documents_count); // set the total number of entries for all models documents
@@ -238,20 +239,12 @@ const save_couchbase = async (model, documents) => {
 };
 
 // upserts a document into couchbase
-const upsert = (key, data, attempts = 0) => new Promise((resolve, reject) => {
+const upsert = (key, data) => new Promise((resolve, reject) => {
   // console.log('output.upsert');
   try {
     couchbase_bucket.upsert(key.toString(), data, (err) => {
       if (err) {
-        if (attempts < 3) { // try 3 times to save the data
-          upsert(key, data, ++attempts)
-            .then(resolve)
-            .catch((e) => {
-              reject(e);
-            });
-        } else {
-          reject(new Error(`Error saving ${key}, Reason: ${err.message}`));
-        }
+        reject(err);
       } else {
         resolve();
       }
