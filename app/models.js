@@ -10,6 +10,7 @@ import objectPath from 'object-path';
 
 let models = {}; // global variable to hold parsed models
 let model_order = []; // global variable to hold the model run order
+let model_dependencies = []; // global variable to hold all dependencies
 let model_count = 0; // global variable to hold the number of available models
 let model_documents_count = {}; // global variable to hold the number of documents to generate for each model
 let settings; // global variable to hold the available options / settings
@@ -208,31 +209,34 @@ const parse_model_defaults = async (model) => {
 // resolve the dependencies and establish the order the models should be parsed in
 const resolve_dependencies = async () => {
   // console.log('models.resolve_dependencies');
-  try {
-    let counter = 0;
-    // continue looping until all dependencies are resolve or we have looped (model_count * 5) times at which point
-    // not all dependencies could be resolved and we will just error to prevent an infinte loop
-    while (counter < model_count * 5 && model_order.length < model_count) {
-      counter += 1;
-      for (let model in models) {
-        // if there are dependencies, determine if all of the dependencies have already been added to the order
-        if (models[model].data.dependencies) {
-          if (check_dependencies(models[model].data.dependencies)) {
-            add_model_order(model);
-          }
-        } else { // there are no dependencies add it to the order
+  let counter = 0;
+  // continue looping until all dependencies are resolve or we have looped (model_count * 5) times at which point
+  // not all dependencies could be resolved and we will just error to prevent an infinte loop
+  while (counter < model_count * 5 && model_order.length < model_count) {
+    counter += 1;
+    for (let model in models) {
+      // if there are dependencies, determine if all of the dependencies have already been added to the order
+      if (models[model].data.dependencies) {
+        if (check_dependencies(models[model].data.dependencies)) {
           add_model_order(model);
         }
+      } else { // there are no dependencies add it to the order
+        add_model_order(model);
       }
     }
-    if (model_order.length !== model_count) {
-      // update error to include which models could not be resolved
-      throw new Error('Model dependencies could not be resolved.');
-    }
-    // console.log('Models will be generated in the following order: %s', model_order.join(', '));
-  } catch (e) {
-    throw new Error(`Error: resolve_dependencies ${e.message}`);
   }
+  if (model_order.length !== model_count) {
+    // update error to include which models could not be resolved
+    throw new Error(`The following Model Dependencies could not be resolved: ${unresolvable_dependencies().join(', ')}`);
+  }
+  // console.log('Models will be generated in the following order: %s', model_order.join(', '));
+};
+
+// builds an array of all of the dependencies that could not be resolved
+const unresolvable_dependencies = () => {
+  return model_dependencies.filter((v) => {
+    return model_order.indexOf(v) === -1;
+  });
 };
 
 // determines if all dependencies have been resolved or not
@@ -240,6 +244,9 @@ const check_dependencies = (dependencies) => {
   let resolved = 0;
   // loop over each of the models dependencies and check if its dependencies have been resolved
   for (let i = 0; i < dependencies.length; i++) {
+    if (model_dependencies.indexOf(dependencies[i]) === -1) { // if the dependency has been added yet add it
+      model_dependencies.push(dependencies[i]);
+    }
     resolved += model_order.indexOf(dependencies[i]) !== -1 ? 1 : 0;
   }
   return resolved === dependencies.length;
