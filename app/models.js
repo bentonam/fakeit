@@ -7,6 +7,7 @@ const chance = new Chance();
 import documents from './documents';
 import utils from './utils';
 import objectPath from 'object-path';
+import objectMerge from 'object-merge';
 
 let models = {}; // global variable to hold parsed models
 let model_order = []; // global variable to hold the model run order
@@ -154,7 +155,7 @@ const parse_model_references = async (model) => {
     let property_path = reference_path.replace(pattern, '') + (reference_path.indexOf('.items.') !== -1 ? '.items' : '');
     let property = objectPath.get(models[model], property_path);
     let defined_path = objectPath.get(models[model], reference_path).replace(/^#\//, '').replace('/', '.');
-    property = Object.assign({}, property, objectPath.get(models[model], defined_path));
+    property = objectMerge({}, property, objectPath.get(models[model], defined_path));
     objectPath.set(models[model], property_path, property);
   });
 };
@@ -201,7 +202,7 @@ const parse_model_defaults = async (model) => {
     objectPath.set(
       models[model],
       data_path,
-      Object.assign({}, data_defaults, objectPath.get(models[model], data_path))
+      objectMerge({}, data_defaults, objectPath.get(models[model], data_path))
     );
   });
 };
