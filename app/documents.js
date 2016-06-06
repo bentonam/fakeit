@@ -229,10 +229,15 @@ const build_process = (current_model, generated_document, model_paths, document_
 };
 
 // callback the is used by build_process
-const build_process_callback = (current_model, generated_document, property, value, document_index) => { // eslint-disable-line complexity
+// eslint-disable-next-line max-statements,complexity
+const build_process_callback = (current_model, generated_document, property, value, document_index) => {
   // if there is a post_build block
   if (property.data && property.data.post_build) {
     value = property.data.post_build.apply(generated_document, [ documents, globals, inputs, faker, chance, document_index ]);
+  } else if (property.items && property.items.data && property.items.data.post_build) {
+    for (let i = 0; i < value.length; i++) {
+      value[i] = property.items.data.post_build.apply(generated_document, [ documents, globals, inputs, faker, chance, document_index ]);
+    }
   }
   // if the value is not null try to convert it to the correct type
   if (value !== null) {
