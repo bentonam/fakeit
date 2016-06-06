@@ -289,7 +289,7 @@ const generate = async () => {
     await documents.run(// eslint-disable-line babel/no-await-in-loop
       models[model_order[i]],
       model_documents_count[models[model_order[i]].name],
-      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0
+      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0 && settings.exclude.indexOf(models[model_order[i]].name) === -1
     ); // eslint-disable-line babel/no-await-in-loop
   }
 };
