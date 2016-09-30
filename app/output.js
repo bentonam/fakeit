@@ -10,6 +10,9 @@ import couchbase from 'couchbase';
 import utils from './utils';
 import request from 'request';
 import PromisePool from 'es6-promise-pool';
+import faker from 'faker';
+import Chance from 'chance';
+const chance = new Chance();
 
 let settings, archive, archive_out, couchbase_bucket, sync_session;
 
@@ -329,7 +332,7 @@ const save_archive = (model, documents) => new Promise((resolve, reject) => {
               .then((formatted) => {
                 result = [];
                 formatted.forEach((v, i) => {
-                  filename = documents[i][model.key] + '.' + settings.output;
+                  filename = `${get_key(model, documents[i])}.${settings.output}`;
                   result.push(append_zip(v, filename));
                 });
                 return Promise.all(result);
@@ -360,9 +363,9 @@ const append_zip = (data, entry_name) => new Promise((resolve, reject) => {
 // saves each document to an individual file
 const save_files = async (model, documents) => {
   // console.log('save_files', documents);
-  var writes = [];
+  let writes = [];
   for (let i = 0; i < documents.length; i++) {
-    let filename = documents[i][model.key] + '.' + settings.output;
+    let filename = `${get_key(model, documents[i])}.${settings.output}`;
     writes.push(
       format_data(documents[i])
         .then((formatted_data) => write_file(filename, formatted_data))
@@ -494,5 +497,18 @@ const error_cleanup = () => new Promise((resolve, reject) => {
     reject(e);
   }
 });
+
+// gets the key for a document
+const get_key = (model, doc) => {
+  // console.log('output.get_key');
+  let key;
+  if (model.key.build) {
+    key = model.key.build.apply(doc, [ null, null, null, faker, chance, null ]);
+  } else {
+    key = doc[model.key];
+  }
+  console.log('KEY:', key);
+  return key;
+};
 
 export default { prepare, save, update_entry_totals, error_cleanup };

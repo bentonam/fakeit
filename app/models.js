@@ -187,13 +187,14 @@ const parse_model_defaults = async (model) => {
         property.items.data = {};
       }
     } else if (!property.data) {
-      property.data = {
-        fixed: 1
-      };
+      property.data = {};
     }
     objectPath.set(models[model], data_path, property);
   });
   // find any data property at the root or that is a child of items and make sure it has the defaults for min, max, fixed
+  if (!models[model].data) { // if a data property wasn't set define it
+    models[model].data = {};
+  }
   results = utils.object_search(models[model], /^(.*properties\.[^.]+\.items\.data|(data))$/);
   const data_defaults = {
     min: 0,
@@ -219,7 +220,7 @@ const resolve_dependencies = async () => {
     counter += 1;
     for (let model in models) {
       // if there are dependencies, determine if all of the dependencies have already been added to the order
-      if (models[model].data.dependencies) {
+      if (models[model].data && models[model].data.dependencies) {
         if (check_dependencies(models[model].data.dependencies)) {
           add_model_order(model);
         }
