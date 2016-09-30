@@ -507,7 +507,6 @@ const get_key = (model, doc) => {
   } else {
     key = doc[model.key];
   }
-  console.log('KEY:', key);
   return key;
 };
 

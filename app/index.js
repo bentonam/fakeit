@@ -24,6 +24,7 @@ export default function() {
     .option('-g, --sync_gateway_admin [value]', 'The Sync-Gateway Admin address')
     .option('-u, --username [name]', 'The sync-gateway username')
     .option('-e, --exclude [model]', 'A comma-delimited list of model names to exclude from output', '')
+    .option('-v, --verbose', 'Whether or not to use verbose output')
     .parse(process.argv);
 
   // run the program
