@@ -29,8 +29,8 @@ rebuild:
 	npm i
 	make build
 
-VERS := "patch"
-TAG := "latest"
+VERS ?= "patch"
+TAG ?= "latest"
 
 release:
 	git checkout master
