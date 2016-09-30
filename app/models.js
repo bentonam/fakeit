@@ -151,6 +151,7 @@ const parse_model_references = async (model) => {
   // console.log('models.parse_model_references');
   let pattern = /\.(schema|items).\$ref$/;
   let results = utils.object_search(models[model], pattern);
+  results.sort(); // sort the array so definitions come first before properties, this allows definitions to have definitions
   results.forEach((reference_path) => {
     let property_path = reference_path.replace(pattern, '') + (reference_path.indexOf('.items.') !== -1 ? '.items' : '');
     let property = objectPath.get(models[model], property_path);
@@ -192,6 +193,9 @@ const parse_model_defaults = async (model) => {
     objectPath.set(models[model], data_path, property);
   });
   // find any data property at the root or that is a child of items and make sure it has the defaults for min, max, fixed
+  if (!models[model].data) { // if a data property wasn't set define it
+    models[model].data = {};
+  }
   results = utils.object_search(models[model], /^(.*properties\.[^.]+\.items\.data|(data))$/);
   const data_defaults = {
     min: 0,
@@ -217,7 +221,7 @@ const resolve_dependencies = async () => {
     counter += 1;
     for (let model in models) {
       // if there are dependencies, determine if all of the dependencies have already been added to the order
-      if (models[model].data.dependencies) {
+      if (models[model].data && models[model].data.dependencies) {
         if (check_dependencies(models[model].data.dependencies)) {
           add_model_order(model);
         }
@@ -283,13 +287,14 @@ const set_document_counts = async () => {
 };
 
 // handles generation of data for each model
-const generate = async () => {
+const generate = async (options) => {
   // console.log('models.generate');
   for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
     await documents.run(// eslint-disable-line babel/no-await-in-loop
       models[model_order[i]],
       model_documents_count[models[model_order[i]].name],
-      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0 && settings.exclude.indexOf(models[model_order[i]].name) === -1
+      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0 && settings.exclude.indexOf(models[model_order[i]].name) === -1,
+      options
     ); // eslint-disable-line babel/no-await-in-loop
   }
 };

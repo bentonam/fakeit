@@ -9,7 +9,7 @@ const defaults = {
   output: 'console',
   archive: '',
   models: process.cwd(),
-  destination: process.cwd(),
+  destination: 'console',
   format: 2,
   server: '127.0.0.1',
   bucket: 'default'
@@ -24,7 +24,7 @@ export default function start(options = {}) {
       input.prepare(options)
         .then(() => models.prepare(options))
         .then((model_documents_count) => output.prepare(options, resolve, reject, model_documents_count))
-        .then(() => models.generate(reject))
+        .then(() => models.generate(options))
         .catch((err) => {
           try {
             output.error_cleanup();

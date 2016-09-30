@@ -12,7 +12,7 @@ export default function() {
     .option('-o, --output [value]', 'The output format to generate.  Supported formats are: json, csv, yaml, cson', 'json')
     .option('-a, --archive [value]', 'The archive file to generate.  Supported formats are: zip')
     .option('-m, --models [value]', 'A directory or comma-delimited list of files models to use.', process.cwd())
-    .option('-d, --destination [value]', 'The output destination.  Values can be: couchbase, console or a directory path.', process.cwd())
+    .option('-d, --destination [value]', 'The output destination.  Values can be: couchbase, console or a directory path.', 'console')
     .option('-f, --format [value]', 'The spacing format to use for JSON and YAML file generation.  Default is 2', 2)
     .option('-n, --number [value]', 'Overrides the number of documents to generate specified by the model.')
     .option('-i, --input [value]', 'Directory or comma-delimited list of files to use as inputs.  Support formats are: json, yaml, csv, cson, zip')
@@ -24,6 +24,7 @@ export default function() {
     .option('-g, --sync_gateway_admin [value]', 'The Sync-Gateway Admin address')
     .option('-u, --username [name]', 'The sync-gateway username')
     .option('-e, --exclude [model]', 'A comma-delimited list of model names to exclude from output', '')
+    .option('-v, --verbose', 'Whether or not to use verbose output')
     .parse(process.argv);
 
   // run the program
