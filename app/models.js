@@ -187,7 +187,9 @@ const parse_model_defaults = async (model) => {
         property.items.data = {};
       }
     } else if (!property.data) {
-      property.data = {};
+      property.data = {
+        fixed: 1
+      };
     }
     objectPath.set(models[model], data_path, property);
   });
