@@ -41,7 +41,9 @@ fakeit [options]
 - `-g, --sync_gateway_admin [value]` *(optional)* A Sync Gateway Admin address
 - `-u, --username [value]` *(optional)* A Sync Gateway username.
 - `-e, --exclude [model]` *(optional)* A comma-delimited list of model names to exclude from output  
+- `-v` --verbose` *(optional)* Whether or not to use verbose output
 - `-h, --help` Displays available options
+- `-V, --version` Display the current version
 
 ## Models
 

@@ -151,6 +151,7 @@ const parse_model_references = async (model) => {
   // console.log('models.parse_model_references');
   let pattern = /\.(schema|items).\$ref$/;
   let results = utils.object_search(models[model], pattern);
+  results.sort(); // sort the array so definitions come first before properties, this allows definitions to have definitions
   results.forEach((reference_path) => {
     let property_path = reference_path.replace(pattern, '') + (reference_path.indexOf('.items.') !== -1 ? '.items' : '');
     let property = objectPath.get(models[model], property_path);
