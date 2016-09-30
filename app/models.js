@@ -286,13 +286,14 @@ const set_document_counts = async () => {
 };
 
 // handles generation of data for each model
-const generate = async () => {
+const generate = async (options) => {
   // console.log('models.generate');
   for (let i = 0; i < model_order.length; i++) { // loop over each model and execute in order of dependency
     await documents.run(// eslint-disable-line babel/no-await-in-loop
       models[model_order[i]],
       model_documents_count[models[model_order[i]].name],
-      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0 && settings.exclude.indexOf(models[model_order[i]].name) === -1
+      typeof settings.number !== 'undefined' && parseInt(settings.number) > 0 && settings.exclude.indexOf(models[model_order[i]].name) === -1,
+      options
     ); // eslint-disable-line babel/no-await-in-loop
   }
 };
