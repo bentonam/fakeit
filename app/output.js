@@ -131,9 +131,9 @@ const setup_syncgateway = () => new Promise((resolve, reject) => {
   // console.log('output.setup_syncgateway');
   try {
     // there might not need to be authentication if the sync db is allowing guest
-    if (settings.sync_gateway_admin && settings.username && settings.password) {
+    if (settings.username && settings.password) {
       let options = {
-        url: settings.sync_gateway_admin + '/' + settings.bucket + '/_session',
+        url: settings.server + '/' + encodeURIComponent(settings.bucket) + '/_session',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
