@@ -10,6 +10,7 @@ import couchbase from 'couchbase';
 import utils from './utils';
 import request from 'request';
 import PromisePool from 'es6-promise-pool';
+import cookie_parser from 'set-cookie-parser';
 import faker from 'faker';
 import Chance from 'chance';
 const chance = new Chance();
@@ -145,11 +146,17 @@ const setup_syncgateway = () => new Promise((resolve, reject) => {
           reject(err);
         } else {
           body = JSON.parse(body);
-          if (body.error) {
+          if (body.ok && res.headers['set-cookie']) {
+            let set_cookie = cookie_parser.parse(res);
+            sync_session = {
+              cookie_name: set_cookie[0].name,
+              session_id: set_cookie[0].value
+            };
+            resolve();
+          } else if (body.error) {
             reject(body.error);
           } else {
-            sync_session = body;
-            resolve();
+            reject('Unable to connect to Sync Gateway');
           }
         }
       });
