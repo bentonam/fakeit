@@ -29,7 +29,8 @@
     "yaml",
     "csv",
     "cson",
-    "couchbase"
+    "couchbase",
+    "sync-gateway"
   ],
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
@@ -61,6 +62,7 @@
     "object-merge": "^2.5.1",
     "object-path": "^0.9.2",
     "request": "^2.75.0",
+    "set-cookie-parser": "^1.0.2",
     "yamljs": "^0.2.8"
   },
   "devDependencies": {
