@@ -2,12 +2,16 @@
 
 import program from 'commander';
 import generator from './generator';
-import { version } from './../package.json';
+import updateNotifier from 'update-notifier';
+import pkg from './../package.json';
 
 export default function() {
+  // check for update and notify
+  updateNotifier({ pkg }).notify();
+
   // get the inputs
   program
-    .version(version)
+    .version(pkg.version)
     .usage('fakeit [options]')
     .option('-o, --output [value]', 'The output format to generate.  Supported formats are: json, csv, yaml, cson', 'json')
     .option('-a, --archive [value]', 'The archive file to generate.  Supported formats are: zip')
