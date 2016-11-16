@@ -1,42 +1,61 @@
+.DEFAULT_GOAL:= build
 MAKEFLAGS = -j1
 PATH := ./node_modules/.bin:$(PATH)
 SHELL := /bin/bash
 args = $(filter-out $@, $(MAKECMDGOALS))
-
-.PHONY: all lint test-only test build coverage publish rebuild release
+.PHONY: install clean deep-clean reinstall setup build compile watch lint test ci publish release
 
 all: build test
 
-clean:
-	rm -rf ./dist
+install:
+	type yarn 2>/dev/null && yarn install || npm install
 
-build:
-	babel app -d dist $(args)
+clean:
+	rm -rf dist logs
+
+deep-clean:
+	make clean
+	rm -rf node_modules/ dist/ .nyc_output/ npm-debug.log yarn-error.log
+
+reinstall setup:
+	make deep-clean
+	make install
+
+build compile:
+	make clean
+	babel app --out-dir dist $(args)
+
+watch:
+	make build -- --watch
 
 lint:
-	eslint app
+	eslint 'app' 'test'
 
-test-only:
-	tape -r babel-register test/**/*.test.js | tap-spec
+test:
+	ava $(args) && \
+	ava $(args) test/cli.test.js
 
-test: lint test-only
-
-publish: all
-	npm publish
-
-rebuild:
-	rm -rf node_modules/ dist/ .nyc_output/ npm-debug.log
-	npm i
+ci:
+	make lint
 	make build
+	make test
 
 VERS ?= "patch"
 TAG ?= "latest"
 
-release:
+patch:
+	export VERS="patch" && make release
+
+minor:
+	export VERS="minor" && make release
+
+major:
+	export VERS="major" && make release
+
+publish release:
 	git checkout master
 	git pull --rebase
-	make build
-	make test
+	make ci
 	npm version $(VERS) -m "Release %s"
 	npm publish --tag $(TAG)
-	git push --follow-tags
+	git push --follow-tags origin master
