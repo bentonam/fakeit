@@ -1,5 +1,3 @@
-'use strict';
-
 import program from 'commander';
 import generator from './generator';
 import updateNotifier from 'update-notifier';
