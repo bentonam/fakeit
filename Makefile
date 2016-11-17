@@ -8,7 +8,13 @@ args = $(filter-out $@, $(MAKECMDGOALS))
 all: build test
 
 install:
-	type yarn 2>/dev/null && yarn install || npm install
+	if type yarn 2>/dev/null; then \
+		yarn install; \
+		echo "because yarn isn't pulling in the correct package"; \
+		time npm install ma-shop/lint-rules tjbenton/ava-spec; \
+	else \
+		npm install; \
+	fi
 
 clean:
 	rm -rf dist logs
@@ -39,8 +45,14 @@ ci:
 	make build
 	make test
 
+# "patch", "minor", "major", "prepatch",
 VERS ?= "patch"
+
+# "preminor", "premajor", "prerelease"
 TAG ?= "latest"
+
+prepatch:
+	export VERS="prepatch" && make release
 
 patch:
 	export VERS="patch" && make release
