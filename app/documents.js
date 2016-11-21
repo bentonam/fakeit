@@ -2,7 +2,7 @@ import faker from 'faker';
 import Chance from 'chance';
 const chance = new Chance();
 import { getInputs } from './input';
-import output from './output';
+import * as output from './output';
 import { objectSearch } from './utils';
 import objectPath from 'object-path';
 

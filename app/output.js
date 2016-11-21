@@ -2,6 +2,7 @@ import path from 'path';
 // @todo check and see if `fs-extra-promisify` works with this correctly
 import { createWriteStream } from 'fs';
 import fs from 'fs-extra-promisify';
+import * as utils from './utils';
 import archiver from 'archiver';
 import csvStringify from 'csv-stringify';
 import yaml from 'yamljs';
@@ -24,7 +25,7 @@ let archive_entries_to_process = 0; // the total number of entries to add to the
 let archive_entries_processed = 0; // the number of entries that have been successfully added to the archive
 
 // pre run setup / handle settings
-async function prepare({ format, limit, timeout, exclude, ...options }, resolve, reject, model_documents_count) {
+export async function prepare({ format, limit, timeout, exclude, ...options }, resolve, reject, model_documents_count) {
   // console.log('output.prepare');
   settings = {
     ...options,
@@ -64,7 +65,7 @@ async function prepare({ format, limit, timeout, exclude, ...options }, resolve,
 }
 
 // updates the entry totals, if a model being generated set new values this would be called
-function updateEntryTotals(model_name, number) {
+export function updateEntryTotals(model_name, number) {
   if (settings.exclude.indexOf(model_name) === -1) {
     let old_entries_to_process = entries_to_process[model_name];
     total_entries_to_process -= old_entries_to_process;
@@ -213,7 +214,7 @@ async function setupZip() {
 }
 
 // handles saving a model after a run
-function save(model, documents) {
+export function save(model, documents) {
   return new Promise((resolve, reject) => {
     // console.log('output.save');
     try {
@@ -520,7 +521,7 @@ function writeFile(filename, data) {
 }
 
 // error cleanup to delete generated files, etc.
-function errorCleanup() {
+export function errorCleanup() {
   return new Promise((resolve, reject) => {
     // console.log('output.errorCleanup');
     try {
@@ -554,5 +555,3 @@ function getKey(model, doc) {
   }
   return key;
 }
-
-export default { prepare, save, updateEntryTotals, errorCleanup };

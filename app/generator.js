@@ -1,7 +1,7 @@
 import path from 'path';
 import { prepare } from './input';
 import * as models from './models';
-import output from './output';
+import * as output from './output';
 
 const defaults = {
   output: 'console',
