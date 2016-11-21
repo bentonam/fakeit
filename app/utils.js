@@ -3,6 +3,7 @@ import globby from 'globby';
 import { map } from 'async-array-methods';
 import to from 'to-js';
 import AdmZip from 'adm-zip';
+import promisify from 'es6-promisify';
 import fs from 'fs-extra-promisify';
 
 export function objectSearch(data, pattern, current_path, paths = []) {
@@ -123,3 +124,38 @@ export async function readFiles(files) {
 
   return to.flatten(files);
 }
+
+
+// This holds all the parsers that this project uses and normalizes
+// them to all function the same way.
+// Each parser in this object has 2 functions `parse`, and `stringify`.
+const parsers = {};
+import yaml from 'yamljs';
+import cson from 'cson';
+import csvParse from 'csv-parse';
+import csvStringify from 'csv-stringify';
+
+const csv = {
+  parse: promisify(csvParse),
+  stringify: promisify(csvStringify)
+};
+
+parsers.yaml = parsers.yml = {
+  parse: (obj) => Promise.resolve(yaml.parse(obj)),
+  stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj), null, indent)
+};
+
+parsers.json = {
+  parse: (obj) => Promise.resolve(JSON.parse(obj)),
+  stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, indent))
+};
+parsers.cson = {
+  parse: promisify(cson.parse),
+  stringify: (obj, indent = 2) => Promise.resolve(cson.stringify(obj, null, indent))
+};
+parsers.csv = {
+  parse: (obj) => csv.parse(obj, { columns: true }),
+  stringify: (obj, options = { header: true, quotedString: true }) => csv.stringify(obj, options)
+};
+
+export { parsers };

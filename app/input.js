@@ -1,25 +1,10 @@
 import path from 'path';
-import promisify from 'es6-promisify';
 import * as utils from './utils';
-import yaml from 'yamljs';
-import cson from 'cson';
-import csvParse from 'csv-parse';
 import { map } from 'async-array-methods';
 import to from 'to-js';
 
 // stores the current input files
 let inputs = {};
-
-// the different files that can be parsed
-const csv = promisify(csvParse);
-const parsers = {
-  yaml: (content) => Promise.resolve(yaml.parse(content)),
-  cson: promisify(cson.parse),
-  csv: (content) => csv(content, { columns: true }),
-  json: (content) => Promise.resolve(JSON.parse(content))
-};
-parsers.yml = parsers.yaml;
-export { parsers };
 
 // pre run setup / handle settings
 export async function prepare(options) {
@@ -38,11 +23,11 @@ export async function prepare(options) {
   // handles parsing each of the supported formats
   return map(files, async (file) => {
     // get the current parser to use
-    const parser = parsers[file.ext.replace(/^\./, '')];
+    const parser = utils.parsers[file.ext.replace(/^\./, '')];
 
     if (!parser) throw new Error(`No valid parser could be found for "${file.name}.${file.type}"`);
 
-    const result = await parser(file.content);
+    const result = await parser.parse(file.content);
     inputs[file.name] = result;
     return file;
   });
