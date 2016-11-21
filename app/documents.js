@@ -3,7 +3,7 @@ import Chance from 'chance';
 const chance = new Chance();
 import { getInputs } from './input';
 import output from './output';
-import * as utils from './utils';
+import { objectSearch } from './utils';
 import objectPath from 'object-path';
 
 let documents = {}; // global variable to keep track of the generated documents
@@ -309,7 +309,7 @@ function buildProcessCallback(current_model, generated_document, property, value
 
 // finds all of the properties paths in a model
 function getModelPaths(current_model) {
-  return utils.objectSearch(current_model, /^properties\.([^.]+|(?!items\.).+properties\.[^.]+)$/)
+  return objectSearch(current_model, /^properties\.([^.]+|(?!items\.).+properties\.[^.]+)$/)
     .filter((path) => {
       return path.indexOf('items.properties') === -1;
     });
