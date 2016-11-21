@@ -155,7 +155,13 @@ parsers.cson = {
 };
 parsers.csv = {
   parse: (obj) => csv.parse(obj, { columns: true }),
-  stringify: (obj, options = { header: true, quotedString: true }) => csv.stringify(obj, options)
+  stringify: (obj, options) => {
+    if (typeof options !== 'object') {
+      options = {};
+    }
+    options = to.extend({ header: true, quotedString: true }, options);
+    return csv.stringify(obj, options);
+  }
 };
 
 export { parsers };

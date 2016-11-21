@@ -2,11 +2,9 @@ import path from 'path';
 // @todo check and see if `fs-extra-promisify` works with this correctly
 import { createWriteStream } from 'fs';
 import fs from 'fs-extra-promisify';
-import * as utils from './utils';
+import { parsers } from './utils';
+import { map } from 'async-array-methods';
 import archiver from 'archiver';
-import csvStringify from 'csv-stringify';
-import yaml from 'yamljs';
-import cson from 'cson';
 import couchbase from 'couchbase';
 import request from 'request';
 import PromisePool from 'es6-promise-pool';
@@ -110,11 +108,13 @@ function setArchiveEntriesToProcess() {
 }
 
 // prepare the connection to couchbase
+// @todo update this to be an async function
 function setupCouchbase() {
   return new Promise((resolve, reject) => {
     // console.log('output.setupCouchbase');
     try {
       const cluster = new couchbase.Cluster(settings.server);
+      // @todo promisify cluster.openBucket
       couchbase_bucket = cluster.openBucket(settings.bucket, settings.password || '', (err) => {
         if (err) {
           reject(err);
@@ -214,37 +214,33 @@ async function setupZip() {
 }
 
 // handles saving a model after a run
-export function save(model, documents) {
-  return new Promise((resolve, reject) => {
-    // console.log('output.save');
-    try {
-      if (settings.exclude.indexOf(model.name) === -1) {
-        // console.log(`Saving ${documents.length} documents for ${model.name} model`);
-        models_processed += 1; // keep track of the number of models processed
-        let result;
-        if (settings.archive) { // if we are generating an archive
-          saveArchive(model, documents).then(resolve);
-        } else {
-          if (settings.destination === 'couchbase') { // send the output to couchbase
-            result = saveCouchbase(model, documents);
-          } else if (settings.destination === 'sync-gateway') {
-            result = saveSyncgateway(model, documents);
-          } else if (settings.destination === 'console') { // flush the output to the console
-            result = flushConsole(model, documents);
-          } else if (settings.output === 'csv') { // write model to csv
-            result = saveCsv(model, documents);
-          } else { // save output files
-            result = saveFiles(model, documents);
-          }
-          result.then(finalize).then(resolve);
-        }
-      } else {
-        resolve();
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
+export async function save(model, documents) {
+  if (settings.exclude.indexOf(model.name) !== -1) {
+    return;
+  }
+
+  // console.log(`Saving ${documents.length} documents for ${model.name} model`);
+  models_processed += 1; // keep track of the number of models processed
+
+  if (settings.archive) { // if we are generating an archive
+    return saveArchive(model, documents).then(finalize);
+  }
+
+  switch (settings.destination) {
+    case 'couchbase':
+      await saveCouchbase(model, documents);
+      break;
+    case 'sync-gateway':
+      await saveSyncgateway(model, documents);
+      break;
+    case 'console':
+      await flushConsole(model, documents);
+      break;
+    default:
+      await saveFiles(model, documents);
+  }
+
+  finalize();
 }
 
 // saves each document to a couchbase instance
@@ -265,6 +261,7 @@ async function saveCouchbase(model, documents) {
 }
 
 // upserts a document into couchbase
+// @todo remove this function and promisify couchbase_bucket.upsert
 function upsert(key, data) {
   return new Promise((resolve, reject) => {
     // console.log('output.upsert');
@@ -304,20 +301,19 @@ function syncgatewaySend(key, data) {
     // console.log('output.syncgatewaySend');
     try {
       let options = {
-        url: settings.server + '/' + settings.bucket + '/' + encodeURIComponent(key),
+        url: `${settings.server}/${settings.bucket}/${encodeURIComponent(key)}`,
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       };
       // if there is a an authenticated sync session use it
       if (sync_session) {
         let jar = request.jar();
-        let cookie = request.cookie(sync_session.cookie_name + '=' + sync_session.session_id);
+        let cookie = request.cookie(`${sync_session.cookie_name}=${sync_session.session_id}`);
         jar.setCookie(cookie, settings.server);
         options.jar = jar;
       }
+      // @todo promisify `request`
       request(options, (err, res, body) => {
         if (err) {
           reject();
@@ -340,184 +336,70 @@ function syncgatewaySend(key, data) {
 }
 
 // formats the data based on the output type
-function saveArchive(model, documents) {
-  return new Promise((resolve, reject) => {
-    try {
-      let filename, result;
-      if (settings.output === 'csv') { // write model to csv
-        filename = model.name + '.' + settings.output;
-        result = createCsv(documents)
-                  .then((formatted_data) => appendZip(formatted_data, filename))
-                  .then(resolve);
-      } else { // save output files
-        result = [];
-        for (let i = 0; i < documents.length; i++) {
-          result.push(
-            formatData(documents[i]) // eslint-disable-line no-loop-func
-          );
-        }
-        Promise.all(result)
-                .then((formatted) => {
-                  result = [];
-                  formatted.forEach((v, i) => {
-                    filename = `${getKey(model, documents[i])}.${settings.output}`;
-                    result.push(appendZip(v, filename));
-                  });
-                  return Promise.all(result);
-                })
-                .then(resolve);
-      }
-    } catch (e) {
-      reject(e);
-    }
+async function saveArchive(model, documents) {
+  if (settings.output === 'csv') { // write model to csv
+    return appendZip(await parsers.csv.stringify(documents), `${model.name}.${settings.output}`);
+  }
+
+  return map(documents, async (data) => {
+    return appendZip(await formatData(data), `${getKey(model, data)}.${settings.output}`);
   });
 }
 
 // appends files to the zip archive
-function appendZip(data, entry_name) {
-  return new Promise((resolve, reject) => {
-    // console.log('output.appendZip', entry_name);
-    try {
-      archive.append(
-        data,
-        {
-          name: entry_name
-        }
-      );
-      resolve();
-    } catch (e) {
-      reject(e);
-    }
-  });
+function appendZip(data, name) {
+  archive.append(data, { name });
 }
 
 // saves each document to an individual file
 async function saveFiles(model, documents) {
-  // console.log('saveFiles', documents);
-  let writes = [];
-  for (let i = 0; i < documents.length; i++) {
-    let filename = `${getKey(model, documents[i])}.${settings.output}`;
-    writes.push(
-      formatData(documents[i])
-        .then((formatted_data) => writeFile(filename, formatted_data))
-    );
+  if (settings.output === 'csv') {
+    return fs.outputFile(path.join(settings.destination, `${model.name}.${settings.output}`), await formatData(documents));
   }
-  return Promise.all(writes);
-}
 
-// saves each document to an single csv file {
-function saveCsv(model, documents) {
-  return new Promise((resolve, reject) => {
-    // console.log('saveCsv', documents);
-    try {
-      createCsv(documents)
-        .then((transformed_data) => writeFile(model.name + '.' + settings.output, transformed_data))
-        .then(finalize)
-        .then(resolve)
-        .catch(reject);
-    } catch (e) {
-      reject(e);
-    }
+  // console.log('saveFiles', documents);
+  return map(documents, async (data) => {
+    const file = path.join(settings.destination, `${getKey(model, data)}.${settings.output}`);
+    return fs.outputFile(file, await formatData(data));
   });
 }
 
 // creates a csv string from the documents
-function createCsv(documents) {
-  return new Promise((resolve, reject) => {
-    // console.log('output.createCsv');
-    try {
-      csvStringify(documents, { header: true, quotedString: true }, (err, transformed_data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(transformed_data);
-        }
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
+async function flushConsole(model, documents) {
+  // console.log('flushConsole');
+  if (settings.output === 'csv') {
+    console.log(await formatData(documents));
+    return;
+  }
 
-// creates a csv string from the documents
-function flushConsole(model, documents) {
-  return new Promise((resolve, reject) => {
-    // console.log('output.flushConsole');
-    try {
-      let writes = [];
-      if (settings.output === 'csv') {
-        writes.push(createCsv(documents));
-      } else {
-        documents.forEach((d) => {
-          writes.push(
-            formatData(d)
-          );
-        });
-      }
-      Promise.all(writes)
-        .then((result) => {
-          result.forEach((v) => {
-            console.log(v);
-          });
-        })
-        .then(resolve);
-    } catch (e) {
-      reject(e);
-    }
-  });
+  documents = await map(documents, formatData);
+
+  for (let document of documents) {
+    console.log(document);
+  }
 }
 
 // determines whether or not the entire generation can be finalized
-async function finalize() {
+function finalize() {
   // console.log('output.finalize');
-  if (!settings.archive) { // if we are generating an archive
-    if (models_to_process === models_processed) {
-      if (
-        !settings.destination === 'couchbase' &&
-        couchbase_bucket.connected
-      ) {
-        couchbase_bucket.disconnect();
-      }
-      settings.resolve();
+  if (
+    // if we are generating an archive
+    !settings.archive &&
+    models_to_process === models_processed
+  ) {
+    if (
+      !settings.destination === 'couchbase' &&
+      couchbase_bucket.connected
+    ) {
+      couchbase_bucket.disconnect();
     }
+    settings.resolve();
   }
 }
 
 // formats the data based on the output type
 function formatData(data) {
-  return new Promise((resolve, reject) => {
-    try {
-      if (settings.output === 'json') {
-        resolve(JSON.stringify(data, null, settings.format));
-      } else if (
-        settings.output === 'yaml' ||
-        settings.output === 'yml'
-      ) {
-        resolve(yaml.stringify(data, settings.format));
-      } else if (settings.output === 'cson') {
-        resolve(cson.stringify(data, null, settings.format));
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-
-// handles writing a file to disk
-function writeFile(filename, data) {
-  return new Promise((resolve, reject) => {
-    try {
-      fs.writeFile(path.join(settings.destination, filename), data, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
+  return parsers[settings.output].stringify(data, settings.format);
 }
 
 // error cleanup to delete generated files, etc.
@@ -529,8 +411,8 @@ export function errorCleanup() {
         // prevent the close method from being called to the generation is not resolved
         archive_out.removeAllListeners('close');
         // attach a new close event to delete the zip file
-        archive_out.on('close', async () => {
-          await fs.unlink().then(resolve).catch(reject);
+        archive_out.on('close', () => {
+          fs.unlink().then(resolve).catch(reject);
         });
       } else if (
         settings.destination === 'couchbase' &&
