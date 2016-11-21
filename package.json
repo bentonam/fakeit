@@ -37,6 +37,7 @@
   "dependencies": {
     "adm-zip": "^0.4.7",
     "archiver": "^1.2.0",
+    "async-array-methods": "^2.1.0",
     "babel-register": "^6.18.0",
     "babel-runtime": "^6.18.0",
     "chance": "^1.0.4",
@@ -46,9 +47,11 @@
     "csv-parse": "^1.1.7",
     "csv-stringify": "^1.0.4",
     "es6-promise-pool": "^2.4.4",
+    "es6-promisify": "^5.0.0",
     "faker": "^3.1.0",
+    "fs-extra-promisify": "^0.0.2",
+    "globby": "^6.1.0",
     "lint-rules": "ma-shop/lint-rules",
-    "mkdirp": "^0.5.1",
     "object-path": "^0.11.2",
     "request": "^2.78.0",
     "set-cookie-parser": "^1.0.2",
@@ -65,5 +68,14 @@
     "babel-preset-stage-0": "^6.16.0",
     "coveralls": "^2.11.15",
     "nyc": "^9.0.1"
+  },
+  "ava": {
+    "files": [
+      "test/**/*.test.js"
+    ],
+    "source": [
+      "dist/**/*"
+    ],
+    "failFast": true
   }
 }
