@@ -1,11 +1,12 @@
 import path from 'path';
-import fs from 'fs';
+// @todo check and see if `fs-extra-promisify` works with this correctly
+import { createWriteStream } from 'fs';
+import fs from 'fs-extra-promisify';
 import archiver from 'archiver';
 import csvStringify from 'csv-stringify';
 import yaml from 'yamljs';
 import cson from 'cson';
 import couchbase from 'couchbase';
-import * as utils from './utils';
 import request from 'request';
 import PromisePool from 'es6-promise-pool';
 import cookieParser from 'set-cookie-parser';
@@ -43,7 +44,7 @@ async function prepare({ format, limit, timeout, exclude, ...options }, resolve,
     // resolve the destination directory
     settings.destination = path.resolve(settings.destination);
     // create any directories that do not exist
-    await utils.makeDirectory(settings.destination);
+    await fs.ensureDir(settings.destination);
   }
 
   if (settings.destination === 'couchbase') {
@@ -185,7 +186,7 @@ async function setupZip() {
   // console.log('output.setupZip');
   try {
     archive_entries_processed = 0;
-    archive_out = fs.createWriteStream(path.join(settings.destination, settings.archive));
+    archive_out = createWriteStream(path.join(settings.destination, settings.archive));
     archive = archiver('zip');
     archive.pipe(archive_out);
     // event listener to keep track of entries into the zip stream
@@ -527,14 +528,8 @@ function errorCleanup() {
         // prevent the close method from being called to the generation is not resolved
         archive_out.removeAllListeners('close');
         // attach a new close event to delete the zip file
-        archive_out.on('close', () => {
-          fs.unlink(archive_out.path, (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
+        archive_out.on('close', async () => {
+          await fs.unlink().then(resolve).catch(reject);
         });
       } else if (
         settings.destination === 'couchbase' &&
