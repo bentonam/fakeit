@@ -2,8 +2,8 @@ import faker from 'faker';
 import Chance from 'chance';
 const chance = new Chance();
 import { getInputs } from './input';
-import output from './output';
-import * as utils from './utils';
+import * as output from './output';
+import { objectSearch } from './utils';
 import objectPath from 'object-path';
 
 let documents = {}; // global variable to keep track of the generated documents
@@ -16,11 +16,11 @@ export default async function run(current_model, number_to_generate, number_over
   inputs = inputs || getInputs(); // set the inputs if they aren't set yet
   // define a key based on the model path to hold the generated documents and document_index for the model
   documents[current_model.name] = [];
+  if (!current_model.data) {
+    current_model.data = {};
+  }
   // if there is a pre_run function call it
-  if (
-    current_model.data &&
-    current_model.data.pre_run
-  ) {
+  if (current_model.data.pre_run) {
     current_model.data.pre_run.apply(current_model, [ documents, globals, inputs, faker, chance ]);
   }
   // if we aren't generating a fixed number of documents from the command line and if the data.fixed attribute is set
@@ -40,61 +40,43 @@ export default async function run(current_model, number_to_generate, number_over
     console.log(`Generating ${number_to_generate} documents for ${current_model.name} model`);
   }
   for (let i = 0; i < number_to_generate; i++) { // loop over each model and execute in order of dependency
-    builds.push(
-      buildDocument(current_model, model_paths, document_paths, i)
-    );
+    builds.push(buildDocument(current_model, model_paths, document_paths, i));
   }
-  return await Promise.all(builds)
-    .then(() => {
-      if (current_model.data.post_run) {
-        current_model.data.post_run.apply(current_model, [ documents, globals, inputs, faker, chance ]);
-      }
-    })
-    .then(() => output.save(current_model, documents[current_model.name]))
-    .catch((e) => {
-      throw e;
-    });
+
+  await Promise.all(builds);
+
+  if (current_model.data.post_run) {
+    current_model.data.post_run.apply(current_model, [ documents, globals, inputs, faker, chance ]);
+  }
+
+  return output.save(current_model, documents[current_model.name]);
 }
 
 // builds a document and saves it to the global documents variable, the outputs the result
 async function buildDocument(current_model, model_paths, document_paths, document_index) {
   // console.log('inputs.buildDocument');
-  try {
-    // generate the initial values
-    let generated_document = build(current_model, model_paths, document_paths, document_index);
-    // console.log(JSON.stringify(generated_document));
-    documents[current_model.name].push(generated_document);
-  } catch (e) {
-    throw e;
-  }
+  // generate the initial values
+  let generated_document = build(current_model, model_paths, document_paths, document_index);
+  // console.log(JSON.stringify(generated_document));
+  documents[current_model.name].push(generated_document);
 }
 
 // builds a document
 function build(current_model, model_paths, document_paths, document_index) {
   // console.log('inputs.build');
-  try {
-    // generate the initial values
-    let generated_document = initializeDocument(current_model, model_paths, document_paths);
-    // if there is a pre_build function for the document call it
-    if (
-      current_model.data &&
-      current_model.data.pre_build
-    ) {
-      current_model.data.pre_build.apply(generated_document, [ documents, globals, inputs, faker, chance, document_index ]);
-    }
-    generated_document = buildObject(current_model, generated_document, model_paths, document_paths, document_index);
-    generated_document = buildProcess(current_model, generated_document, model_paths, document_paths, document_index);
-    // if there is a post_build function for the document call it
-    if (
-      current_model.data &&
-      current_model.data.post_build
-    ) {
-      current_model.data.post_build.apply(generated_document, [ documents, globals, inputs, faker, chance, document_index ]);
-    }
-    return generated_document;
-  } catch (e) {
-    throw e;
+  // generate the initial values
+  let generated_document = initializeDocument(current_model, model_paths, document_paths);
+  // if there is a pre_build function for the document call it
+  if (current_model.data.pre_build) {
+    current_model.data.pre_build.apply(generated_document, [ documents, globals, inputs, faker, chance, document_index ]);
   }
+  generated_document = buildObject(current_model, generated_document, model_paths, document_paths, document_index);
+  generated_document = buildProcess(current_model, generated_document, model_paths, document_paths, document_index);
+  // if there is a post_build function for the document call it
+  if (current_model.data.post_build) {
+    current_model.data.post_build.apply(generated_document, [ documents, globals, inputs, faker, chance, document_index ]);
+  }
+  return generated_document;
 }
 
 // initializes a documents default values
@@ -120,21 +102,18 @@ function initializeDocument(current_model, model_paths, document_paths) {
 // generates the initial value for a variable based on the data type
 function initializeValue(data_type) {
   // console.log('documents.initializeValue');
-  let value;
   if (data_type === 'string') {
-    value = '';
+    return '';
   } else if (data_type === 'object') {
-    value = {};
+    return {};
   } else if ('number,integer,double,long,float'.indexOf(data_type) !== -1) {
-    value = 0;
+    return 0;
   } else if (data_type === 'array') {
-    value = [];
+    return [];
   } else if ('boolean,bool'.indexOf(data_type) !== -1) {
-    value = false;
-  } else {
-    value = null;
+    return false;
   }
-  return value;
+  return null;
 }
 
 // builds an object based on a model
@@ -309,7 +288,7 @@ function buildProcessCallback(current_model, generated_document, property, value
 
 // finds all of the properties paths in a model
 function getModelPaths(current_model) {
-  return utils.objectSearch(current_model, /^properties\.([^.]+|(?!items\.).+properties\.[^.]+)$/)
+  return objectSearch(current_model, /^properties\.([^.]+|(?!items\.).+properties\.[^.]+)$/)
     .filter((path) => {
       return path.indexOf('items.properties') === -1;
     });

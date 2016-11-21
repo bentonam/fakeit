@@ -1,6 +1,10 @@
 import path from 'path';
-import fs from 'fs';
-import mkdirp from 'mkdirp';
+import globby from 'globby';
+import { map } from 'async-array-methods';
+import to from 'to-js';
+import AdmZip from 'adm-zip';
+import promisify from 'es6-promisify';
+import fs from 'fs-extra-promisify';
 
 export function objectSearch(data, pattern, current_path, paths = []) {
   if (Array.isArray(data)) {
@@ -40,86 +44,124 @@ function appendPath(opath, index) {
   return opath;
 }
 
-export function exists(file_path) {
-  return new Promise((resolve, reject) => {
-    try {
-      fs.exists(path.resolve(file_path), (found) => {
-        if (found) {
-          resolve();
-        } else {
-          reject(`${file_path} does not exist`);
-        }
-      });
-    } catch (e) {
-      reject(e);
+/// @name findFiles
+/// @description
+/// This is a very efficient way to to recursively read a directory and get all the files.
+/// @arg {string, array} dirs - The dir or dirs you want to get all the files from
+/// @returns {array} All the files in the directory(s) that were passed
+/// @async
+export async function findFiles(dirs) {
+  // all the files after
+  const files = [];
+  const sort = (list) => {
+    const to_search = [];
+    list = to.flatten(list);
+    for (let item of list) {
+      if (!!path.extname(item)) {
+        files.push(item);
+      } else {
+        to_search.push(item);
+      }
     }
-  });
+    return to_search;
+  };
+  const find = async (folders) => {
+    folders = sort(await map(folders, (folder) => globby(path.join(folder, '*'))));
+    if (folders.length) {
+      return find(folders);
+    }
+  };
+
+  await find(to.array(dirs));
+  return files;
 }
 
-export function isDirectory(dir_path) {
-  return new Promise((resolve, reject) => {
-    try {
-      dir_path = path.resolve(dir_path);
-      fs.stat(dir_path, (err, stats) => {
-        if (err || !stats.isDirectory()) {
-          reject();
-        } else {
-          resolve(dir_path);
+
+/// @name readFiles
+/// @description
+/// This will read all the files that have been passed to it and return them in an array of objects.
+/// @arg {string, array} files - The files to read. This can be any file including `zip`.
+/// @returns {array} An `array` of files where each object will have the following information
+///
+/// ```js
+/// {
+///   path: '', // the full path of the file
+///   content: '', // the contents of the file as a string
+///   // the rest of the keys are the same as what you would get from running `path.parse`
+///   root: '',
+///   dir: '',
+///   base: '',
+///   ext: '',
+///   name: '',
+/// }
+/// ```
+/// @async
+export async function readFiles(files) {
+  if (!files) return;
+
+  files = to.array(files);
+
+  files = await map(files, async (file) => {
+    file = path.resolve(file); // resolve the full path
+    let info = path.parse(file); // parse the full path to get the name and extension
+    if (info.ext === '.zip') {
+      const zip = new AdmZip(file);
+      return map(zip.getEntries(), async (entry) => {
+        if (!entry.isDirectory && !entry.entryName.match(/^(\.|__MACOSX)/)) {
+          let file_info = path.parse(entry.entryName); // eslint-disable-line
+          file_info.path = entry.entryName;
+          file_info.content = await zip.readAsText(entry.entryName);
+          return file_info;
         }
       });
-    } catch (e) {
-      reject(e);
     }
+
+    info.path = file;
+    info.content = to.string(await fs.readFile(file));
+    return info;
   });
+
+
+  return to.flatten(files);
 }
 
-export function readDirectory(dir_path) {
-  return new Promise((resolve, reject) => {
-    try {
-      fs.readdir(dir_path, (err, files) => {
-        if (err) {
-          throw err;
-        } else {
-          files = files.map((current) => {
-            return path.join(dir_path, current);
-          });
-          resolve(files);
-        }
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
 
-export function readFile(file_path) {
-  return new Promise((resolve, reject) => {
-    try {
-      fs.readFile(file_path, (err, data) => {
-        if (err) {
-          throw err;
-        } else {
-          resolve(data.toString());
-        }
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
+// This holds all the parsers that this project uses and normalizes
+// them to all function the same way.
+// Each parser in this object has 2 functions `parse`, and `stringify`.
+const parsers = {};
+import yaml from 'yamljs';
+import cson from 'cson';
+import csvParse from 'csv-parse';
+import csvStringify from 'csv-stringify';
 
-export function makeDirectory(dir_path) {
-  return new Promise((resolve, reject) => {
-    try {
-      mkdirp(dir_path, (err) => {
-        if (err) {
-          throw err;
-        } else {
-          resolve();
-        }
-      });
-    } catch (e) {
-      reject(e);
+const csv = {
+  parse: promisify(csvParse),
+  stringify: promisify(csvStringify)
+};
+
+parsers.yaml = parsers.yml = {
+  parse: (obj) => Promise.resolve(yaml.parse(obj)),
+  stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj), null, indent)
+};
+
+parsers.json = {
+  parse: (obj) => Promise.resolve(JSON.parse(obj)),
+  stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, indent))
+};
+parsers.cson = {
+  parse: promisify(cson.parse),
+  stringify: (obj, indent = 2) => Promise.resolve(cson.stringify(obj, null, indent))
+};
+parsers.csv = {
+  parse: (obj) => csv.parse(obj, { columns: true }),
+  stringify: (obj, options) => {
+    if (typeof options !== 'object') {
+      options = {};
     }
-  });
-}
+    options = to.extend({ header: true, quotedString: true }, options);
+    return csv.stringify(obj, options);
+  }
+};
+
+export { parsers };
