@@ -12,7 +12,20 @@ import AdmZip from 'adm-zip';
 import promisify from 'es6-promisify';
 import fs from 'fs-extra-promisify';
 
+
+/// @name objectSearch
+/// @description Recursively looks through objects and finds the pattern provided
+/// @arg {object, array} data - The data to search through
+/// @arg {regex,string} pattern - The pattern used to match a path
+/// @arg {string} current_path - The current part of the path. This is used as apart of the recursion and you shouldn't pass anyting to it manually.
+/// @arg {array} paths - The paths that have been match. This is used as apart of the recursion and you shouldn't pass anyting to it manually.
+/// @returns {array} - With the paths that have been matched
 export function objectSearch(data, pattern, current_path, paths = []) {
+  function appendPath(opath, index) {
+    opath = opath ? opath + '.' + index : '' + index;
+    opath = opath.replace(/^\.|\.$|\.{2,}/, '');
+    return opath;
+  }
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
       let test_path = appendPath(current_path, i);
@@ -42,12 +55,6 @@ export function objectSearch(data, pattern, current_path, paths = []) {
     }
   }
   return paths;
-}
-
-function appendPath(opath, index) {
-  opath = opath ? opath + '.' + index : '' + index;
-  opath = opath.replace(/^\.|\.$|\.{2,}/, '');
-  return opath;
 }
 
 /// @name findFiles
@@ -132,9 +139,12 @@ export async function readFiles(files) {
 }
 
 
-// This holds all the parsers that this project uses and normalizes
-// them to all function the same way.
-// Each parser in this object has 2 functions `parse`, and `stringify`.
+/// @name parsers
+/// @description
+/// This holds all the parsers that this project uses and normalizes
+/// them to all function the same way.
+/// Each parser in this object has 2 functions `parse`, and `stringify`.
+/// @type {object}
 const parsers = {};
 import yaml from 'yamljs';
 import cson from 'cson';
@@ -146,21 +156,74 @@ const csv = {
   stringify: promisify(csvStringify)
 };
 
+///# @name parsers.yaml
+///# @alias parsers.yml
+///# @type {object}
 parsers.yaml = parsers.yml = {
+  ///# @name parsers.yaml.parse
+  ///# @alias parsers.yml.parse
+  ///# @arg {string, object} obj
+  ///# @returns {object} - The javascript object
+  ///# @async
   parse: (obj) => Promise.resolve(yaml.parse(obj)),
+
+  ///# @name parsers.yaml.stringify
+  ///# @alias parsers.yml.stringify
+  ///# @arg {object} obj
+  ///# @arg {number} indent [2] The indent level
+  ///# @returns {string} - The yaml string
+  ///# @async
   stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj), null, indent)
 };
 
+///# @name parsers.json
+///# @type {object}
 parsers.json = {
+  ///# @name parsers.json.parse
+  ///# @arg {string, object} obj
+  ///# @returns {object} - The javascript object
+  ///# @async
   parse: (obj) => Promise.resolve(JSON.parse(obj)),
+
+  ///# @name parsers.json.stringify
+  ///# @arg {object} obj
+  ///# @arg {number} indent [2] The indent level
+  ///# @returns {string} - The yaml string
+  ///# @async
   stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, indent))
 };
+
+///# @name parsers.cson
+///# @type {object}
 parsers.cson = {
+  ///# @name parsers.cson.parse
+  ///# @arg {string, object} obj
+  ///# @returns {object} - The javascript object
+  ///# @async
   parse: promisify(cson.parse),
+
+  ///# @name parsers.cson.stringify
+  ///# @arg {object} obj
+  ///# @arg {number} indent [2] The indent level
+  ///# @returns {string} - The yaml string
+  ///# @async
   stringify: (obj, indent = 2) => Promise.resolve(cson.stringify(obj, null, indent))
 };
+
+///# @name parsers.csv
+///# @type {object}
 parsers.csv = {
+  ///# @name parsers.csv.parse
+  ///# @arg {string, object}
+  ///# @returns {object} - The javascript object
+  ///# @async
   parse: (obj) => csv.parse(obj, { columns: true }),
+
+  ///# @name parsers.csv.stringify
+  ///# @arg {object} obj
+  ///# @arg {object} options [{ header: true, quotedString: true }] The csv options
+  ///# @returns {string} - The yaml string
+  ///# @async
   stringify: (obj, options) => {
     if (typeof options !== 'object') {
       options = {};
