@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "ava": "^0.16.0",
-    "ava-spec": "tjbenton/ava-spec",
+    "ava-spec": "github:tjbenton/ava-spec",
     "babel-cli": "^6.18.0",
     "babel-eslint": "^7.1.0",
     "babel-preset-latest": "^6.16.0",

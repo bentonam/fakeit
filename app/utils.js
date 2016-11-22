@@ -7,7 +7,7 @@
 import path from 'path';
 import globby from 'globby';
 import { map } from 'async-array-methods';
-import to from 'to-js';
+import to, { is } from 'to-js';
 import AdmZip from 'adm-zip';
 import promisify from 'es6-promisify';
 import fs from 'fs-extra-promisify';
@@ -173,7 +173,7 @@ parsers.yaml = parsers.yml = {
   ///# @arg {number} indent [2] The indent level
   ///# @returns {string} - The yaml string
   ///# @async
-  stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj), null, indent)
+  stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj, null, indent).trim())
 };
 
 ///# @name parsers.json
@@ -200,7 +200,16 @@ parsers.cson = {
   ///# @arg {string, object} obj
   ///# @returns {object} - The javascript object
   ///# @async
-  parse: promisify(cson.parse),
+  parse: (obj) => {
+    return new Promise((resolve, reject) => {
+      cson.parse(obj, {}, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(result);
+      });
+    });
+  },
 
   ///# @name parsers.cson.stringify
   ///# @arg {object} obj
@@ -215,9 +224,40 @@ parsers.cson = {
 parsers.csv = {
   ///# @name parsers.csv.parse
   ///# @arg {string, object}
-  ///# @returns {object} - The javascript object
+  ///# @returns {array} - The javascript object
   ///# @async
-  parse: (obj) => csv.parse(obj, { columns: true }),
+  parse: async (obj) => {
+    let result = await csv.parse(obj, { columns: true });
+
+    // The following should be an object but the csv parser returns it as a string so this is used to fix that mistake
+    // `"{\"latitude\":-6.081689835,\"longitude\":145.3919983,\"level-2\":{\"level-3\":\"woohoo\"}}"`
+    // it also doesn't handle numbers correctly so this fixes those instances as well
+    function fix(a, b) {
+      if (!a || !b) {
+        return a;
+      }
+
+      for (let k in b) { // eslint-disable-line
+        if (b.hasOwnProperty(k)) {
+          if (is.plainObject(b[k])) {
+            a[k] = is.plainObject(a[k]) ? fix(a[k], b[k]) : b[k];
+          } else if (is.string(b[k]) && /^[0-9]+$/.test(b[k])) {
+            // convert string into a number
+            a[k] = to.number(b[k]);
+          } else if (is.string(b[k]) && b[k][0] === '{') {
+            // convert string into an object
+            a[k] = fix({}, to.object(b[k]));
+          } else {
+            a[k] = b[k];
+          }
+        }
+      }
+
+      return a;
+    }
+
+    return result.map((item) => fix({}, item));
+  },
 
   ///# @name parsers.csv.stringify
   ///# @arg {object} obj
@@ -229,7 +269,8 @@ parsers.csv = {
       options = {};
     }
     options = to.extend({ header: true, quotedString: true }, options);
-    return csv.stringify(obj, options);
+    return csv.stringify(to.array(obj), options)
+      .then((result) => result.trim());
   }
 };
 
@@ -259,8 +300,6 @@ export class Logger {
     if (this.options.verbose) {
       this.options.log = true;
     }
-
-    this.times = {};
   }
 
   ///# @name log_types
