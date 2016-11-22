@@ -67,6 +67,8 @@
     "babel-preset-latest": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
     "coveralls": "^2.11.15",
+    "docs-core": "0.0.0-alpha-6.1",
+    "docs-theme-default": "0.0.0-alpha-6.1",
     "nyc": "^9.0.1"
   },
   "ava": {
