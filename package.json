@@ -21,11 +21,19 @@
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },
+  "engines": {
+    "node": ">=4"
+  },
   "keywords": [
     "fake",
+    "data",
     "generate",
     "model",
     "mock",
+    "faker",
+    "chance",
+    "random",
+    "async",
     "json",
     "yaml",
     "csv",
