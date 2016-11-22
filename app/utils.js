@@ -226,8 +226,8 @@ parsers.csv = {
   ///# @arg {string, object}
   ///# @returns {array} - The javascript object
   ///# @async
-  parse: async (obj) => {
-    let result = await csv.parse(obj, { columns: true });
+  async parse(obj) {
+    const result = await csv.parse(obj, { columns: true });
 
     // The following should be an object but the csv parser returns it as a string so this is used to fix that mistake
     // `"{\"latitude\":-6.081689835,\"longitude\":145.3919983,\"level-2\":{\"level-3\":\"woohoo\"}}"`
@@ -264,13 +264,13 @@ parsers.csv = {
   ///# @arg {object} options [{ header: true, quotedString: true }] The csv options
   ///# @returns {string} - The yaml string
   ///# @async
-  stringify: (obj, options) => {
+  async stringify(obj, options) {
     if (typeof options !== 'object') {
       options = {};
     }
     options = to.extend({ header: true, quotedString: true }, options);
-    return csv.stringify(to.array(obj), options)
-      .then((result) => result.trim());
+    const result = await csv.stringify(to.array(obj), options);
+    return result.trim();
   }
 };
 
