@@ -1,3 +1,9 @@
+////
+/// @name Utils
+/// @page api/utils
+/// @description These are all the utility functions used throughout the application
+////
+
 import path from 'path';
 import globby from 'globby';
 import { map } from 'async-array-methods';
@@ -165,3 +171,173 @@ parsers.csv = {
 };
 
 export { parsers };
+
+
+import chalk from 'chalk';
+import symbols from 'log-symbols';
+import perfy from 'perfy';
+symbols.warn = symbols.warning;
+symbols.ok = symbols.okay = symbols.success;
+
+/// @name Logger
+/// @description
+/// This is the main logger for the application
+export class Logger {
+  ///# @name constructor
+  ///# @arg {object} options [{ log: true, verbose: false, timestamp: true }]
+  constructor(options = {}) {
+    this.options = to.extend({
+      log: true,
+      verbose: false,
+      timestamp: true,
+    }, options);
+
+    // ensure that if `verbose` is true then `log` must also be true
+    if (this.options.verbose) {
+      this.options.log = true;
+    }
+
+    this.times = {};
+  }
+
+  ///# @name log_types
+  ///# @static
+  ///# @type {object}
+  ///# @raw-code
+  static log_types = {
+    error: 'red',
+    warning: 'yellow',
+    success: 'green', // possibly remove
+    info: 'blue',
+    verbose: 'magenta',
+    log: 'gray'
+  }
+
+  ///# @name log
+  ///# @description This is used to control the logging of an app
+  ///# @arg {*} type
+  ///# If this is a `string` and matches `error`, `warning`, `success`, `info`, `verbose`, `log` then it
+  ///# will add special characters before the rest of the log depending on the type that was passed.
+  ///# If it's not one of these then the type will default to `log` and the value you passed will be
+  ///# prepended to the rest of the arguments
+  ///# @arg {*} ...args - Any other arguments that you wish to pass
+  ///# @chainable
+  log(type, ...args) {
+    if (type instanceof Error) {
+      args.unshift(type);
+      type = 'error';
+    }
+    if (this.options.log || type === 'error') {
+      if ([ 'time', 'timeEnd' ].includes(type)) {
+        return this[type](...args);
+      }
+
+      if (!to.keys(this.log_types).includes(type)) {
+        args.unshift(type);
+        type = 'log';
+      }
+
+      const stamp = this.stamp(type);
+
+      // print the current time.
+      if (stamp) {
+        process.stdout.write(stamp);
+      }
+
+      console[type](...args);
+
+      if (type === 'error') {
+        throw new Error(args.join('\n'));
+      }
+    }
+    return this;
+  }
+
+  ///# @name stamp
+  ///# @description This will generate a colorized timestamp and message depending on the time that's passed.
+  ///# @arg {string} type ['log'] - This determins the type of stamp to return. This can be any of the types that you can pass to `this.log`
+  ///# @returns {string} The stamp that was generated.
+  stamp(type = 'log') {
+    const now = new Date();
+    const timestamp = [ now.getHours(), now.getMinutes(), now.getSeconds() ].join(':');
+    const color = this.log_types[type];
+    let stamp = this.options.timestamp ? `[${chalk.magenta(timestamp)}] ` : '';
+    if (symbols[type]) {
+      stamp += `${symbols[type]} `;
+    }
+    if ([ 'error', 'warning', 'warn', 'info' ].includes(type)) {
+      stamp += `${chalk[color](type)}: `;
+    }
+
+    return stamp;
+  }
+
+  ///# @name error
+  ///# @description This is an alias for `this.log('error', 'message.....')
+  ///# @arg {*} ...args - The message that should be passed
+  ///# @chainable
+  error(...args) {
+    this.log('error', ...args);
+    return this;
+  }
+
+  ///# @name warn
+  ///# @description This is an alias for `this.log('warn', 'message.....')
+  ///# @arg {*} ...args - The message that should be passed
+  ///# @chainable
+  warn(...args) {
+    this.log('warning', ...args);
+    return this;
+  }
+
+  ///# @name info
+  ///# @description This is an alias for `this.log('info', 'message.....')
+  ///# @arg {*} ...args - The message that should be passed
+  ///# @chainable
+  info(...args) {
+    this.log('info', ...args);
+    return this;
+  }
+
+  ///# @name verbose
+  ///# @description This is an alias for `this.log('verbose', 'message.....')
+  ///# @arg {*} ...args - The message that should be passed
+  ///# @chainable
+  verbose(...args) {
+    this.log('info', ...args);
+    return this;
+  }
+
+  ///# @name time
+  ///# @description
+  ///# This does the same thing as `console.time`.
+  ///# @arg {string} label - This is the label for your timed event
+  ///# @chainable
+  time(label) {
+    if (!label) {
+      return this.error('You must pass in a label for `Logger.prototype.time`', (new Error()).trace);
+    }
+    perfy.start(label);
+    return this;
+  }
+
+  ///# @name timeEnd
+  ///# @description
+  ///# This does the same thing as `console.timeEnd`.
+  ///# @arg {string} label - This must be the same label that was passed to the associated `this.time` function
+  ///# @returns {string} - The total time it took to run the process
+  timeEnd(label) {
+    if (!label) {
+      return this.error('You must pass in a label for `Logger.prototype.timeEnd`', (new Error()).trace);
+    }
+    let time = perfy.end(label).time;
+    let suffix = 's';
+    // convert to milliseconds
+    if (time < 1) {
+      time *= Math.pow(10, 1);
+      suffix = 'ms';
+    }
+    time = `+${time.toFixed(2)}${suffix}`;
+    return `${chalk.cyan(time)}`;
+  }
+}
