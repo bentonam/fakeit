@@ -69,10 +69,16 @@ test.group('findFiles', (test) => {
     await touch(files);
   });
 
-  test(async (t) => {
+  test('pass a dir', async (t) => {
     const actual = await findFiles(root);
     t.is(actual.length, 5);
     t.deepEqual(actual, files);
+  });
+
+  test('pass a glob', async (t) => {
+    const actual = await findFiles(p(root, '*.js'));
+    t.is(actual.length, 1);
+    t.deepEqual(actual, files.slice(0, 1));
   });
 
   test.after.always(() => fs.remove(root));

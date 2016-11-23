@@ -60,10 +60,10 @@ export function objectSearch(data, pattern, current_path, paths = []) {
 /// @name findFiles
 /// @description
 /// This is a very efficient way to to recursively read a directory and get all the files.
-/// @arg {string, array} dirs - The dir or dirs you want to get all the files from
-/// @returns {array} All the files in the directory(s) that were passed
+/// @arg {string, array} globs - The glob(s) or dir(s) you want to get all the files from
+/// @returns {array} All the files in the paths(s) that were passed
 /// @async
-export async function findFiles(dirs) {
+export async function findFiles(globs) {
   // all the files after
   const files = [];
   const sort = (list) => {
@@ -78,14 +78,23 @@ export async function findFiles(dirs) {
     }
     return to_search;
   };
-  const find = async (folders) => {
-    folders = sort(await map(folders, (folder) => globby(path.join(folder, '*'))));
-    if (folders.length) {
-      return find(folders);
+
+  const find = async (items) => {
+    items = sort(await map(items, (item) => {
+      if (globby.hasMagic(item)) {
+        return globby(item);
+      } else if (!!path.extname(item)) {
+        return item;
+      }
+
+      return globby(path.join(item, '*'));
+    }));
+    if (items.length) {
+      return find(items);
     }
   };
 
-  await find(to.array(dirs));
+  await find(to.array(globs));
   return files;
 }
 
