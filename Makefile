@@ -8,13 +8,7 @@ args = $(filter-out $@, $(MAKECMDGOALS))
 all: build test
 
 install:
-	if type yarn 2>/dev/null; then \
-		yarn install; \
-		echo "because yarn isn't pulling in the correct package"; \
-		time npm install ma-shop/lint-rules tjbenton/ava-spec; \
-	else \
-		npm install; \
-	fi
+	npm install
 
 clean:
 	rm -rf dist logs
