@@ -3,13 +3,9 @@
 *.log
 *.DS_Store
 *.bak
-*.csv
-export/
 .TemporaryItems
 dist/
 Thumbs.db
 thumbs.db
-.vagrant/
 node_modules/
-temp/
 .nyc*
