@@ -4,64 +4,80 @@ import path from 'path';
 import DependencyResolver from 'dependency-resolver';
 import documents from './documents';
 import * as utils from './utils';
+import Base from './base';
 import objectPath from 'object-path';
 import to from 'to-js';
 
-let models = {}; // global variable to hold parsed models
-let model_order = []; // global variable to hold the model run order
-let model_documents_count = {}; // global variable to hold the number of documents to generate for each model
-let settings; // global variable to hold the available options / settings
 
-// pre run setup / handle settings
-// @todo remove this function
-export async function prepare(options) {
-  settings = options;
-  if (!options.models) return;
-
-  // get list of files
-  let files = await map(options.models.split(/\s*,\s*/), (str) => !!path.extname(str) ? str : utils.findFiles(str));
-  // flattens the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
-  files = to.flatten(files).filter((file) => !!file && /\.ya?ml$/i.test(file));
-
-  if (!files.length) throw new Error('No valid model files found.');
-
-  await map(files, parse);
-
-  model_order = resolveDependencies(models);
-  setDocumentCounts(options);
-  return model_documents_count;
-}
-
-// @todo remove this function
-async function parse(file) {
-  // read yaml file and convert it to json
-  const model = await utils.parsers.yaml.parse(to.string(await fs.readFile(path.resolve(file))));
-
-  if (!model.name) {
-    model.name = file;
+export default class Models extends Base {
+  constructor(options = {}) {
+    super(options);
+    this.models = {}; // holds the parsed models
+    this.model_order = []; // holds the order that the models should run in
   }
 
-  // validate the model
-  if (!model.type) {
-    throw new Error(`The model ${model.name} must have a "type" property.`);
-  }
-  if (!model.key) {
-    throw new Error(`The model ${model.name} must have a "key" property.`);
+  async registerModel(models) {
+    // get list of files
+    let files = await utils.findFiles(this.resolvePaths(models));
+    // flattens the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
+    files = to.flatten(files).filter((file) => !!file && /\.ya?ml$/i.test(file));
+
+    if (!files.length) throw new Error('No valid model files found.');
+
+    await map(files, async (file) => {
+      // read yaml file and convert it to json
+      const model = await utils.parsers.yaml.parse(to.string(await fs.readFile(file)));
+
+      if (!model.name) {
+        model.name = path.basename(file).split('.')[0];
+      }
+
+      // validate the model
+      if (!model.type) {
+        this.log('error', new Error(`The model ${model.name} must have a "type" property.`));
+      }
+      if (!model.key) {
+        this.log('error', new Error(`The model ${model.name} must have a "key" property.`));
+      }
+
+      // add the parsed model to the global object should always have a model name
+      this.models[model.name] = await this.parseModel(model);
+    });
+
+    // update the models order
+    this.model_order = resolveDependenciesOrder(this.models).map((model) => this.models[model]);
   }
 
-  // console.log('models.parseModel');
-  parseModelFunctions(model);
-  parseModelReferences(model);
-  parseModelTypes(model);
-  parseModelDefaults(model);
+  ///# @name parseModel
+  ///# @description
+  ///# This is used to parse the model that was passed and add the functions, and fix the types, data, and defaults
+  ///# @returns {object} - The model that's been updated
+  parseModel(model) {
+    parseModelFunctions(model);
+    parseModelReferences(model);
+    parseModelTypes(model);
+    parseModelDefaults(model);
+    parseModelCount(model, this.options.count || this.options.number);
+    return model;
+  }
 
-  // add the parsed model to the global object
-  // should always have a model name
-  models[model.name] = model;
+  // @todo move this function into documents after it gets updated to be a class
+  async generateModels() {
+    // this has to run in order because other documents might depend on prior documents.
+    for (let model of this.model_order) {
+      await documents(// eslint-disable-line babel/no-await-in-loop
+        model,
+        model.count,
+        true, // @todo remove this option from documents
+        this.options,
+        this.inputs || {}
+      ); // eslint-disable-line babel/no-await-in-loop
+    }
+  }
 }
 
 // searches the model for any of the pre / post run and build functions and generates them
-function parseModelFunctions(model) {
+export function parseModelFunctions(model) {
   // console.log('models.parseModelFunctions');
   const paths = utils.objectSearch(model, /((pre|post)_run)|(pre_|post_)?build$/);
   paths.forEach((function_path) => {
@@ -80,7 +96,7 @@ function parseModelFunctions(model) {
 }
 
 // searches the model for any '$ref' values that are pointing to definitions, sub_models, etc. and copies the reference to the schema
-function parseModelReferences(model) {
+export function parseModelReferences(model) {
   // console.log('models.parseModelReferences');
   const pattern = /\.(schema|items).\$ref$/;
   utils.objectSearch(model, pattern)
@@ -95,7 +111,7 @@ function parseModelReferences(model) {
 }
 
 // searches the model for any properties or items and makes sure the default types exist
-function parseModelTypes(model) {
+export function parseModelTypes(model) {
   // console.log('models.parseModel_properties');
   utils.objectSearch(model, /.*properties\.[^.]+(\.items)?$/)
     .forEach((type_path) => {
@@ -109,7 +125,7 @@ function parseModelTypes(model) {
 }
 
 // sets any model defaults that are not defined
-function parseModelDefaults(model) {
+export function parseModelDefaults(model) {
   // console.log('models.parseModelDefaults');
   // find properties or items that do not have a data block and assign it
   utils.objectSearch(model, /^(.*properties\.[^.]+)$/)
@@ -141,7 +157,14 @@ function parseModelDefaults(model) {
     });
 }
 
-function resolveDependencies(main_model = {}) {
+export function parseModelCount(model, count) {
+  if (!count) {
+    count = model.data.fixed || to.random(model.data.min, model.data.max) || 1;
+  }
+  model.count = to.number(count);
+}
+
+export function resolveDependenciesOrder(main_model = {}) {
   const resolver = new DependencyResolver();
 
   let keys = to.keys(main_model);
@@ -154,43 +177,4 @@ function resolveDependencies(main_model = {}) {
   }
 
   return resolver.sort();
-}
-
-// resolve the dependencies and establish the order the models should be parsed in
-export function getDocumentCounts() {
-  return model_documents_count;
-}
-
-// resolve the dependencies and establish the order the models should be parsed in
-async function setDocumentCounts() {
-  // console.log('models.setDocumentCounts');
-  model_order.forEach((v) => {
-    let current_model = models[v];
-    let number;
-    if (settings.number) {
-      number = parseInt(settings.number);
-    } else {
-      number = current_model.data.fixed || to.random(current_model.data.min, current_model.data.max) || 1;
-    }
-    model_documents_count[v] = number;
-  });
-  return model_documents_count;
-}
-
-// handles generation of data for each model
-export async function generate(options) {
-  // this has to run in order because other documents might depend on prior documents.
-  for (let order of model_order) {
-    await documents(// eslint-disable-line babel/no-await-in-loop
-      models[order],
-      model_documents_count[models[order].name],
-      settings.number != null && parseInt(settings.number) > 0 && settings.exclude.indexOf(models[order].name) === -1,
-      options
-    ); // eslint-disable-line babel/no-await-in-loop
-  }
-}
-
-// handles generation of data for each model
-export function getModelNames() {
-  return to.keys(models);
 }
