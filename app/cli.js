@@ -1,5 +1,5 @@
 import program from 'commander';
-import fakeit from './index.js';
+import Fakeit from './index.js';
 import updateNotifier from 'update-notifier';
 import pkg from './../package.json';
 
@@ -30,6 +30,9 @@ export default async function() {
 
   // run the program
   fakeit(program)
+  const fakeit = new Fakeit(options);
+
+  fakeit.generate()
     .then(() => {
       // console.log('Data Generation Complete');
       process.exit();
