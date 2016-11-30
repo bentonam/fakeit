@@ -11,11 +11,10 @@ import to from 'to-js';
 export default class Models extends Base {
   constructor(options = {}) {
     super(options);
-    this.models = {}; // holds the parsed models
-    this.model_order = []; // holds the order that the models should run in
+    this.models = []; // holds the parsed models
   }
 
-  async registerModel(models) {
+  async registerModels(models) {
     // get list of files
     let files = await utils.findFiles(this.resolvePaths(models));
     // flattens the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
@@ -23,7 +22,7 @@ export default class Models extends Base {
 
     if (!files.length) throw new Error('No valid model files found.');
 
-    await map(files, async (file) => {
+    this.models = await map(files, async (file) => {
       // read yaml file and convert it to json
       const model = await utils.parsers.yaml.parse(to.string(await fs.readFile(file)));
 
@@ -40,11 +39,13 @@ export default class Models extends Base {
       }
 
       // add the parsed model to the global object should always have a model name
-      this.models[model.name] = await this.parseModel(model);
+      return this.parseModel(model);
     });
 
     // update the models order
-    this.model_order = resolveDependenciesOrder(this.models).map((model) => this.models[model]);
+    this.models = resolveDependenciesOrder(this.models);
+
+    return this;
   }
 
   ///# @name parseModel
@@ -149,17 +150,18 @@ export function parseModelCount(model, count) {
   model.count = to.number(count);
 }
 
-export function resolveDependenciesOrder(main_model = {}) {
+export function resolveDependenciesOrder(models = []) {
   const resolver = new DependencyResolver();
+  const order = {};
 
-  let keys = to.keys(main_model);
-  for (let model_name of keys) {
-    resolver.add(model_name);
-    const dependencies = to.array(main_model[model_name].data && main_model[model_name].data.dependencies);
+  for (let [ i, { name, data } ] of to.entries(models)) {
+    order[name] = i;
+    resolver.add(name);
+    const dependencies = to.array(data && data.dependencies);
     for (let dependency of dependencies) {
-      resolver.setDependency(model_name, dependency);
+      resolver.setDependency(name, dependency);
     }
   }
 
-  return resolver.sort();
+  return resolver.sort().map((name) => models[order[name]]);
 }

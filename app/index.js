@@ -69,8 +69,7 @@ export default class Fakeit extends mixin(Base, Input, Models, Documents) {
     this.globals = {};
 
     // defined in `model.js`
-    this.models = {}; // holds the parsed models
-    this.model_order = []; // holds the order that the models should run in
+    this.models = []; // holds the parsed models
   }
 
   generate() {
@@ -83,19 +82,17 @@ export default class Fakeit extends mixin(Base, Input, Models, Documents) {
           await this.input(this.options.input);
         }
 
-        await this.registerModel(this.options.models);
+        await this.registerModels(this.options.models);
 
         // @todo remove this, It's only used in output
-        const model_documents_count = to.keys(this.models).reduce((prev, next) => {
-          next = this.models[next];
+        const model_documents_count = this.models.reduce((prev, next) => {
           prev[next.name] = next.count;
           return prev;
         }, {});
 
         await output.prepare(this.options, resolve, reject, model_documents_count);
 
-        // @todo rework the models to change `this.model_order` to be `this.models` instead;
-        await this.generateDocuments(this.model_order);
+        await this.generateDocuments(this.models);
       } catch (err) {
         console.log(err);
         try {
