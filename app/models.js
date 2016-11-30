@@ -2,7 +2,6 @@ import { map } from 'async-array-methods';
 import fs from 'fs-extra-promisify';
 import path from 'path';
 import DependencyResolver from 'dependency-resolver';
-import documents from './documents';
 import * as utils from './utils';
 import Base from './base';
 import objectPath from 'object-path';
@@ -59,20 +58,6 @@ export default class Models extends Base {
     parseModelDefaults(model);
     parseModelCount(model, this.options.count || this.options.number);
     return model;
-  }
-
-  // @todo move this function into documents after it gets updated to be a class
-  async generateModels() {
-    // this has to run in order because other documents might depend on prior documents.
-    for (let model of this.model_order) {
-      await documents(// eslint-disable-line babel/no-await-in-loop
-        model,
-        model.count,
-        true, // @todo remove this option from documents
-        this.options,
-        this.inputs || {}
-      ); // eslint-disable-line babel/no-await-in-loop
-    }
   }
 }
 

@@ -4,6 +4,7 @@ import * as output from './output';
 import Base from './base';
 import to from 'to-js';
 import mixin from 'class-mixin';
+import Documents from './documents';
 
 /// @name Fakeit
 /// @page api
@@ -28,7 +29,7 @@ import mixin from 'class-mixin';
 ///   timestamp: true,
 /// }
 /// ```
-export default class Fakeit extends mixin(Base, Input, Models) {
+export default class Fakeit extends mixin(Base, Input, Models, Documents) {
   constructor(options = {}) {
     // console.log(this);
     options = to.extend({
@@ -60,8 +61,12 @@ export default class Fakeit extends mixin(Base, Input, Models) {
     super(options);
     this.options = options;
 
-    // defined in `input.js`
+    // defined in `input.js`, and `documents.js`
     this.inputs = {};
+
+    // defined in `documents.js`
+    this.documents = {};
+    this.globals = {};
 
     // defined in `model.js`
     this.models = {}; // holds the parsed models
@@ -89,7 +94,8 @@ export default class Fakeit extends mixin(Base, Input, Models) {
 
         await output.prepare(this.options, resolve, reject, model_documents_count);
 
-        await this.generateModels();
+        // @todo rework the models to change `this.model_order` to be `this.models` instead;
+        await this.generateDocuments(this.model_order);
       } catch (err) {
         console.log(err);
         try {

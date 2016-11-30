@@ -8,7 +8,7 @@ const test = ava.group('base:');
 
 test('without args', (t) => {
   const base = new Base();
-
+  console.log(base);
   t.deepEqual(base, {
     options: {
       root: process.cwd(),
@@ -17,7 +17,15 @@ test('without args', (t) => {
       log: true,
       verbose: false,
       timestamp: true,
-    }
+    },
+    log_types: {
+      error: 'red',
+      warning: 'yellow',
+      success: 'green',
+      info: 'blue',
+      verbose: 'magenta',
+      log: 'gray',
+    },
   });
 });
 
@@ -32,7 +40,15 @@ test('with args', (t) => {
       log: false,
       verbose: false,
       timestamp: true,
-    }
+    },
+    log_types: {
+      error: 'red',
+      warning: 'yellow',
+      success: 'green',
+      info: 'blue',
+      verbose: 'magenta',
+      log: 'gray',
+    },
   });
 });
 

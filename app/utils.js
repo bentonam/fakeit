@@ -309,19 +309,19 @@ export class Logger {
     if (this.options.verbose) {
       this.options.log = true;
     }
-  }
 
-  ///# @name log_types
-  ///# @static
-  ///# @type {object}
-  ///# @raw-code
-  static log_types = {
-    error: 'red',
-    warning: 'yellow',
-    success: 'green', // possibly remove
-    info: 'blue',
-    verbose: 'magenta',
-    log: 'gray'
+    ///# @name log_types
+    ///# @static
+    ///# @type {object}
+    ///# @raw-code
+    this.log_types = {
+      error: 'red',
+      warning: 'yellow',
+      success: 'green', // possibly remove
+      info: 'blue',
+      verbose: 'magenta',
+      log: 'gray'
+    };
   }
 
   ///# @name log
