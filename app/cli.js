@@ -2,6 +2,7 @@ import program from 'commander';
 import Fakeit from './index.js';
 import updateNotifier from 'update-notifier';
 import pkg from './../package.json';
+import { pick } from 'lodash';
 
 export default async function() {
   // check for update and notify
@@ -28,8 +29,23 @@ export default async function() {
     .option('-v, --verbose', 'Whether or not to use verbose output')
     .parse(process.argv);
 
-  // run the program
-  fakeit(program)
+  const options = pick(program, [
+    'output',
+    'archive',
+    'models',
+    'destination',
+    'format',
+    'number',
+    'input',
+    'server',
+    'bucket',
+    'password',
+    'timeout',
+    'limit',
+    'username',
+    'exclude',
+    'verbose',
+  ]);
   const fakeit = new Fakeit(options);
 
   fakeit.generate()
