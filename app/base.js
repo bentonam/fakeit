@@ -14,8 +14,6 @@ export default class Base extends utils.Logger {
     super(options);
     this.options = to.extend({
       root: process.cwd(),
-      format: 2, // @todo remove this in favor of `this.options.spacing`
-      spacing: 2, // the spacing to use when objects are converted to other languanges
       log: true,
       verbose: false,
       timestamp: true,

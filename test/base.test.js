@@ -12,8 +12,6 @@ test('without args', (t) => {
   t.deepEqual(base, {
     options: {
       root: process.cwd(),
-      format: 2, // @note this will be removed after options.spacing is used everywhere instead of format
-      spacing: 2,
       log: true,
       verbose: false,
       timestamp: true,
@@ -35,8 +33,6 @@ test('with args', (t) => {
   t.deepEqual(base, {
     options: {
       root: process.cwd(),
-      format: 2, // @note this will be removed after options.spacing is used everywhere instead of format
-      spacing: 2,
       log: false,
       verbose: false,
       timestamp: true,

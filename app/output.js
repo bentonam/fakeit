@@ -399,7 +399,7 @@ function finalize() {
 
 // formats the data based on the output type
 function formatData(data) {
-  return parsers[settings.output].stringify(data, settings.format);
+  return parsers[settings.output].stringify(data, settings.spacing);
 }
 
 // error cleanup to delete generated files, etc.
