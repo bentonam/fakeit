@@ -64,6 +64,7 @@
     "faker": "^3.1.0",
     "fs-extra-promisify": "^0.0.2",
     "globby": "^6.1.0",
+    "highlight-es": "~1.0.0",
     "lint-rules": "ma-shop/lint-rules",
     "lodash": "~4.17.2",
     "log-symbols": "~1.0.2",
@@ -86,7 +87,8 @@
     "coveralls": "^2.11.15",
     "docs-core": "0.0.0-alpha-6.1",
     "docs-theme-default": "0.0.0-alpha-6.1",
-    "nyc": "^9.0.1"
+    "nyc": "^9.0.1",
+    "test-console": "~1.0.0"
   },
   "ava": {
     "files": [

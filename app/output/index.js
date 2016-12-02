@@ -31,6 +31,64 @@ export default class Output extends Base {
     this.prepared = false;
   }
 
+  ///# @name prepare
+  ///# @description
+  ///# This is used to prepare the saving functionality that is determined by the
+  ///# options that were passed to the constructor.
+  ///# It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
+  ///# This way when you go to save data it, that function will know if the setup is complete or not and
+  ///# wait for it to be done before it starts saving data.
+  ///# @returns {promise} - The setup function that was called
+  ///# @async
+  prepare() {
+    this.preparing = this.setup();
+    return this.preparing;
+  }
+
+  ///# @name setup
+  ///# @description
+  ///# This is used to setup the saving function that will be used.
+  async setup() {
+    // if this.prepare hasn't been called then run it first.
+    if (this.preparing == null) {
+      return this.prepare();
+    }
+    let { output } = this.output_options;
+
+    if (!output_types.includes(output)) {
+      output = 'folder';
+    }
+
+    // get the outputter to use
+    const Outputter = require(`./${output}`).default;
+    // creates a new instance of it so that we can use it to output the data in
+    // what ever way that the user wants to output it in.
+    this.outputter = new Outputter(this.options, this.output_options);
+
+    // if the outputter has a prepare function call it and await for it to be done
+    if (typeof this.outputter.prepare === 'function') {
+      await this.outputter.prepare();
+    }
+    this.prepared = true;
+  }
+
+  ///# @name output
+  ///# @description
+  ///# This is used to save data to any place that was passed in the constructor
+  ///# @arg {object, json} data - The data that you want to be saved
+  ///# @async
+  async output(data) {
+    if (this.prepared !== true) {
+      if (this.preparing == null) {
+        this.prepare();
+      }
+      await this.preparing;
+    }
+
+    // use the outputter's output function to output the data
+    await this.outputter.output(data);
+  }
+
   ///# @name validateOutputOptions
   ///# @description This is used to validate the output options
   ///# @throws {error} - If an option that was passed is invalid.

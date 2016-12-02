@@ -2,6 +2,8 @@
 
 import Output, { validate, isServer, isString, output_types } from '../../dist/output/index';
 import ava from 'ava-spec';
+import { join as p } from 'path';
+const output_root = p(__dirname, 'fixtures', 'output');
 
 const test = ava.group('output:');
 
@@ -368,3 +370,7 @@ test.group('validation', (test) => {
   });
 });
 
+
+test.todo('prepare');
+test.todo('setup');
+test.todo('output');
