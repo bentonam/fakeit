@@ -1,6 +1,8 @@
 import { extend } from 'lodash';
+import path from 'path';
 import default_options from './default-options';
 import Base from '../base';
+import fs from 'fs-extra-promisify';
 
 /// @name Folder
 /// @page api
@@ -40,11 +42,14 @@ export default class Folder extends Base {
       return this.prepare();
     }
 
-    // set stuff up to save data
+    // Resolve the output path to make sure it's absolute
+    this.output_options.output = this.resolvePaths(this.output_options.output)[0];
 
-    process.nextTick(() => {
-      this.prepared = true;
-    });
+    // Ensure there is a directory to write to. This way we can use `fs.writeFile`
+    // instead of `fs.outputFile` which has extra checks that we can skip over
+    await fs.ensureDir(this.output_options.output);
+
+    this.prepared = true;
   }
 
   ///# @name output
@@ -61,7 +66,6 @@ export default class Folder extends Base {
       await this.preparing;
     }
 
-    console.log(id);
-    console.log(data);
+    return fs.writeFile(path.join(this.output_options.output, `${id}.${this.output_options.format}`), data);
   }
 }
