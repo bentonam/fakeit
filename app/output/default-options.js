@@ -21,7 +21,7 @@ module.exports = {
   // avaiable formats `zip`
   // the file name of the zip file
   // This can be used inconjuction with any other type
-  archive: false,
+  archive: '',
   // These options are used if the output is `sync-gateway`, or `couchbase`
   // the server address
   server: '127.0.0.1',

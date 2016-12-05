@@ -168,16 +168,21 @@ export const validate = {
   ///# @arg {boolean} option - The option to validate against
   ///# @throws {error} - If the archive option that was pass was invalid
   archive(option, { output }) {
-    if (is.boolean(option)) {
-      if (
-        option &&
-        [ 'return', 'console' ].includes(output)
-      ) {
-        throw new Error(`You can\'t have an archive file when you have the output option set to ${output}`);
-      }
-      return;
+    if (!is.string(option)) {
+      throw new Error('The archive option must be a string');
     }
-    throw new Error('The archive option must be a boolean');
+
+    // there's no archive file specified
+    if (!option.length) return;
+
+    if (
+      option &&
+      [ 'return', 'console' ].includes(output)
+    ) {
+      throw new Error(`You can\'t have an archive file when you have the output option set to ${output}`);
+    } else if (path.extname(option) !== '.zip') {
+      throw new Error('The archive file must have a file extention of `.zip`');
+    }
   },
 
   ///# @name server

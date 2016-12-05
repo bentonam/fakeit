@@ -22,7 +22,7 @@ test('without args', async (t) => {
   t.deepEqual(t.context.output_options, {
     format: 'json',
     spacing: 2,
-    archive: false,
+    archive: '',
     output: 'return',
     limit: 100,
     server: '127.0.0.1',
@@ -36,7 +36,7 @@ test('output_types', (t) => {
   t.deepEqual(output_types, [ 'return', 'console', 'couchbase', 'sync-gateway' ]);
 });
 
-test.group('validation', (test) => {
+test.only.group('validation', (test) => {
   test.group('format', (test) => {
     const passing = [ 'json', 'csv', 'yaml', 'yml', 'cson' ];
     passing.forEach((format) => {
@@ -142,7 +142,7 @@ test.group('validation', (test) => {
   });
 
   test.group('archive', (test) => {
-    const passing = [ true, false ];
+    const passing = [ 'one.zip', '' ];
     passing.forEach((archive) => {
       test(`passing ${archive}`, (t) => {
         t.context.output_options.output = 'somefolder';
@@ -158,9 +158,9 @@ test.group('validation', (test) => {
     });
 
     test('passing output is return', (t) => {
-      t.context.output_options.archive = false;
+      t.context.output_options.archive = '';
       try {
-        validate.archive(false, t.context.output_options);
+        validate.archive(t.context.output_options.archive, t.context.output_options);
         t.context.validateOutputOptions();
         t.pass();
       } catch (e) {
@@ -170,9 +170,9 @@ test.group('validation', (test) => {
 
     test('passing output is console', (t) => {
       t.context.output_options.output = 'console';
-      t.context.output_options.archive = false;
+      t.context.output_options.archive = '';
       try {
-        validate.archive(false, t.context.output_options);
+        validate.archive(t.context.output_options.archive, t.context.output_options);
         t.context.validateOutputOptions();
         t.pass();
       } catch (e) {
@@ -180,7 +180,7 @@ test.group('validation', (test) => {
       }
     });
 
-    const failing = [ 'outputfile.zip', 2, '', [], {} ];
+    const failing = [ true, false, 2, '', [], {} ];
     failing.forEach((archive) => {
       test(`failing ${archive}`, (t) => {
         t.context.output_options.archive = archive;
@@ -191,15 +191,15 @@ test.group('validation', (test) => {
     });
 
     test('failing output is return', (t) => {
-      t.context.output_options.archive = true;
-      const validateArchive = () => validate.archive(true, t.context.output_options);
+      t.context.output_options.archive = 'somefile.zip';
+      const validateArchive = () => validate.archive(t.context.output_options.archive, t.context.output_options);
       t.throws(validateArchive);
       t.throws(t.context.validateOutputOptions);
     });
     test('failing output is console', (t) => {
       t.context.output_options.output = 'console';
-      t.context.output_options.archive = true;
-      const validateArchive = () => validate.archive(true, t.context.output_options);
+      t.context.output_options.archive = 'somefile.zip';
+      const validateArchive = () => validate.archive(t.context.output_options.archive, t.context.output_options);
       t.throws(validateArchive);
       t.throws(t.context.validateOutputOptions);
     });
