@@ -11,6 +11,7 @@ import to, { is } from 'to-js';
 import AdmZip from 'adm-zip';
 import promisify from 'es6-promisify';
 import fs from 'fs-extra-promisify';
+import PromisePool from 'es6-promise-pool';
 
 
 /// @name objectSearch
@@ -145,6 +146,36 @@ export async function readFiles(files) {
 
 
   return to.flatten(files);
+}
+
+/// @name pool
+/// @description
+/// This is very similar to the `Array.prototype.map` except that
+/// it's used to limit the number of functions running at a time.
+/// @arg {array} items - The array to loop over
+/// @arg {function} fn - The function to run on each of the items. It has the same arguments the map function does
+/// @arg {number} limit [100] - The number of promises that can run at any given item.
+/// @returns {array} of the items that were returned by the fn.
+/// @async
+export async function pool(items, fn, limit = 100) {
+  let i = 0;
+  const results = [];
+  const producer = () => {
+    if (i < items.length) {
+      const index = i;
+      return fn(items[index], i++, items)
+        .then((result) => {
+          results[index] = result;
+        });
+    }
+
+    return null;
+  };
+
+  const runner = new PromisePool(producer, limit);
+
+  await runner.start();
+  return results;
 }
 
 
