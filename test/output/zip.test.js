@@ -19,9 +19,10 @@ fs.exists = async (str) => {
 };
 
 const zip_root = p(__dirname, '..', 'fixtures', 'output', 'zip');
+default_options.root = zip_root;
 
 test.beforeEach((t) => {
-  t.context = new Zip();
+  t.context = new Zip({ root: zip_root });
 });
 
 test('without args', (t) => {
