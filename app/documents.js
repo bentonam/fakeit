@@ -1,7 +1,6 @@
 import faker from 'faker';
 import Chance from 'chance';
 const chance = new Chance();
-import * as output from './output';
 import Base from './base';
 import { series } from 'async-array-methods';
 import { objectSearch } from './utils';
@@ -42,8 +41,6 @@ export class Document extends Base {
     // if there is a pre_run function call it
     this.runData(model.data.pre_run, model);
 
-    output.updateEntryTotals(model.name, model.count);
-
     this.log('info', `Generating ${model.count} documents for ${model.name} model`);
 
     for (let i = 0; i < model.count; i++) { // loop over each model and execute in order of dependency
@@ -53,7 +50,6 @@ export class Document extends Base {
     }
 
     this.runData(model.data.post_run, model);
-    await output.save(model, this.documents[model.name]);
     return this.documents[model.name];
   }
 
