@@ -61,16 +61,22 @@ export default class Output extends Base {
     }
 
     // get the outputter to use
-    const Outputter = require(`./${output}`).default;
-    // creates a new instance of it so that we can use it to output the data in
-    // what ever way that the user wants to output it in.
-    this.outputter = new Outputter(this.options, this.output_options);
-
-    // if the outputter has a prepare function call it and await for it to be done
-    if (typeof this.outputter.prepare === 'function') {
-      await this.outputter.prepare();
+    if (output !== 'return') {
+      const Outputter = require(`./${output}`).default;
+      // creates a new instance of it so that we can use it to output the data in
+      // what ever way that the user wants to output it in.
+      this.outputter = new Outputter(this.options, this.output_options);
+      // if the outputter has a prepare function call it and await for it to be done
+      if (typeof this.outputter.prepare === 'function') {
+        await this.outputter.prepare();
+      }
+      this.prepared = true;
+      return;
     }
-    this.prepared = true;
+
+    process.nextTick(() => {
+      this.prepared = true;
+    });
   }
 
   ///# @name output
