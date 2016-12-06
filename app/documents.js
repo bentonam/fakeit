@@ -44,9 +44,17 @@ export class Document extends Base {
     this.log('info', `Generating ${model.count} documents for ${model.name} model`);
 
     for (let i = 0; i < model.count; i++) { // loop over each model and execute in order of dependency
-      this.documents[model.name].push(
-        this.buildDocument(model, getPaths(model), i)
-      );
+      const doc = this.buildDocument(model, getPaths(model), i);
+      // build the key for the document
+      let value;
+      if (model.key.build) {
+        value = model.key.build.apply(doc, [ null, null, null, faker, chance, null ]);
+      } else {
+        value = doc[model.key];
+      }
+      Object.defineProperty(doc, '__key', { value });
+      Object.defineProperty(doc, '__name', { value: model.name });
+      this.documents[model.name].push(doc);
     }
 
     this.runData(model.data.post_run, model);
