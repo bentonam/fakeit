@@ -9,18 +9,8 @@ import ava from 'ava-spec';
 
 default_options.output = 'test';
 
-fs.exists = async (str) => {
-  try {
-    await fs.stat(str);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
-
 const test = ava.group('output:folder');
-const folder_root = p(__dirname, 'fixtures', 'output', 'folder');
+const folder_root = p(__dirname, '..', 'fixtures', 'output', 'folder');
 
 test.before(() => fs.remove(folder_root));
 
@@ -126,23 +116,22 @@ test.serial.group('output', (test) => {
     `)
   };
 
-  to.keys(languages)
-    .forEach((language) => {
-      const data = languages[language];
-      test(`${language}`, async (t) => {
-        const id = '1234567890';
-        t.context.output_options.format = language;
-        t.is(t.context.prepared, false);
-        t.is(t.context.preparing, undefined); // eslint-disable-line
+  for (let language of to.keys(languages)) {
+    const data = languages[language];
+    test(`${language}`, async (t) => {
+      const id = '1234567890';
+      t.context.output_options.format = language;
+      t.is(t.context.prepared, false);
+      t.is(t.context.preparing, undefined); // eslint-disable-line
 
-        await t.context.output(id, data);
-        t.is(t.context.prepared, true);
+      await t.context.output(id, data);
+      t.is(t.context.prepared, true);
 
-        const contents = to.string(await fs.readFile(p(folder_root, 'test', `${id}.${t.context.output_options.format}`)));
+      const contents = to.string(await fs.readFile(p(folder_root, 'test', `${id}.${t.context.output_options.format}`)));
 
-        t.is(data.trim(), contents.trim());
-      });
+      t.is(data.trim(), contents.trim());
     });
+  }
 });
 
 test.after.always(() => fs.remove(folder_root));

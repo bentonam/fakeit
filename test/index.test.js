@@ -1,9 +1,5 @@
-import test from 'ava-spec'
+import test from 'ava-spec';
 
-test('test suite', (t) => {
-  try {
-    t.pass('test 1');
-  } catch (e) {
-    t.fail('test 1');
-  }
-});
+test.todo('without args');
+test.todo('with args');
+test.todo('generate');

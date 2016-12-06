@@ -41,6 +41,7 @@ export default class Output extends Base {
   ///# @returns {promise} - The setup function that was called
   ///# @async
   prepare() {
+    this.preparing = true;
     this.preparing = this.setup();
     return this.preparing;
   }

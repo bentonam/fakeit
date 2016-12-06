@@ -3,7 +3,7 @@
 import Output, { validate, isServer, isString, output_types } from '../../dist/output/index';
 import ava from 'ava-spec';
 import { join as p } from 'path';
-const output_root = p(__dirname, 'fixtures', 'output');
+const output_root = p(__dirname, '..', 'fixtures', 'output');
 
 const test = ava.group('output:');
 
@@ -36,7 +36,7 @@ test('output_types', (t) => {
   t.deepEqual(output_types, [ 'return', 'console', 'couchbase', 'sync-gateway' ]);
 });
 
-test.only.group('validation', (test) => {
+test.group('validation', (test) => {
   test.group('format', (test) => {
     const passing = [ 'json', 'csv', 'yaml', 'yml', 'cson' ];
     passing.forEach((format) => {
@@ -374,3 +374,4 @@ test.only.group('validation', (test) => {
 test.todo('prepare');
 test.todo('setup');
 test.todo('output');
+test.todo('finalize');

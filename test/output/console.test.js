@@ -111,18 +111,17 @@ test.serial.group('output', (test) => {
     `)
   };
 
-  to.keys(languages)
-    .forEach((language) => {
-      const data = languages[language];
-      test(`${language}`, async (t) => {
-        t.is(t.context.prepared, false);
-        t.is(t.context.preparing, undefined); // eslint-disable-line
-        const inspect = stdout.inspect();
-        await t.context.output(null, data);
-        t.is(t.context.prepared, true);
-        inspect.restore();
-        t.not(inspect.output[0].trim(), data);
-        t.is(stripColor(inspect.output[0]).trim(), data);
-      });
+  for (let language of to.keys(languages)) {
+    const data = languages[language];
+    test(`${language}`, async (t) => {
+      t.is(t.context.prepared, false);
+      t.is(t.context.preparing, undefined); // eslint-disable-line
+      const inspect = stdout.inspect();
+      await t.context.output(null, data);
+      t.is(t.context.prepared, true);
+      inspect.restore();
+      t.not(inspect.output[0].trim(), data);
+      t.is(stripColor(inspect.output[0]).trim(), data);
     });
+  }
 });

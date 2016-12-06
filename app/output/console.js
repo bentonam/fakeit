@@ -62,6 +62,6 @@ export default class Console extends Base {
       await this.preparing;
     }
 
-    console.log(`\n${highlight(data)}`);
+    console.log(`${highlight(data)}`);
   }
 }

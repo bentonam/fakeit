@@ -23,12 +23,12 @@ export default class Documents extends Base {
 }
 
 export class Document extends Base {
-  constructor(options, _documents = {}, _globals = {}, _inputs = {}) {
+  constructor(options, documents = {}, globals = {}, inputs = {}) {
     super(options);
     this.options = this.options || {};
-    this.documents = _documents;
-    this.globals = _globals;
-    this.inputs = _inputs;
+    this.documents = documents;
+    this.globals = globals;
+    this.inputs = inputs;
   }
 
   async build(model) {
@@ -195,7 +195,7 @@ export class Document extends Base {
       property.data &&
       property.data.post_build
     ) {
-      this.runData(property.data.post_build, doc, index);
+      value = this.runData(property.data.post_build, doc, index);
     } else if (
       property.items &&
       property.items.data &&
