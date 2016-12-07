@@ -379,6 +379,8 @@ test.group('validation', (test) => {
 
 
 test.group('prepare', (test) => {
+  const root = p(output_root, 'prepare');
+
   test('without options', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
@@ -401,6 +403,40 @@ test.group('prepare', (test) => {
     t.is(t.context.outputter.constructor.name, 'Console');
     t.is(t.context.prepared, true);
   });
+
+  test('zip', async (t) => {
+    t.context.options.root = root;
+    t.context.output_options.output = 'zip';
+    t.context.output_options.archive = 'archive.zip';
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    const preparing = t.context.prepare();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.outputter.constructor.name, 'Zip');
+    t.is(to.type(t.context.outputter.zip), 'object');
+    t.is(t.context.prepared, true);
+    t.deepEqual(await globby('zip', { cwd: root }), [ 'zip' ]);
+    t.deepEqual(await globby(p('zip', '**', '*'), { cwd: root }), []);
+  });
+
+  test('folder', async (t) => {
+    t.context.options.root = root;
+    t.context.output_options.output = 'folder';
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    const preparing = t.context.prepare();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.outputter.constructor.name, 'Folder');
+    t.is(t.context.prepared, true);
+    t.deepEqual(await globby('folder', { cwd: root }), [ 'folder' ]);
+    t.deepEqual(await globby(p('folder', '**', '*'), { cwd: root }), []);
+  });
+
+  test.after.always(() => fs.remove(root));
 });
 
 
