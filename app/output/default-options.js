@@ -22,13 +22,20 @@ module.exports = {
   // the file name of the zip file
   // This can be used inconjuction with any other type
   archive: '',
+
   // These options are used if the output is `sync-gateway`, or `couchbase`
   // the server address
   server: '127.0.0.1',
+
   // the bucket name
   bucket: 'default',
+
   // the username to use
   username: '',
+
   // the password for the account
   password: '',
+
+  // timeout for the servers
+  timeout: 5000,
 };

@@ -36,6 +36,7 @@ test('without args', async (t) => {
     bucket: 'default',
     password: '',
     username: '',
+    timeout: 5000,
   });
 });
 
@@ -354,6 +355,31 @@ test.group('validation', (test) => {
         const validatePassword = () => validate.password(password, t.context.output_options);
         t.throws(validatePassword);
         t.throws(t.context.validateOutputOptions);
+      });
+    });
+
+    test.group('timeout', (test) => {
+      const passing = [ 100, 200, 300, 400, 500, 600, 700, 800 ];
+      passing.forEach((timeout) => {
+        test(`passing ${timeout}`, (t) => {
+          t.context.output_options.timeout = timeout;
+          try {
+            validate.timeout(timeout);
+            t.context.validateOutputOptions();
+            t.pass();
+          } catch (e) {
+            t.fail(e);
+          }
+        });
+      });
+      const failing = [ '', [], {} ];
+      failing.forEach((timeout) => {
+        test(`failing ${timeout}`, (t) => {
+          t.context.output_options.timeout = timeout;
+          const validateTimeout = () => validate.timeout(timeout);
+          t.throws(validateTimeout);
+          t.throws(t.context.validateOutputOptions);
+        });
       });
     });
   });

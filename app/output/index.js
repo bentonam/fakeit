@@ -286,6 +286,17 @@ export const validate = {
 
     isString(option, 'password');
   },
+
+  ///# @name limit
+  ///# @description Used to validate the limit option
+  ///# @arg {number} option - The option to validate against
+  ///# @throws {error} - If the limit option that was pass was invalid
+  timeout(option) {
+    if (is.number(option)) {
+      return;
+    }
+    throw new Error('The timeout option must be a number');
+  },
 };
 
 

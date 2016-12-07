@@ -16,5 +16,6 @@ test((t) => {
     bucket: 'default',
     username: '',
     password: '',
+    timeout: 5000,
   });
 });
