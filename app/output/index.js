@@ -124,6 +124,18 @@ export default class Output extends Base {
     }, limit);
   }
 
+  ///# @name finalize
+  ///# @description
+  ///# This is used to clean up anything that needs to be cleaned up
+  ///# like a connection to a data base, any event listeners, or finish outputting a zip file.
+  ///# @async
+  async finalize() {
+    if (
+      this.outputter &&
+      is.function(this.outputter.finalize)
+    ) {
+      await this.outputter.finalize();
+    }
   }
 
   ///# @name validateOutputOptions
