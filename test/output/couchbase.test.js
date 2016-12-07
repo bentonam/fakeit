@@ -20,3 +20,4 @@ test('without args', (t) => {
 test.todo('prepare');
 test.todo('setup');
 test.todo('output');
+test.todo('finalize');
