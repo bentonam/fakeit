@@ -1,19 +1,26 @@
-/* eslint-disable id-length, no-shadow */
+/* eslint-disable id-length, no-shadow, no-undefined */
 
 import Output, { validate, isServer, isString, output_types } from '../../dist/output/index';
 import ava from 'ava-spec';
 import { join as p } from 'path';
+import { stdout } from 'test-console';
+import { stripColor } from 'chalk';
+import fs from 'fs-extra-promisify';
+import { map, reduce } from 'async-array-methods';
+import globby from 'globby';
+import to from 'to-js';
+
 const output_root = p(__dirname, '..', 'fixtures', 'output');
 
 const test = ava.group('output:');
 
 test.beforeEach(async (t) => {
-  t.context = new Output();
+  t.context = new Output({ root: output_root });
 });
 
 test('without args', async (t) => {
   t.deepEqual(t.context.options, {
-    root: process.cwd(),
+    root: output_root,
     log: true,
     verbose: false,
     timestamp: true
@@ -371,7 +378,250 @@ test.group('validation', (test) => {
 });
 
 
-test.todo('prepare');
-test.todo('setup');
-test.todo('output');
+test.group('prepare', (test) => {
+  test('without options', async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    const preparing = t.context.prepare();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.outputter, undefined);
+    t.is(t.context.prepared, true);
+  });
+
+  test('with output as console', async (t) => {
+    t.context.output_options.output = 'console';
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    const preparing = t.context.prepare();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.outputter.constructor.name, 'Console');
+    t.is(t.context.prepared, true);
+  });
+});
+
+
+test.group('setup', (test) => {
+  test('without options', async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.outputter, undefined);
+    t.is(t.context.prepared, true);
+  });
+
+  test('with output as console', async (t) => {
+    t.context.output_options.output = 'console';
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.outputter.constructor.name, 'Console');
+    t.is(t.context.prepared, true);
+  });
+});
+
+
+test.group('output', (test) => {
+  const root = p(output_root, 'output');
+  let data;
+
+  test.before(async () => {
+    data = await getData();
+  });
+
+  test.group('return', languages((test, language) => {
+    test(language, async (t) => {
+      const { raw, node } = data[language];
+      t.context.output_options.output = 'return';
+      t.context.output_options.format = language;
+      t.is(t.context.prepared, false);
+      t.is(t.context.preparing, undefined);
+      const actual = await t.context.output(raw);
+      t.is(t.context.prepared, true);
+      t.deepEqual(actual, node);
+    });
+  }));
+
+  test.serial.group('console', languages((test, language) => {
+    test(language, async (t) => {
+      const { raw, node } = data[language];
+      t.context.output_options.output = 'console';
+      t.context.output_options.format = language;
+      t.is(t.context.prepared, false);
+      t.is(t.context.preparing, undefined);
+      const inspect = stdout.inspect();
+      await t.context.output(raw);
+      t.is(t.context.prepared, true);
+      inspect.restore();
+      t.not(inspect.output[0].trim(), node);
+      t.is(stripColor(inspect.output[0]).trim(), node);
+    });
+  }));
+
+  test.group('folder', languages((test, language) => {
+    test(language, async (t) => {
+      const { raw, nodes } = data[language];
+      const keys = to.keys(nodes).sort();
+      t.plan(keys.length + 4);
+      // change the root folder to be under folder so it's easier
+      // to remove the tests for `folder` after they're done.
+      t.context.options.root = p(root, 'folder');
+      const output = t.context.output_options.format = t.context.output_options.output = language;
+      t.is(t.context.prepared, false);
+      t.is(t.context.preparing, undefined);
+      await t.context.output(raw);
+      t.is(t.context.prepared, true);
+
+      // ge all the files in the output folder
+      const files = await globby('*', { cwd: p(root, 'folder', output) });
+
+      // all the files exist
+      t.deepEqual(files.map((file) => file.split('.')[0]).sort(), keys);
+
+      // this ensures that all the files match the correct output
+      await map(files, async (file) => {
+        const content = to.string(await fs.readFile(p(root, 'folder', output, file))).trim();
+        const name = file.split('.')[0];
+        t.deepEqual(content, nodes[name]);
+      });
+    });
+  }));
+
+
+  test.group('zip', languages((test, language) => {
+    if (language !== 'json') {
+      return;
+    }
+    test(language, async (t) => {
+      const { raw, nodes } = data[language];
+      const keys = to.keys(nodes).sort();
+
+      // change the root folder to be under folder so it's easier
+      // to remove the tests for `folder` after they're done.
+      t.context.options.root = p(root, 'zip');
+      t.context.output_options.format = t.context.output_options.output = language;
+      t.context.output_options.archive = `${language}.zip`;
+      t.is(t.context.prepared, false);
+      t.is(t.context.preparing, undefined);
+      await t.context.output(raw);
+      t.is(t.context.prepared, true);
+      t.is(to.type(t.context.outputter.zip), 'object');
+      const files = t.context.outputter.zip.getEntries().map(({ name }) => name.split('.')[0]);
+      t.deepEqual(files.sort(), keys);
+    });
+  }));
+
+
+  test.group('couchbase', (test) => {
+    test.todo();
+  });
+
+  test.group('sync-gateway', (test) => {
+    test.todo();
+  });
+
+  test.after.always(() => fs.remove(root));
+});
+
+
 test.todo('finalize');
+
+// This will loop through each of the languages to run tests for each one.
+// It makes it easier to test each language for each type of output rather
+// than duplicating the loop on each test
+function languages(cb) {
+  return (test) => {
+    for (let language of [ 'cson', 'csv', 'json', 'yaml', 'yml' ]) {
+      cb(test, language);
+    }
+  };
+}
+
+
+// this generates the data that is used to test
+// it returns an object of the language types and their data
+// each language will have an object of
+// {
+//   raw: '', // the test data
+//   node: '', // the expected file
+//   nodes: {} // the expected nodes that will get created
+// }
+async function getData() {
+  const file_types = [ 'cson', 'csv', 'json', 'yaml', 'yml' ];
+  const root = p(__dirname, '..', 'fixtures', 'test-data');
+  const raw = await fs.readJson(p(root, 'data.json'));
+
+  return reduce(file_types, async (prev, next) => {
+    const data = {
+      // holds the full set of data
+      // this is used for the console and return
+      node: '',
+      // holds the individual data nodes
+      nodes: {},
+      // the raw data nodes
+      raw: to.clone(raw).map((node) => {
+        Object.defineProperty(node, '__key', { value: `${next}-${node.id}` });
+        Object.defineProperty(node, '__name', { value: `${next}-${node.id}` });
+        return node;
+      }),
+    };
+
+    const file = p(root, `data.${next}`);
+
+    if (next === 'json') {
+      data.node = to.json(raw);
+    } else {
+      data.node = to.string(await fs.readFile(file)).trim();
+    }
+
+    switch (next) {
+      case 'yaml':
+      case 'yml':
+        data.nodes = data.node
+          .replace(/^\s+/gm, '')
+          .split('-')
+          .filter(Boolean)
+          .map((line) => line.trim());
+        break;
+      case 'cson':
+        data.nodes = data.node
+          .split('\n')
+          .slice(1, -1)
+          .join('\n')
+          .split(/(?={)/)
+          .map((item) => item.replace(/[{}]| \s{2,}/g, '').trim())
+          .filter(Boolean);
+        break;
+      case 'json':
+        data.nodes = to.object(data.node).map((item) => to.json(item));
+        break;
+      case 'csv':
+        data.nodes = {
+          [`csv-${raw[0].id}`]: data.node
+        };
+        break;
+      default:
+        data.nodes = data.node;
+    }
+
+    if (next !== 'csv') {
+      let items = data.nodes;
+      data.nodes = {};
+      for (let [ i, node ] of to.entries(raw)) {
+        data.nodes[`${next}-${node.id}`] = items[i];
+      }
+    }
+
+    prev[next] = data;
+    return prev;
+  }, {});
+}

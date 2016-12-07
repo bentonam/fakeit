@@ -4,8 +4,9 @@
 
 import path from 'path';
 import { extend } from 'lodash';
-import { is } from 'to-js';
+import to, { is } from 'to-js';
 import Base from '../base';
+import { parsers, pool } from '../utils';
 import default_options from './default-options';
 
 export const output_types = [ 'return', 'console', 'couchbase', 'sync-gateway' ];
@@ -54,10 +55,10 @@ export default class Output extends Base {
     if (this.preparing == null) {
       return this.prepare();
     }
-    let { output } = this.output_options;
+    let { output, archive } = this.output_options;
 
     if (!output_types.includes(output)) {
-      output = 'folder';
+      output = !!archive ? 'zip' : 'folder';
     }
 
     // get the outputter to use
@@ -82,9 +83,15 @@ export default class Output extends Base {
   ///# @name output
   ///# @description
   ///# This is used to save data to any place that was passed in the constructor
-  ///# @arg {object, json} data - The data that you want to be saved
+  ///# @arg {array, object} documents - The data that you want to be saved
+  ///# @returns {array, object, string} - This is determined by the output type that's passed and the format that's used.
   ///# @async
-  async output(data) {
+  async output(documents) {
+    if (!documents) {
+      return this.log('error', 'You must pass in documents to the output');
+    }
+    documents = to.array(documents);
+
     if (this.prepared !== true) {
       if (this.preparing == null) {
         this.prepare();
@@ -92,8 +99,31 @@ export default class Output extends Base {
       await this.preparing;
     }
 
-    // use the outputter's output function to output the data
-    await this.outputter.output(data);
+    const { format, spacing, limit, output } = this.output_options;
+    const parser = parsers[format].stringify;
+
+    // if the output type is `return` or `console` then this will return the complete
+    // data set instead of running them individually
+    if ([ 'return', 'console' ].includes(output)) {
+      const parsed = await parser(documents, spacing);
+      return output === 'console' ? this.outputter.output(null, parsed) : parsed;
+    }
+
+    // if the output isn't `return` or `console` and the `format` is `csv`
+    // then it needs to be updated
+    if (format === 'csv') {
+      // key = documents[0].__name; // eslint-disable-line no-underscore-dangle
+      documents = [ documents ];
+    }
+
+    // reformat the data into the output type
+    return pool(documents, async (document) => {
+      const key = document.__key || document.__name || (document[0] || {}).__name || ''; // eslint-disable-line no-underscore-dangle
+      // use the outputter's output function to output the data
+      return this.outputter.output(key, await parser(document, spacing));
+    }, limit);
+  }
+
   }
 
   ///# @name validateOutputOptions
