@@ -4,7 +4,7 @@ import path from 'path';
 import DependencyResolver from 'dependency-resolver';
 import * as utils from './utils';
 import Base from './base';
-import objectPath from 'object-path';
+import { set, get } from 'lodash';
 import to from 'to-js';
 
 
@@ -68,11 +68,11 @@ export function parseModelFunctions(model) {
   const paths = utils.objectSearch(model, /((pre|post)_run)|(pre_|post_)?build$/);
   paths.forEach((function_path) => {
     try {
-      objectPath.set(
+      set(
         model,
         function_path,
         /* eslint-disable no-new-func */
-        new Function('documents', 'globals', 'inputs', 'faker', 'chance', 'document_index', objectPath.get(model, function_path))
+        new Function('documents', 'globals', 'inputs', 'faker', 'chance', 'document_index', get(model, function_path))
         /* eslint-enable no-new-func */
       );
     } catch (e) {
@@ -89,10 +89,10 @@ export function parseModelReferences(model) {
     .sort() // sort the array so definitions come first before properties, this allows definitions to have definitions
     .forEach((reference_path) => {
       const property_path = reference_path.replace(pattern, '') + (reference_path.includes('.items.') ? '.items' : '');
-      let property = objectPath.get(model, property_path);
-      const defined_path = objectPath.get(model, reference_path).replace(/^#\//, '').replace('/', '.');
-      property = to.extend(to.clone(property), objectPath.get(model, defined_path));
-      objectPath.set(model, property_path, property);
+      let property = get(model, property_path);
+      const defined_path = get(model, reference_path).replace(/^#\//, '').replace('/', '.');
+      property = to.extend(to.clone(property), get(model, defined_path));
+      set(model, property_path, property);
     });
 }
 
@@ -101,11 +101,11 @@ export function parseModelTypes(model) {
   // console.log('models.parseModel_properties');
   utils.objectSearch(model, /.*properties\.[^.]+(\.items)?$/)
     .forEach((type_path) => {
-      const property = objectPath.get(model, type_path);
+      const property = get(model, type_path);
       // make sure there is a type property set
       if (!property.hasOwnProperty('type')) {
         property.type = 'undefined';
-        objectPath.set(model, type_path, property);
+        set(model, type_path, property);
       }
     });
 }
@@ -116,7 +116,7 @@ export function parseModelDefaults(model) {
   // find properties or items that do not have a data block and assign it
   utils.objectSearch(model, /^(.*properties\.[^.]+)$/)
     .forEach((data_path) => {
-      let property = objectPath.get(model, data_path);
+      let property = get(model, data_path);
       // if the property is an array that has an items block but not a data block, default it
       if (property.type === 'array') {
         if (property.items && !property.items.data) {
@@ -125,7 +125,7 @@ export function parseModelDefaults(model) {
       } else if (!property.data) {
         property.data = {};
       }
-      objectPath.set(model, data_path, property);
+      set(model, data_path, property);
     });
 
   // find any data property at the root or that is a child of items and make sure it has the defaults for min, max, fixed
@@ -133,14 +133,13 @@ export function parseModelDefaults(model) {
     model.data = {};
   }
 
-  utils.objectSearch(model, /^(.*properties\.[^.]+\.items\.data|(data))$/)
-    .forEach((data_path) => {
-      objectPath.set(
-        model,
-        data_path,
-        to.extend({ min: 0, max: 0, fixed: 0 }, objectPath.get(model, data_path))
-      );
-    });
+  for (let data_path of utils.objectSearch(model, /^(.*properties\.[^.]+\.items\.data|(data))$/)) {
+    set(
+      model,
+      data_path,
+      to.extend({ min: 0, max: 0, fixed: 0 }, get(model, data_path))
+    );
+  }
 }
 
 export function parseModelCount(model, count) {

@@ -68,7 +68,6 @@
     "lint-rules": "ma-shop/lint-rules",
     "lodash": "~4.17.2",
     "log-symbols": "~1.0.2",
-    "object-path": "^0.11.2",
     "perfy": "~1.1.2",
     "request": "^2.78.0",
     "set-cookie-parser": "^1.0.2",

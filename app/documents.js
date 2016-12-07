@@ -4,7 +4,7 @@ const chance = new Chance();
 import Base from './base';
 import { series } from 'async-array-methods';
 import { objectSearch } from './utils';
-import objectPath from 'object-path';
+import { set, get } from 'lodash';
 import to from 'to-js';
 
 
@@ -93,7 +93,7 @@ export class Document extends Base {
     try {
       paths.model.forEach((path, i) => {
         key = paths.document[i]; // set a key for error messaging
-        objectPath.set(doc, key, typeToValue(objectPath.get(model, path).type));
+        set(doc, key, typeToValue(get(model, path).type));
       });
       return doc;
     } catch (e) {
@@ -108,10 +108,10 @@ export class Document extends Base {
     try {
       paths.model.forEach((path, i) => {
         key = paths.document[i]; // set a key for error messaging
-        objectPath.set(doc, key, this.buildValue(
+        set(doc, key, this.buildValue(
           doc,
-          objectPath.get(model, path),
-          objectPath.get(doc, key),
+          get(model, path),
+          get(doc, key),
           index
         ));
       });
@@ -180,10 +180,10 @@ export class Document extends Base {
     try {
       paths.model.forEach((path, i) => {
         key = paths.document[i]; // set a key for error messaging
-        objectPath.set(
+        set(
           doc,
           key,
-          this.buildProcessCallback(model, doc, objectPath.get(model, path), objectPath.get(doc, key), index)
+          this.buildProcessCallback(model, doc, get(model, path), get(doc, key), index)
         );
       });
       return doc;
