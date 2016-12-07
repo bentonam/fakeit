@@ -1,6 +1,9 @@
 import { extend } from 'lodash';
 import default_options from './default-options';
 import Base from '../base';
+import to from 'to-js';
+import req from 'request';
+import cookieParser from 'set-cookie-parser';
 
 /// @name SyncGateway
 /// @page api
@@ -40,7 +43,37 @@ export default class SyncGateway extends Base {
       return this.prepare();
     }
 
-    // set stuff up to save data
+    const { username: name, password, server, bucket } = this.output_options;
+
+    // do nothing?
+    // should this throw an error?
+    if (!name && !password) {
+      return;
+    }
+
+    let [ res, body ] = await request({
+      url: `${server}/${encodeURIComponent(bucket)}/_session`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: to.json({ name, password }),
+    });
+
+    body = to.object(body);
+
+    if (
+      body.ok &&
+      res.headers['set-cookie']
+    ) {
+      const cookie = cookieParser.parse(res);
+      this.session = {
+        name: cookie[0].name,
+        id: cookie[0].value,
+      };
+    } else if (body.error) {
+      return this.log('error', body.error);
+    } else {
+      return this.log('error', 'Unable to connect to Sync Gateway');
+    }
 
     this.prepared = true;
   }
@@ -59,7 +92,50 @@ export default class SyncGateway extends Base {
       await this.preparing;
     }
 
-    console.log(id);
-    console.log(data);
+    const { server, bucket } = this.output_options;
+
+    const options = {
+      url: `${server}/${bucket}/${encodeURIComponent(id)}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      // @todo remove this comment
+      // not using this because the main Output function handles the data conversion
+      // body: JSON.stringify(data),
+      body: data,
+    };
+
+    // if there is a an authenticated sync session use it
+    if (this.session) {
+      const jar = req.jar();
+      const cookie = req.cookie(`${this.session.name}=${this.session.id}`);
+      jar.setCookie(cookie, server);
+      options.jar = jar;
+    }
+
+    const body = to.object((await request(options))[1]);
+
+    if (body.error) {
+      if (body.reason === 'Document exists') {
+        body.reason = `The '${id}' document already exists`;
+      }
+      this.log('error', body.reason);
+    }
   }
+}
+
+
+/// @name request
+/// @description
+/// This converts the call back style of `request` to be a promise style
+/// @arg {object} options - The options to pass onto the `request` function
+/// @returns {array} - The first item in the array is the `res`, and the second item is the `body` response.
+/// @async
+export function request(options = {}) {
+  return new Promise((resolve, reject) => {
+    req(options, (err, res, body) => {
+      if (err) return reject(err);
+
+      resolve([ res, body ]);
+    });
+  });
 }

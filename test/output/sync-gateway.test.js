@@ -20,3 +20,8 @@ test('without args', (t) => {
 test.todo('prepare');
 test.todo('setup');
 test.todo('output');
+
+// this is just calling another library and it's just converting
+// it's callback style to a promise style so we just need to ensure
+// it's a promise.
+test.todo('request');
