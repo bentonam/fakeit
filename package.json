@@ -52,7 +52,7 @@
     "chance": "^1.0.4",
     "class-mixin": "~2.0.0",
     "commander": "^2.9.0",
-    "couchbase": "^2.2.4",
+    "couchbase-promises": "~2.2.0",
     "cson": "^4.0.0",
     "csv-parse": "^1.1.7",
     "csv-stringify": "^1.0.4",
