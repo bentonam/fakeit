@@ -37,7 +37,8 @@ export default class SyncGateway extends Base {
   ///# @name setup
   ///# @description
   ///# This is used to setup the saving function that will be used.
-  async setup() {
+  ///# @async
+  setup() {
     // if this.prepare hasn't been called then run it first.
     if (this.preparing == null) {
       return this.prepare();
@@ -45,37 +46,44 @@ export default class SyncGateway extends Base {
 
     const { username: name, password, server, bucket } = this.output_options;
 
-    // do nothing?
-    // should this throw an error?
+    // If there's no `name`, and `password` there's no need to
+    // run authentication if the sync db is allowing guest
     if (!name && !password) {
-      return;
+      process.nextTick(() => {
+        this.prepared = true;
+      });
+      return Promise.resolve();
     }
 
-    let [ res, body ] = await request({
+    return request({
       url: `${server}/${encodeURIComponent(bucket)}/_session`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: to.json({ name, password }),
-    });
+    })
+      .then(([ res, body ]) => {
+        body = to.object(body);
 
-    body = to.object(body);
+        if (
+          body.ok &&
+          res.headers['set-cookie']
+        ) {
+          const cookie = cookieParser.parse(res);
+          this.session = {
+            name: cookie[0].name,
+            id: cookie[0].value,
+          };
+        } else if (body.error) {
+          return this.log('error', body.error);
+        } else {
+          return this.log('error', 'Unable to connect to Sync Gateway');
+        }
 
-    if (
-      body.ok &&
-      res.headers['set-cookie']
-    ) {
-      const cookie = cookieParser.parse(res);
-      this.session = {
-        name: cookie[0].name,
-        id: cookie[0].value,
-      };
-    } else if (body.error) {
-      return this.log('error', body.error);
-    } else {
-      return this.log('error', 'Unable to connect to Sync Gateway');
-    }
-
-    this.prepared = true;
+        this.prepared = true;
+      })
+      .catch((err) => {
+        this.log('error', `Unable to connect to Sync Gateway: ${err.message}`);
+      });
   }
 
   ///# @name output

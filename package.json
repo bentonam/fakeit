@@ -83,6 +83,7 @@
     "docs-core": "0.0.0-alpha-6.1",
     "docs-theme-default": "0.0.0-alpha-6.1",
     "lint-rules": "github:ma-shop/lint-rules",
+    "nock": "~9.0.2",
     "nyc": "~9.0.1",
     "test-console": "~1.0.0"
   },
