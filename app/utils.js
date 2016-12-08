@@ -379,6 +379,11 @@ export class Logger {
         type = 'log';
       }
 
+      if (type === 'verbose') {
+        if (!this.options.verbose) return;
+        type = 'console';
+      }
+
       const stamp = this.stamp(type);
 
       // print the current time.
