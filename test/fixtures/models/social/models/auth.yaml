@@ -1,0 +1,34 @@
+name: Auth
+type: object
+key: _id
+data:
+  pre_run: >
+    this.data.fixed = documents.Users.length;
+  dependencies:
+    - Users
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'user_' + this.user_id + '_auth'"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user-auth"
+  username:
+    type: string
+    description: The users username
+    data:
+      fake: "{{internet.userName}}"
+  password:
+    type: string
+    description: The users password
+    data:
+      fake: "{{internet.password}}"
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: "return documents.Users[document_index].user_id"

@@ -1,0 +1,163 @@
+name: Users
+type: object
+key: _id
+data:
+  min: 100
+  max: 500
+  pre_run: >
+    if (!inputs.countries) {
+      throw new Error('countries must be provided as an input');
+    }
+    if (!inputs.regions) {
+      throw new Error('regions must be provided as an input');
+    }
+    if (!inputs.email) {
+      throw new Error('email_types must be provided as an input');
+    }
+    if (!inputs.phone) {
+      throw new Error('email_types must be provided as an input');
+    }
+    if (!inputs.address) {
+      throw new Error('address_types must be provided as an input');
+    }
+  pre_build: >
+    globals.country_code = faker.random.arrayElement(inputs.countries).code;
+    globals.region_codes = inputs.regions.filter(function(value) {
+      return value.iso_country === globals.country_code;
+    });
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'user_' + this.user_id;"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user"
+  user_id:
+    type: integer
+    description: The users id
+    data:
+        build: "return document_index + 1"
+  first_name:
+    type: string
+    description: The users first name
+    data:
+      fake: "{{name.firstName}}"
+  last_name:
+    type: string
+    description: The users last name
+    data:
+      fake: "{{name.lastName}}"
+  username:
+    type: string
+    description: The users username
+    data:
+      fake: "{{internet.userName}}"
+  password:
+    type: string
+    description: The users password
+    data:
+      fake: "{{internet.password}}"
+  emails:
+    type: array
+    description: An array of emails
+    items:
+      $ref: '#/definitions/Email'
+      data:
+        min: 1
+        max: 3
+  phones:
+    type: array
+    description: An array of phone numbers
+    items:
+      $ref: '#/definitions/Phone'
+      data:
+        min: 1
+        max: 3
+  addresses:
+    type: array
+    description: An array of addresses
+    items:
+      $ref: '#/definitions/Address'
+      data:
+        min: 1
+        max: 3
+  created_on:
+    type: integer
+    description: An epoch time of when the user was created
+    data:
+      fake: "{{date.past}}"
+      post_build: "return new Date(this.created_on).getTime();"
+definitions:
+  Email:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The email type
+        data:
+          build: "return faker.random.arrayElement(inputs.email.types)"
+      email_address:
+        type: string
+        description: The phone number
+        data:
+          build: "return faker.internet.email()"
+  Phone:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The phone type
+        data:
+          build: "return faker.random.arrayElement(inputs.phone.types)"
+      phone_number:
+        type: string
+        description: The phone number
+        data:
+          build: "return chance.phone()"
+      extension:
+        type: string
+        description: The phone extension
+        data:
+          build: "return chance.bool({likelihood: 20}) ? '' + chance.integer({min: 1000, max: 9999}) : null;"
+  Address:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The address type
+        data:
+          build: "return faker.random.arrayElement(inputs.address.types)"
+      address_1:
+        type: string
+        description: The address 1
+        data:
+          build: "return faker.address.streetAddress() + ' ' + faker.address.streetSuffix()"
+      address_2:
+        type: string
+        description: The address_2
+        data:
+          build: "return chance.bool({likelihood: 35}) ? faker.address.secondaryAddress() : null"
+      locality:
+        type: string
+        description: The locality
+        data:
+          build: "return faker.address.city();"
+      region:
+        type: string
+        description: The region / state / province
+        data:
+          build: "return faker.random.arrayElement(globals.region_codes).code"
+      postal_code:
+        type: string
+        description: The zip code / postal code
+        data:
+          build: "return faker.address.zipCode();"
+      country:
+        type: string
+        description: The country code
+        data:
+          build: "return globals.country_code"

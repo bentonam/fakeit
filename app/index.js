@@ -84,7 +84,7 @@ export default class Fakeit extends mixin(Base, Input, Models) {
 
     await preparing;
 
-    const data = series(to.flatten(this.models), async (model) => {
+    const data = await series(to.flatten(this.models), async (model) => {
       return output.output(await document.build(model));
     });
 

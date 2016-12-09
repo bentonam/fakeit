@@ -1,0 +1,111 @@
+name: Products
+type: object
+key: _id
+data:
+  min: 100
+  max: 500
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'product_' + this.product_id;"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "product"
+  product_id:
+    type: string
+    description: Unique identifier representing a specific product
+    data:
+      build: "return faker.random.uuid();"
+  price:
+    type: double
+    description: The product price
+    data:
+      build: "return chance.floating({min: 0, max: 150, fixed: 2});"
+  sale_price:
+    type: double
+    description: The product price
+    data:
+      build: "return chance.floating({min: 0, max: 150, fixed: 2});"
+      post_build: "return this.sale_price > this.price ? 0 : this.sale_price;"
+  display_name:
+    type: string
+    description: Display name of product.
+    data:
+      fake: "{{commerce.productName}}"
+  short_description:
+    type: string
+    description: Description of product.
+    data:
+      fake: "{{lorem.paragraphs(1)}}"
+  long_description:
+    type: string
+    description: Description of product.
+    data:
+      fake: "{{lorem.paragraphs(5)}}"
+  keywords:
+    type: array
+    description: An array of keywords
+    data:
+      build: >
+        var keywords = [];
+        for (var i = 0, rand = Math.floor(Math.random() * 10) + 1; i < rand; i++) {
+          keywords.push(faker.random.word());
+        }
+        return keywords;
+  availability:
+    type: string
+    description: The availability status of the product
+    data:
+      build: "return faker.random.arrayElement(['Preorder', 'In-Stock', 'Out of Stock', 'Discontinued']);"
+  availability_date:
+    type: integer
+    description: An epoch time of when the document was last modified
+    data:
+      fake: "{{date.recent}}"
+      post_build: "return new Date(this.availability_date).getTime();"
+  product_slug:
+    type: string
+    description: The URL friendly version of the product name
+    data:
+      post_build: "return faker.helpers.slugify(this.display_name).toLowerCase();"
+  category:
+    type: string
+    description: Category for the Product
+    data:
+      fake: "{{commerce.department}}"
+  category_slug:
+    type: string
+    description: The URL friendly version of the category name
+    data:
+      post_build: "return faker.helpers.slugify(this.category).toLowerCase();"
+  image:
+    type: string
+    description: Image URL representing the product.
+    data:
+      fake: "{{image.image}}"
+  alternate_images:
+    type: array
+    description: An array of alternate images for the product
+    data:
+      build: >
+        var images = [];
+        for (var i = 0, rand = Math.floor(Math.random() * 4) + 1; i < rand; i++) {
+          images.push(faker.image.image());
+        }
+        return images;
+  created_on:
+    type: integer
+    description: An epoch time of when the document was first created
+    data:
+      fake: "{{date.past}}"
+      post_build: "return new Date(this.created_on).getTime();"
+  modified_on:
+    type: integer
+    description: An epoch time of when the document was last modified
+    data:
+      fake: "{{date.recent}}"
+      post_build: "return new Date(this.modified_on).getTime();"

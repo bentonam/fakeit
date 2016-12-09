@@ -1,0 +1,30 @@
+name: Continents
+type: object
+key: _id
+data:
+  pre_run: >
+    if (!inputs.continents) {
+      throw new Error('continents must be provided as an input');
+    }
+    this.data.fixed = inputs.continents.length;
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'continent_' + this.continent_code"
+  continent_code:
+    type: string
+    description: The ISO continent code
+    data:
+      build: "return inputs.continents[document_index].code"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: continent
+  continent_name:
+    type: string
+    description: The continent name
+    data:
+      build: "return inputs.continents[document_index].name"

@@ -1,0 +1,45 @@
+name: Chats
+type: object
+key: _id
+data:
+  pre_run: >
+    this.data.fixed = documents.Users.length * 10;
+  dependencies:
+    - Users
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'chat_' + this.chat_id;"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "chat"
+  chat_id:
+    type: string
+    description: The chat id as a GUID
+    data:
+      build: "return chance.guid()"
+  created_on:
+    type: integer
+    description: The date of the post
+    data:
+      build: "return new Date(chance.bool({likelihood: 30}) ? faker.date.past() : faker.date.recent()).getTime()"
+  users:
+    type: array
+    description: An array of user ids who are in the chat
+    data:
+      post_build: >
+        var user_ids = [];
+        var rand;
+        var user;
+        var rand = chance.bool({likelihood: 70}) ? 2 : chance.integer({min: 2, max: 10});
+        for (var i = 0; i < rand; i++) {
+          user = documents.Users[chance.integer({min: 0, max: documents.Users.length -1})];
+          if (user_ids.indexOf(user.user_id) === -1) {
+            user_ids.push(user.user_id);
+          }
+        }
+        return user_ids;
