@@ -26,13 +26,20 @@ build compile:
 	babel app --out-dir dist $(args)
 
 watch:
-	make build -- --watch
+	make build -- --watch $(args)
 
 lint:
 	eslint 'app' 'test'
 
 test:
 	ava $(args)
+
+test-coverage:
+	babel app --out-dir dist --source-maps
+	nyc make test
+
+coverage code-coverage:
+	NODE_ENV=test nyc
 
 ci:
 	make lint

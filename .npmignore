@@ -4,3 +4,5 @@ examples
 test
 .eslint*
 Makefile
+.nyc*
+coverage

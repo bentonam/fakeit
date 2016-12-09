@@ -92,8 +92,15 @@
       "test/**/*.test.js"
     ],
     "source": [
-      "dist/**/*"
+      "dist/**/*",
+      "test/fixtures/models/*/validation/*"
     ],
     "failFast": true
+  },
+  "nyc": {
+    "exclude": [
+      "test/**/*",
+      "dist/index.js"
+    ]
   }
 }
