@@ -57,7 +57,7 @@ export default class Models extends Base {
     parseModelReferences(model);
     parseModelTypes(model);
     parseModelDefaults(model);
-    parseModelCount(model, this.options.count || this.options.number);
+    parseModelCount(model, this.options.count);
     return model;
   }
 }

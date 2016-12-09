@@ -1,6 +1,7 @@
 import Input from './input';
 import Models from './models';
-import * as output from './output';
+import { series } from 'async-array-methods';
+import Output from './output/index';
 import Base from './base';
 import to from 'to-js';
 import mixin from 'class-mixin';
@@ -14,45 +15,32 @@ import Document from './documents';
 /// @arg {object} options [{}] Here are the defaults
 /// ```
 /// options = {
-///   archive: '',
-///   output: 'console',
-///   models: process.cwd(),
-///   destination: 'console',
-///   format: 2,
-///   server: '127.0.0.1',
-///   bucket: 'default',
+///   inputs: '', // @todo remove
+///   exclude: '', // @todo remove
+///   // a fixed number of documents to generate
+///   count: null,
 ///   // Base options
 ///   root: process.cwd(),
-///   // default options for the logger
 ///   log: true,
 ///   verbose: false,
 ///   timestamp: true,
 /// }
 /// ```
-export default class Fakeit extends mixin(Base, Input, Models, Documents) {
+/* istanbul ignore next: These are already tested in other files */
+export default class Fakeit extends mixin(Base, Input, Models) {
   constructor(options = {}) {
-    // console.log(this);
     options = to.extend({
-      archive: '', ///# @todo move option to `Fakeit.prototype.output`
-      output: 'console', ///# @todo figure out if this is the output type (aka `json`, `cson`, `csv`, `yml`, `yaml`)
-      models: process.cwd(), ///# @todo rename `options.models` to be `options.keywords`
-      destination: 'console', ///# @todo move option to `Fakeit.prototype.output`
-      server: '127.0.0.1', ///# @todo try to move this to `Fakeit.prototype.output` options
-      bucket: 'default', ///# @todo try to move this to `Fakeit.prototype.output` options
-
       // defined in `input.js` and used in `models.js` and `documents.js`
       inputs: '', ///# @todo remove
 
       exclude: '', ///# @todo remove
 
       // used by `models.js` only
-      number: null, ///# @todo rename `options.number` to be `options.count`
       count: null,
 
       // Base options
-      format: 2, ///# @todo rename `options.format` to be `options.spacing`
-      spacing: 2, // the spacing to use when objects are converted to other languanges
       root: process.cwd(), // the root folder to work from
+
       // options for the logger
       log: true,
       verbose: false,
@@ -61,70 +49,47 @@ export default class Fakeit extends mixin(Base, Input, Models, Documents) {
     super(options);
     this.options = options;
 
-    // defined in `input.js`, and `documents.js`
-    this.inputs = {};
-
-    // defined in `documents.js`
     this.documents = {};
     this.globals = {};
+
+    // defined in `input.js`
+    this.inputs = {};
 
     // defined in `model.js`
     this.models = []; // holds the parsed models
   }
 
-  generate() {
-    return new Promise(async (resolve, reject) => {
-      try {
-        this.resolve = resolve;
-        this.reject = reject;
+  async generate(models, output_options = {}) {
+    if (to.type(models) === 'object') {
+      output_options = models;
+      models = models.models;
+    }
 
-        if (this.options.input) {
-          await this.input(this.options.input);
-        }
+    if (!models) {
+      return;
+    }
 
-        await this.registerModels(this.options.models);
+    const output = new Output(this.options, output_options);
+    const preparing = output.prepare();
 
-        // @todo remove this, It's only used in output
-        const model_documents_count = this.models.reduce((prev, next) => {
-          prev[next.name] = next.count;
-          return prev;
-        }, {});
+    // @todo remove this when we can resolve inputs and dependencies automatically
+    if (this.options.input) {
+      await this.input(this.options.input);
+    }
 
-        await output.prepare(this.options, resolve, reject, model_documents_count);
+    // @todo remove `this.options.models`
+    await this.registerModels(models);
 
-        await this.generateDocuments(this.models);
-      } catch (err) {
-        console.log(err);
-        try {
-          output.errorCleanup();
-        } finally {
-          reject(err);
-        }
-      }
+    const document = new Document(this.options, this.documents, this.globals, this.inputs);
+
+    await preparing;
+
+    const data = series(to.flatten(this.models), async (model) => {
+      return output.output(await document.build(model));
     });
+
+    await output.finalize();
+
+    return data;
   }
 }
-
-// @todo incorporate these validations into the different functions of this app
-// function validate(options) {
-//   if ('json,cson,csv,yml,yaml'.indexOf(options.output) === -1) { // validate output format
-//     throw new Error('Unsupported output type');
-//   } else if (
-//     options.archive &&
-//     path.extname(options.archive) !== '.zip'
-//   ) { // validate archive format
-//     throw new Error('The archive must be a zip file');
-//   } else if (
-//     options.destination === 'couchbase' && (
-//       !options.server ||
-//       !options.bucket
-//     )
-//   ) { // validate couchbase
-//     throw new Error('For the server and bucket must be specified when outputting to Couchbase');
-//   } else if (
-//     options.destination === 'couchbase' &&
-//     options.archive
-//   ) { // validate couchbase
-//     throw new Error('The archive option cannot be used when the output is couchbase');
-//   }
-// }
