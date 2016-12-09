@@ -2,26 +2,10 @@ import faker from 'faker';
 import Chance from 'chance';
 const chance = new Chance();
 import Base from './base';
-import { series } from 'async-array-methods';
 import { objectSearch } from './utils';
 import { set, get } from 'lodash';
-import to from 'to-js';
 
-
-export default class Documents extends Base {
-  constructor(options, _inputs = {}) {
-    super(options);
-    this.documents = {};
-    this.globals = {};
-    this.inputs = _inputs;
-  }
-  generateDocuments(...models) {
-    const doc = new Document(this.options, this.documents, this.globals, this.inputs);
-    return series(to.flatten(models), (model) => doc.build(model));
-  }
-}
-
-export class Document extends Base {
+export default class Document extends Base {
   constructor(options, documents = {}, globals = {}, inputs = {}) {
     super(options);
     this.options = this.options || {};

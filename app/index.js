@@ -4,7 +4,7 @@ import * as output from './output';
 import Base from './base';
 import to from 'to-js';
 import mixin from 'class-mixin';
-import Documents from './documents';
+import Document from './documents';
 
 /// @name Fakeit
 /// @page api
