@@ -1,0 +1,57 @@
+import Models from '../dist/models.js';
+import { join as p } from 'path';
+import ava from 'ava-spec';
+
+const test = ava.group('models');
+const models_root = p(__dirname, 'fixtures', 'models');
+
+// holds the schemas that still need to have validation on them on a per model basis
+const schemas_todo = {};
+
+/* istanbul ignore next */
+const models = require('./utils').models({
+  schemas_todo,
+  root: models_root,
+  // Get the models to test. This is used by the `models` function located at the bottom of this file
+  modules: '*/models/*.yaml',
+  // this gets the correct validation file to use on a per test basis
+  validation(model) {
+    return model.replace(/models(.*)\.yaml/g, 'validation$1.model.js');
+  }
+});
+
+test.beforeEach((t) => {
+  t.context = new Models({
+    root: models_root,
+    log: false
+  });
+});
+
+test('without args', async (t) => {
+  t.context.options.log = true;
+  t.deepEqual(t.context.options, {
+    root: models_root,
+    log: true,
+    verbose: false,
+    timestamp: true,
+  });
+});
+
+test('registerModels without args', async (t) => {
+  // you can run registerModels and nothing will happen
+  try {
+    await t.context.registerModels();
+    t.pass();
+  } catch (e) {
+    t.fail();
+  }
+});
+
+test.group('registerModels', models(async (t, model) => {
+  await t.context.registerModels(model);
+  return t.context.models[0];
+}, null, models.files.slice(1)));
+
+
+// log all the schema keys that still need to be done
+test.after(models.todo);

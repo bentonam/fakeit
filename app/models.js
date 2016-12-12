@@ -15,6 +15,11 @@ export default class Models extends Base {
   }
 
   async registerModels(models) {
+    // if models weren't passed in then don't do anything
+    if (!models) {
+      return;
+    }
+
     // get list of files
     let files = await utils.findFiles(this.resolvePaths(models));
     // flattens the array of files and filter files for valid input formats: csv, json, cson, yaml and zip

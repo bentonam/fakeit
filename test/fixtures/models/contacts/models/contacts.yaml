@@ -17,8 +17,9 @@ properties:
       value: "contact"
   channels:
     type: array
-    build: >
-      return ['ufp-555555555'];
+    data:
+      build: >
+        return ['ufp-555555555'];
   contact_id:
     type: string
     description: The contact_id
@@ -121,7 +122,7 @@ definitions:
           build: "return faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
       address_2:
         type: string
-        description: The address_2
+        description: The address 2
         data:
           build: "return chance.bool({likelihood: 35}) ? faker.address.secondaryAddress() : null;"
       locality:
