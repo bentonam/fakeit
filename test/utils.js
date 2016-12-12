@@ -5,6 +5,7 @@ var to = require('to-js').default;
 var p = require('path').join;
 var _ = require('lodash');
 var globby = require('globby');
+var chalk = require('chalk');
 
 /* istanbul ignore next: testing util */
 /// @name models
@@ -14,7 +15,6 @@ var globby = require('globby');
 /// {
 ///   root: process.cwd(), // the root of the modules that are being tested
 ///   modules: '', // The path to the modules to test
-///   schemas_todo: {}, // stores the modules todo
 ///   // the function to get the validation file for the model
 ///   validation: function(model) {
 ///     return model.replace(/models(.*)\.yaml/g, 'validation$1.data.js');
@@ -26,7 +26,6 @@ module.exports.models = function(options) {
   options = to.extend({
     root: process.cwd(), // the root of the modules that are being tested
     modules: '', // The path to the modules to test
-    schemas_todo: {}, // stores the modules todo
     // the function to get the validation file for the model
     validation: function(model) {
       return model.replace(/models(.*)\.yaml/g, 'validation$1.data.js');
@@ -111,17 +110,17 @@ module.exports.models = function(options) {
                 // find the keys that still need to be validated
                 var omitted = _.difference(to.keys(actual), schema_keys);
                 // test the keys that exsit
-                const picked = _.pick(actual, schema_keys);
+                var picked = _.pick(actual, schema_keys);
 
                 // if there're any keys that still need validation add them
                 // to the schema_keys to test at the end
                 if (omitted.length) {
-                  const key = t.title.replace('fakit generate', '').trim();
-                  options.schemas_todo[key] = omitted;
+                  var key = t.title.replace('fakit generate', '').trim();
+                  models.schemas_todo[key] = omitted;
                 }
 
                 // validate the object that can be validated
-                const validate = (err) => {
+                var validate = (err) => {
                   if (err) {
                     let match = err.message.match(/(?:")[^"]+"/);
                     if (match) {
@@ -158,5 +157,14 @@ module.exports.models = function(options) {
   };
 
   models.files = options.modules;
+  models.schemas_todo = {};
+  models.todo = function() {
+    for (var schema in models.schemas_todo) { // eslint-disable-line
+      for (var i = 0; i < models.schemas_todo[schema].length; i++) {
+        console.log(chalk.blue('  -', schema + ':', models.schemas_todo[schema][i]).toString());
+      }
+    }
+  };
+
   return models;
 };
