@@ -4,6 +4,7 @@ const chance = new Chance();
 import Base from './base';
 import { objectSearch } from './utils';
 import { set, get, extend } from 'lodash';
+import to from 'to-js';
 
 export default class Document extends Base {
   constructor(options, documents = {}, globals = {}, inputs = {}) {
@@ -51,7 +52,11 @@ export default class Document extends Base {
   // used to run the different functions that the users can pass in
   runData(data, context, index) {
     if (data) {
-      return data.apply(context, [ this.documents, this.globals, this.inputs, faker, chance, index ]);
+      try {
+        return data.call(context, this.documents, this.globals, this.inputs, faker, chance, index);
+      } catch (e) {
+        this.log('error', `${to.dotCase(data.name)} ${e.message}`);
+      }
     }
   }
 

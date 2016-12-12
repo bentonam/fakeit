@@ -112,12 +112,23 @@ export function parseModelFunctions(model) {
   // console.log('models.parseModelFunctions');
   const paths = utils.objectSearch(model, /((pre|post)_run)|(pre_|post_)?build$/);
   paths.forEach((function_path) => {
+    let name;
+    try {
+      name = to.camelCase(function_path);
+    } catch (e) {
+      name = function_path.split('.').pop();
+    }
+
     try {
       set(
         model,
         function_path,
         /* eslint-disable no-new-func */
-        new Function('documents', 'globals', 'inputs', 'faker', 'chance', 'document_index', get(model, function_path))
+        new Function(`
+          return function ${name}(documents, globals, inputs, faker, chance, document_index) {
+            ${get(model, function_path)}
+          }
+        `)()
         /* eslint-enable no-new-func */
       );
     } catch (e) {
