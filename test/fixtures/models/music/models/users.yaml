@@ -57,7 +57,7 @@ properties:
         var data = {};
         data.state = faker.address.state();
         data.city = faker.address.city();
-        data.countryCode = faker.address.countryCode();
+        data.country_code = faker.address.country_code();
         data.street = faker.address.streetAddress();
         data.postalCode = faker.address.zipCode();
         return data;
@@ -70,7 +70,7 @@ properties:
           phones.push({
             type: faker.random.arrayElement(['home', 'work', 'mobile', 'other', 'main']),
             verified: new Date(faker.date.past()).toISOString(),
-            number: chance.phone({ country: this.address.countryCode.toLowerCase() }) || faker.phone.phoneNumber().replace(/x[0-9]+$/, '')
+            number: chance.phone({ country: this.address.country_code.toLowerCase() }) || faker.phone.phoneNumber().replace(/x[0-9]+$/, '')
           });
         }
         return phones;

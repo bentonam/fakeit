@@ -1,6 +1,7 @@
 import Models from '../dist/models.js';
 import { join as p } from 'path';
 import ava from 'ava-spec';
+import { without } from 'lodash';
 
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
@@ -19,6 +20,15 @@ const models = require('./utils').models({
     return model.replace(/models(.*)\.yaml/g, 'validation$1.model.js');
   }
 });
+
+const done = [
+  p('contacts', 'models', 'contacts.yaml'),
+  p('music', 'models', 'countries.yaml')
+];
+
+function filterDone() {
+  return without(models.files, ...done);
+}
 
 test.beforeEach((t) => {
   t.context = new Models({
@@ -50,7 +60,7 @@ test('registerModels without args', async (t) => {
 test.group('registerModels', models(async (t, model) => {
   await t.context.registerModels(model);
   return t.context.models[0];
-}, null, models.files.slice(1)));
+}, null, filterDone()));
 
 
 // log all the schema keys that still need to be done

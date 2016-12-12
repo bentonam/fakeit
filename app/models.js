@@ -44,7 +44,7 @@ export default class Models extends Base {
       }
 
       // add the parsed model to the global object should always have a model name
-      return this.parseModel(model);
+      return this.parseModel(model, file);
     });
 
     // update the models order
@@ -57,14 +57,54 @@ export default class Models extends Base {
   ///# @description
   ///# This is used to parse the model that was passed and add the functions, and fix the types, data, and defaults
   ///# @returns {object} - The model that's been updated
-  parseModel(model) {
+  async parseModel(model, file) {
+    model.data.inputs = this.resolvePaths(model.data.inputs, path.dirname(file));
+    const inputs = parseModelInputs(model);
     parseModelFunctions(model);
     parseModelReferences(model);
     parseModelTypes(model);
     parseModelDefaults(model);
     parseModelCount(model, this.options.count);
+    await inputs;
     return model;
   }
+}
+
+
+/// @name parseModelInputs
+/// @description
+/// This is used to parse files that are used to generate specific data
+/// @arg {object} model - The model to parse
+/// @async
+export async function parseModelInputs(model) {
+  if (!model.data.inputs.length) {
+    return model;
+  }
+
+  const inputs = {};
+
+  // get list of files
+  let files = await utils.findFiles(model.data.inputs);
+  // flattens the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
+  files = to.flatten(files).filter((file) => !!file && /\.(csv|json|cson|ya?ml|zip)$/i.test(file));
+
+  if (!files.length) throw new Error('No valid input files found.');
+
+  // loop over all the files, read them and parse them if needed
+  files = await utils.readFiles(files);
+
+  // handles parsing each of the supported formats
+  await map(files, async (file) => {
+    // get the current parser to use
+    const parser = utils.parsers[file.ext.replace(/^\./, '')];
+
+    if (!parser) throw new Error(`No valid parser could be found for "${file.name}.${file.type}"`);
+
+    inputs[file.name] = await parser.parse(file.content);
+    return file;
+  });
+
+  model.data.inputs = inputs;
 }
 
 // searches the model for any of the pre / post run and build functions and generates them

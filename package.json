@@ -50,7 +50,6 @@
     "babel-runtime": "^6.18.0",
     "chalk": "^1.1.3",
     "chance": "^1.0.4",
-    "class-mixin": "~2.0.0",
     "commander": "^2.9.0",
     "couchbase-promises": "~2.2.0",
     "cson": "^4.0.0",
@@ -94,7 +93,7 @@
     ],
     "source": [
       "dist/**/*",
-      "test/fixtures/models/*/validation/*",
+      "test/fixtures/models/*/+(models|validation)/*",
       "test/utils.js"
     ],
     "failFast": true

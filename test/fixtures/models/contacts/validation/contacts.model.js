@@ -31,13 +31,14 @@ function check(type, description, data) {
 };
 
 module.exports = is.object({
-  name: is.string().regex(/Contacts/),
+  name: string('Contacts'),
   type: types.object,
-  key: is.string().regex(/_id/),
+  key: string('_id'),
   data: is.object({
     min: is.number().min(200).max(200),
     max: is.number().min(400).max(400),
     fixed: is.number(),
+    inputs: is.array().length(0),
   }),
   properties: is.object()
     .keys({

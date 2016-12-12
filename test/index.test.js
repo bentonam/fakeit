@@ -5,6 +5,7 @@ import { stdout } from 'test-console';
 import { join as p } from 'path';
 import { stripColor } from 'chalk';
 import ava from 'ava-spec';
+import { without } from 'lodash';
 
 const test = ava.group('fakeit');
 const fakeit_root = p(__dirname, 'fixtures', 'models');
@@ -20,6 +21,15 @@ const models = require('./utils').models({
   }
 });
 
+const done = [
+  p('contacts', 'models', 'contacts.yaml'),
+  p('music', 'models', 'countries.yaml')
+];
+
+function filterDone() {
+  return without(models.files, ...done);
+}
+
 test.beforeEach((t) => {
   t.context.fakeit = new Fakeit({
     root: fakeit_root,
@@ -31,11 +41,9 @@ test.beforeEach((t) => {
 });
 
 test('without args', async (t) => {
+  delete t.context.fakeit.options.count;
   t.context.fakeit.options.log = true;
   t.deepEqual(t.context.fakeit.options, {
-    inputs: '',
-    exclude: '',
-    count: 1,
     root: fakeit_root,
     log: true,
     verbose: false,
@@ -43,8 +51,6 @@ test('without args', async (t) => {
   });
   t.is(to.type(t.context.fakeit.documents), 'object');
   t.is(to.type(t.context.fakeit.globals), 'object');
-  t.is(to.type(t.context.fakeit.inputs), 'object');
-  t.is(to.type(t.context.fakeit.models), 'array');
 });
 
 const generate = test.group('generate');
@@ -66,9 +72,9 @@ generate.serial.group('console', models(async (t, model) => {
   inspect.restore();
 
   return to.object(stripColor(inspect.output[0].trim()))[0];
-}, null, models.files.slice(1)));
+}, null, filterDone()));
 
-generate.serial.group('return', models(async (t, model) => {
+generate.group('return', models(async (t, model) => {
   t.context.defaults.output = 'return';
   // var shit = to.object(()[0])
   let actual = await t.context.fakeit.generate(model, t.context.defaults);
@@ -77,7 +83,7 @@ generate.serial.group('return', models(async (t, model) => {
   actual = to.object(actual[0]);
   // get the first item in the array to test
   return actual[0];
-}, null, models.files.slice(1)));
+}, null, filterDone()));
 
 generate.group('folder', models(async (t, model) => {
   t.is(typeof model, 'string');
