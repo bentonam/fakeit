@@ -1,0 +1,48 @@
+name: AirportNavaids
+type: object
+key: _id
+data:
+  pre_run: >
+    this.data.fixed = documents.Airports.length;
+  dependencies:
+    - Airports
+    - Navaids
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'airport_' + this.airport_id + '_navaids'"
+  airport_id:
+    type: integer
+    description: The airport id
+    data:
+      pre_build: "return documents.Airports[document_index].airport_id"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: airport-navaids
+  airport_ident:
+    type: string
+    description: The airports identifier
+    data:
+      pre_build: "return documents.Airports[document_index].airport_ident"
+  navaids:
+    type: array
+    description: An array of navaid_ids
+    data:
+      build: >
+        var navaids = [];
+        for (var i = 0; i < documents.Navaids.length; i++) {
+          if (
+            documents.Navaids[i].associated_airport_icao_code &&
+            (
+              (documents.Airports[document_index].airport_icao && documents.Navaids[i].associated_airport_icao_code === documents.Airports[document_index].airport_icao) ||
+              (documents.Airports[document_index].airport_ident && documents.Navaids[i].associated_airport_icao_code === documents.Airports[document_index].airport_ident)
+            )
+          ) {
+            navaids.push(documents.Navaids[i].navaid_id);
+          }
+        }
+        return navaids;

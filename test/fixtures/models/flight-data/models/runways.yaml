@@ -1,0 +1,126 @@
+name: Runways
+type: object
+key: _id
+data:
+  pre_run: >
+    if (!inputs.runways) {
+      throw new Error('runways must be provided as an input');
+    }
+    this.data.fixed = inputs.runways.length;
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'runway_' + this.runway_id"
+  runway_id:
+    type: integer
+    description: The runway id
+    data:
+      build: "return inputs.runways[document_index].id"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: runway
+  airport_id:
+    type: integer
+    description: The id of the airport the runway belongs to
+    data:
+      build: "return inputs.runways[document_index].airport_ref"
+  airport_ident:
+    type: string
+    description: The airport identifier
+    data:
+      build: "return inputs.runways[document_index].airport_ident"
+  runway_length:
+    type: integer
+    description: The length of the runway in feet
+    data:
+      build: "return inputs.runways[document_index].length_ft || null"
+  runway_width:
+    type: integer
+    description: The width of the runway in ft
+    data:
+      build: "return inputs.runways[document_index].width_ft || null"
+  surface:
+    type: string
+    description: The runway surface
+    data:
+      build: "return inputs.runways[document_index].surface || null"
+  lighted:
+    type: boolean
+    description: Whether or not the runway is lighted
+    data:
+      build: "return inputs.runways[document_index].lighted == '1'"
+  closed:
+    type: boolean
+    description: Whether or not the runway is closed
+    data:
+      build: "return inputs.runways[document_index].closed == '1'"
+  low_bearing:
+    type: object
+    properties:
+      ident:
+        type: string
+        description: The low bearing runway identifer (1 - 18)
+        data:
+          build: "return inputs.runways[document_index].le_ident || null"
+      latitude:
+        type: float
+        description: The low bearing runway latitude
+        data:
+          build: "return inputs.runways[document_index].le_latitude_deg || null"
+      longitude:
+        type: float
+        description: The low bearing runway longitude
+        data:
+          build: "return inputs.runways[document_index].le_longitude_deg || null"
+      elevation:
+        type: integer
+        description: The low bearing runway elevation
+        data:
+          build: "return inputs.runways[document_index].le_elevation_ft || null"
+      magnetic_heading:
+        type: integer
+        description: The low bearing true magnetic heading
+        data:
+          build: "return inputs.runways[document_index].le_heading_degT || null"
+      displaced_threshold:
+        type: integer
+        description: The low bearing displacement from the end of the runway to the threshold
+        data:
+          build: "return inputs.runways[document_index].le_displaced_threshold_ft || null"
+  high_bearing:
+    type: object
+    properties:
+      ident:
+        type: string
+        description: The high bearing runway identifer (19 - 36)
+        data:
+          build: "return inputs.runways[document_index].he_ident || null"
+      latitude:
+        type: float
+        description: The high bearing runway latitude
+        data:
+          build: "return inputs.runways[document_index].he_latitude_deg || null"
+      longitude:
+        type: float
+        description: The high bearing runway longitude
+        data:
+          build: "return inputs.runways[document_index].he_longitude_deg || null"
+      elevation:
+        type: integer
+        description: The high bearing runway elevation
+        data:
+          build: "return inputs.runways[document_index].he_elevation_ft || null"
+      magnetic_heading:
+        type: integer
+        description: The high bearing true magnetic heading
+        data:
+          build: "return inputs.runways[document_index].he_heading_degT || null"
+      displaced_threshold:
+        type: integer
+        description: The high bearing displacement from the end of the runway to the threshold
+        data:
+          build: "return inputs.runways[document_index].he_displaced_threshold_ft || null"

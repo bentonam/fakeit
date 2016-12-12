@@ -7,12 +7,14 @@ import {
   objectSearch,
   findFiles,
   readFiles,
+  pool,
   parsers,
   Logger,
 } from '../dist/utils';
 import { map } from 'async-array-methods';
 import to from 'to-js';
 import AdmZip from 'adm-zip';
+import { stdout } from 'test-console';
 
 async function touch(...files) {
   return map(to.flatten(files), (file) => {
@@ -69,10 +71,16 @@ test.group('findFiles', (test) => {
     await touch(files);
   });
 
-  test(async (t) => {
+  test('pass a dir', async (t) => {
     const actual = await findFiles(root);
     t.is(actual.length, 5);
     t.deepEqual(actual, files);
+  });
+
+  test('pass a glob', async (t) => {
+    const actual = await findFiles(p(root, '*.js'));
+    t.is(actual.length, 1);
+    t.deepEqual(actual, files.slice(0, 1));
   });
 
   test.after.always(() => fs.remove(root));
@@ -146,6 +154,94 @@ test.group('readFiles', (test) => {
   });
 
   test.after.always(() => fs.remove(root));
+});
+
+
+test.serial.group('pool', async (test) => {
+  const delay = (duration) => {
+    duration *= 100;
+    return new Promise((resolve) => {
+      console.log(`${duration} start`);
+      setTimeout(() => {
+        console.log(`${duration} end`);
+        resolve();
+      }, duration);
+    });
+  };
+  const items = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
+  test('no limit', async (t) => {
+    const inspect = stdout.inspect();
+    let result = pool(items, async (item, i, array) => {
+      t.deepEqual(array, items);
+      t.is(typeof i, 'number');
+      await delay(i);
+      return `woohoo ${item}`;
+    });
+    t.is(typeof result.then, 'function');
+    result = await result;
+    inspect.restore();
+    t.notDeepEqual(result, items);
+    t.deepEqual(result, items.map((item) => `woohoo ${item}`));
+    t.deepEqual(inspect.output.join('\n').split('\n').filter(Boolean), [
+      '0 start',
+      '100 start',
+      '200 start',
+      '300 start',
+      '400 start',
+      '500 start',
+      '600 start',
+      '700 start',
+      '800 start',
+      '900 start',
+      '0 end',
+      '100 end',
+      '200 end',
+      '300 end',
+      '400 end',
+      '500 end',
+      '600 end',
+      '700 end',
+      '800 end',
+      '900 end',
+    ]);
+  });
+
+  test('limit 3', async (t) => {
+    const inspect = stdout.inspect();
+    let result = pool(items, async (item, i, array) => {
+      t.deepEqual(array, items);
+      t.is(typeof i, 'number');
+      await delay(i);
+      return `woohoo ${item}`;
+    }, 3);
+    t.is(typeof result.then, 'function');
+    result = await result;
+    inspect.restore();
+    t.notDeepEqual(result, items);
+    t.deepEqual(result, items.map((item) => `woohoo ${item}`));
+    t.deepEqual(inspect.output.join('\n').split('\n').filter(Boolean), [
+      '0 start',
+      '100 start',
+      '200 start',
+      '0 end',
+      '300 start',
+      '100 end',
+      '400 start',
+      '200 end',
+      '500 start',
+      '300 end',
+      '600 start',
+      '400 end',
+      '700 start',
+      '500 end',
+      '800 start',
+      '600 end',
+      '900 start',
+      '700 end',
+      '800 end',
+      '900 end'
+    ]);
+  });
 });
 
 test.serial.group('parsers', (test) => {

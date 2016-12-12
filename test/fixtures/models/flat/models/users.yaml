@@ -1,0 +1,74 @@
+name: Users
+type: object
+key: user_id
+data:
+  min: 100
+  max: 400
+properties:
+  user_id:
+    type: integer
+    description: The users id
+    data:
+        build: >
+          var current_user_id = globals.user_counter || 0;
+          current_user_id += 1;
+          globals.user_counter = current_user_id;
+          return current_user_id;
+  first_name:
+    type: string
+    description: The users first name
+    data:
+      fake: "{{name.firstName}}"
+  last_name:
+    type: string
+    description: The users last name
+    data:
+      fake: "{{name.lastName}}"
+  email_address:
+    type: string
+    description: The users email address
+    data:
+      fake: "{{internet.email}}"
+  home_phone:
+    type: string
+    description: The users home phone
+    data:
+      fake: "{{phone.phoneNumber}}"
+      post_build: "return this.home_phone.replace(/x[0-9]+$/, '')"
+  mobile_phone:
+    type: string
+    description: The users mobile phone
+    data:
+      fake: "{{phone.phoneNumber}}"
+      post_build: "return this.mobile_phone.replace(/x[0-9]+$/, '')"
+  address_1:
+    type: string
+    description: The address 1
+    data:
+      build: "return faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+  address_2:
+    type: string
+    description: The address_2
+    data:
+      build: "return chance.bool({likelihood: 35}) ? faker.address.secondaryAddress() : '';"
+  locality:
+    type: string
+    description: The locality
+    data:
+      build: "return faker.address.city();"
+  region:
+    type: string
+    description: The region / state / province
+    data:
+      build: "return faker.address.stateAbbr();"
+  postal_code:
+    type: string
+    description: The zip code / postal code
+    data:
+      build: "return faker.address.zipCode();"
+  country:
+    type: string
+    description: The country code
+    data:
+      build: "return faker.address.countryCode();"
+

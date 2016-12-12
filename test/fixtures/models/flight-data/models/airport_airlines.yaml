@@ -1,0 +1,66 @@
+name: AirportAirlines
+type: object
+key: _id
+data:
+  pre_run: >
+    this.data.fixed = documents.Airports.length;
+  dependencies:
+    - Airports
+    - Routes
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'airport_' + this.airport_id + '_airlines'"
+  airport_id:
+    type: integer
+    description: The route id
+    data:
+      build: "return documents.Airports[document_index].airport_id"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: airport-airlines
+  airport_ident:
+    type: string
+    description: The airports iata / icao code
+    data:
+      build: "return documents.Airports[document_index].airport_ident"
+  airlines:
+    type: array
+    description: An array of airline codes at the airport
+    data:
+      build: >
+        var airlines = [];
+        var airline_code;
+        for (var i = 0; i < documents.Routes.length; i++) {
+          if (
+            documents.Routes[i].source_airport_code &&
+            (
+              documents.Routes[i].source_airport_code === documents.Airports[document_index].airport_icao ||
+              documents.Routes[i].source_airport_code === documents.Airports[document_index].airport_iata
+            )
+          ) {
+            airline_code = documents.Routes[i].airline_code;
+          }
+          if (airline_code && airlines.indexOf(airline_code) === -1) {
+            airlines.push(airline_code);
+            airline_code = null;
+          }
+          if (
+            documents.Routes[i].destination_airport_code &&
+            (
+              documents.Routes[i].destination_airport_code === documents.Airports[document_index].airport_icao ||
+              documents.Routes[i].destination_airport_code === documents.Airports[document_index].airport_iata
+            )
+          ) {
+            airline_code = documents.Routes[i].airline_code;
+          }
+          if (airline_code && airlines.indexOf(airline_code) === -1) {
+            airlines.push(airline_code);
+            airline_code = null;
+          }
+        }
+        return airlines;

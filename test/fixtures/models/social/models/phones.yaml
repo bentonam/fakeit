@@ -1,0 +1,44 @@
+name: Phones
+type: object
+key: _id
+data:
+  pre_run: >
+    this.data.fixed = documents.Users.length * 3;
+  dependencies:
+    - Users
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'phone_' + this.phone_id;"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "phone"
+  phone_id:
+    type: string
+    description: The phone id as a GUID
+    data:
+      build: "return chance.guid()"
+  user_id:
+    type: integer
+    description: The user_id the phone is for
+    data:
+      build: "return documents.Users[chance.integer({min:0, max: documents.Users.length - 1})].user_id"
+  phone_type:
+    type: string
+    description: The phone type
+    data:
+      build: "return faker.random.arrayElement(['Home', 'Work', 'Mobile', 'Main', 'Other']);"
+  phone_number:
+    type: string
+    description: The phone number
+    data:
+      build: "return faker.phone.phoneNumber().replace(/\s*x[0-9]+$/, '');"
+  extension:
+    type: string
+    description: The phone extension
+    data:
+      build: "return chance.bool({likelihood: 20}) ? '' + chance.integer({min: 1000, max: 9999}) : null;"

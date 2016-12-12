@@ -1,0 +1,70 @@
+name: Playlists
+type: object
+key: _id
+data:
+  dependencies:
+    - Users
+    - Tracks
+  min: 500
+  max: 1000
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'playlist_' + this.id;"
+  type:
+    type: string
+    description: The document type
+    data:
+      value: "playlist"
+  id:
+    type: string
+    description: Unique identifier representing a specific playlist
+    data:
+      build: "return faker.random.uuid();"
+  created:
+    type: string
+    description: The date the track was created
+    data:
+      fake: "{{date.past}}"
+      post_build: "return new Date(this.created).toISOString();"
+  updated:
+    type: string
+    description: The date the track was updated
+    data:
+      fake: "{{date.recent}}"
+      post_build: "return new Date(this.updated).toISOString();"
+  visibility:
+    type: string
+    description: The playlist visibility
+    data:
+        build: "return faker.random.arrayElement(['PUBLIC', 'PRIVATE']);"
+  owner:
+    type: object
+    description: The user that the playlist belongs to
+    data:
+        build: >
+          var user = documents.Users[Math.floor(Math.random() * (documents.Users.length - 1)) + 0];
+          return {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            created: new Date(user.created).getTime(),
+            updated: user.updated,
+            picture: user.picture,
+            username: user.username
+          };
+  tracks:
+    type: array
+    description: An array of track id's
+    data:
+      build: >
+        var tracks = [];
+        var track;
+        for (var i = 0, rand = Math.floor(Math.random() * 25) + 0; i < rand; i++) {
+          track = documents.Tracks[Math.floor(Math.random() * (documents.Tracks.length - 1)) + 0].id;
+          if (tracks.indexOf(track) === -1) {
+            tracks.push(track);
+          }
+        }
+        return tracks;

@@ -1,0 +1,141 @@
+name: Airports
+type: object
+key: _id
+data:
+  pre_run: >
+    if (!inputs.airports) {
+      throw new Error('airports must be provided as an input');
+    }
+    if (!globals.codes) {
+      globals.codes = [];
+    }
+    this.data.fixed = inputs.airports.length;
+  post_build: >
+    if (this.airport_iata) {
+      globals.codes.push({
+        id: this.airport_id,
+        designation: 'airport',
+        code_type: 'iata',
+        code: this.airport_iata
+      });
+    }
+    if (this.airport_icao && this.airport_icao !== this.airport_iata) {
+      globals.codes.push({
+        id: this.airport_id,
+        designation: 'airport',
+        code_type: 'icao',
+        code: this.airport_icao
+      });
+    }
+    if (this.airport_ident && this.airport_ident !== this.airport_icao && this.airport_ident !== this.airport_iata) {
+      globals.codes.push({
+        id: this.airport_id,
+        designation: 'airport',
+        code_type: 'ident',
+        code: this.airport_ident
+      });
+    }
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'airport_' + this.airport_id"
+  airport_id:
+    type: integer
+    description: The airports id
+    data:
+      build: "return inputs.airports[document_index].id"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: airport
+  airport_ident:
+    type: string
+    description: The airport identifier if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].ident || null"
+  airport_type:
+    type: string
+    description: The airport type if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].type || null"
+  airport_name:
+    type: string
+    description: The airport name if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].name"
+  geo:
+    type: object
+    properties:
+      latitude:
+        type: float
+        description: The airports latitude if available, otherwise null
+        data:
+          build: "return inputs.airports[document_index].latitude || null"
+      longitude:
+        type: float
+        description: The airport longitude if available, otherwise null
+        data:
+          build: "return inputs.airports[document_index].longitude || null"
+  elevation:
+    type: integer
+    description: The airport elevation in ft if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].elevation_ft || null"
+  iso_continent:
+    type: string
+    description: The ISO continent code for the airport
+    data:
+      build: "return inputs.airports[document_index].continent"
+  iso_country:
+    type: string
+    description: The ISO country code for the airport
+    data:
+      build: "return inputs.airports[document_index].iso_country"
+  iso_region:
+    type: string
+    description: The ISO region code the airport is in if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].iso_region || null"
+  municipality:
+    type: string
+    description: The airport city if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].city || null"
+  airport_icao:
+    type: string
+    description: The airport 4 character icao code if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].icao_code || null"
+  airport_iata:
+    type: string
+    description: The airport 3 letter iata / faa code if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].iata_code || null"
+  airport_gps_code:
+    type: string
+    description: The airports gps_code if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].gps_code || null"
+  airport_local_code:
+    type: string
+    description: The airports local code if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].local_code || null"
+  timezone_offset:
+    type: integer
+    description: The airports timezone offset if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].timezone_offset || null"
+  dst:
+    type: string
+    description: The airports daylight savings type if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].dst || null"
+  timezone:
+    type: string
+    description: The airports timezone if available, otherwise null
+    data:
+      build: "return inputs.airports[document_index].timezone || null"

@@ -1,55 +1,95 @@
-import path from 'path';
-import { prepare } from './input';
-import * as models from './models';
-import * as output from './output';
+import Input from './input';
+import Models from './models';
+import { series } from 'async-array-methods';
+import Output from './output/index';
+import Base from './base';
 import to from 'to-js';
+import mixin from 'class-mixin';
+import Document from './documents';
 
-export default function fakeit(options = {}) {
-  options = to.extend({
-    output: 'console',
-    archive: '',
-    models: process.cwd(),
-    destination: 'console',
-    format: 2,
-    server: '127.0.0.1',
-    bucket: 'default'
-  }, options);
-  return new Promise((resolve, reject) => {
-    // console.log('generator.start');
-    validate(options);
-    prepare(options)
-      .then(() => models.prepare(options))
-      .then((model_documents_count) => output.prepare(options, resolve, reject, model_documents_count))
-      .then(() => models.generate(options))
-      .catch((err) => {
-        try {
-          output.errorCleanup();
-        } finally {
-          reject(err);
-        }
-      });
-  });
-}
+/// @name Fakeit
+/// @page api
+/// @description
+/// This class is used to generate fake data in `json`, `cson`, `csv`, `yml`, `yaml` formats.
+/// You can have it output idividual files or you can connect to a data base and store the files there.
+/// @arg {object} options [{}] Here are the defaults
+/// ```
+/// options = {
+///   inputs: '', // @todo remove
+///   exclude: '', // @todo remove
+///   // a fixed number of documents to generate
+///   count: null,
+///   // Base options
+///   root: process.cwd(),
+///   log: true,
+///   verbose: false,
+///   timestamp: true,
+/// }
+/// ```
+/* istanbul ignore next: These are already tested in other files */
+export default class Fakeit extends mixin(Base, Input, Models) {
+  constructor(options = {}) {
+    options = to.extend({
+      // defined in `input.js` and used in `models.js` and `documents.js`
+      inputs: '', ///# @todo remove
 
-function validate(options) {
-  if ('json,cson,csv,yml,yaml'.indexOf(options.output) === -1) { // validate output format
-    throw new Error('Unsupported output type');
-  } else if (
-    options.archive &&
-    path.extname(options.archive) !== '.zip'
-  ) { // validate archive format
-    throw new Error('The archive must be a zip file');
-  } else if (
-    options.destination === 'couchbase' && (
-      !options.server ||
-      !options.bucket
-    )
-  ) { // validate couchbase
-    throw new Error('For the server and bucket must be specified when outputting to Couchbase');
-  } else if (
-    options.destination === 'couchbase' &&
-    options.archive
-  ) { // validate couchbase
-    throw new Error('The archive option cannot be used when the output is couchbase');
+      exclude: '', ///# @todo remove
+
+      // used by `models.js` only
+      count: null,
+
+      // Base options
+      root: process.cwd(), // the root folder to work from
+
+      // options for the logger
+      log: true,
+      verbose: false,
+      timestamp: true,
+    }, options);
+    super(options);
+    this.options = options;
+
+    this.documents = {};
+    this.globals = {};
+
+    // defined in `input.js`
+    this.inputs = {};
+
+    // defined in `model.js`
+    this.models = []; // holds the parsed models
+  }
+
+  async generate(models, output_options = {}) {
+    if (to.type(models) === 'object') {
+      output_options = models;
+      models = models.models;
+    }
+
+    if (!models) {
+      return;
+    }
+
+    const output = new Output(this.options, output_options);
+    const preparing = output.prepare();
+
+    // @todo remove this when we can resolve inputs and dependencies automatically
+    if (this.options.input) {
+      await this.input(this.options.input);
+    }
+
+    // @todo remove `this.options.models`
+    await this.registerModels(models);
+
+    const document = new Document(this.options, this.documents, this.globals, this.inputs);
+
+    await preparing;
+
+    const data = await series(to.flatten(this.models), async (model) => {
+      return output.output(await document.build(model));
+    });
+
+    await output.finalize();
+
+    return data;
   }
 }

@@ -1,0 +1,63 @@
+name: AirlineReviews
+type: object
+key: _id
+data:
+  dependencies:
+    - Airlines
+    - Users
+  pre_run: >
+    this.data.fixed = inputs.airlines.length * 5;
+  pre_build: >
+    globals.current_airline_index = chance.integer({min: 0, max: documents.Airlines.length - 1});
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'airline_' + this.airline_id + '_review_' + this.review_id;"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "airline-review"
+  review_id:
+    type: string
+    description: Unique identifier representing a specific review
+    data:
+      build: "return faker.random.uuid();"
+  airline_id:
+    type: integer
+    description: The airline_id the review is for
+    data:
+      build: "return documents.Airlines[globals.current_airline_index].airline_id"
+  airline_code:
+    type: string
+    description: The airport_code the review is for
+    data:
+      build: "return documents.Airlines[globals.current_airline_index].airline_iata || documents.Airlines[globals.current_airline_index].airline_icao || null;"
+  user_id:
+    type: integer
+    description: The user_id of the user who wrote the review
+    data:
+      build: "return documents.Users[chance.integer({min: 0, max: documents.Users.length - 1})].user_id"
+  rating:
+    type: integer
+    description: The review rating
+    data:
+      build: "return chance.integer({min: 1, max: 5})"
+  review_title:
+    type: string
+    description: The review title
+    data:
+      fake: "{{lorem.sentence}}"
+  review_body:
+    type: string
+    description: The review content
+    data:
+      fake: "{{lorem.paragraphs}}"
+  review_date:
+    type: integer
+    description: The review content
+    data:
+      fake: "{{date.past}}"
+      post_build: "return new Date(chance.bool({likelihood: 70}) ? faker.date.recent() : faker.date.past()).getTime();"

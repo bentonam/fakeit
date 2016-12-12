@@ -11,6 +11,7 @@ import to, { is } from 'to-js';
 import AdmZip from 'adm-zip';
 import promisify from 'es6-promisify';
 import fs from 'fs-extra-promisify';
+import PromisePool from 'es6-promise-pool';
 
 
 /// @name objectSearch
@@ -60,10 +61,10 @@ export function objectSearch(data, pattern, current_path, paths = []) {
 /// @name findFiles
 /// @description
 /// This is a very efficient way to to recursively read a directory and get all the files.
-/// @arg {string, array} dirs - The dir or dirs you want to get all the files from
-/// @returns {array} All the files in the directory(s) that were passed
+/// @arg {string, array} globs - The glob(s) or dir(s) you want to get all the files from
+/// @returns {array} All the files in the paths(s) that were passed
 /// @async
-export async function findFiles(dirs) {
+export async function findFiles(globs) {
   // all the files after
   const files = [];
   const sort = (list) => {
@@ -78,14 +79,23 @@ export async function findFiles(dirs) {
     }
     return to_search;
   };
-  const find = async (folders) => {
-    folders = sort(await map(folders, (folder) => globby(path.join(folder, '*'))));
-    if (folders.length) {
-      return find(folders);
+
+  const find = async (items) => {
+    items = sort(await map(items, (item) => {
+      if (globby.hasMagic(item)) {
+        return globby(item);
+      } else if (!!path.extname(item)) {
+        return item;
+      }
+
+      return globby(path.join(item, '*'));
+    }));
+    if (items.length) {
+      return find(items);
     }
   };
 
-  await find(to.array(dirs));
+  await find(to.array(globs));
   return files;
 }
 
@@ -136,6 +146,36 @@ export async function readFiles(files) {
 
 
   return to.flatten(files);
+}
+
+/// @name pool
+/// @description
+/// This is very similar to the `Array.prototype.map` except that
+/// it's used to limit the number of functions running at a time.
+/// @arg {array} items - The array to loop over
+/// @arg {function} fn - The function to run on each of the items. It has the same arguments the map function does
+/// @arg {number} limit [100] - The number of promises that can run at any given item.
+/// @returns {array} of the items that were returned by the fn.
+/// @async
+export async function pool(items, fn, limit = 100) {
+  let i = 0;
+  const results = [];
+  const producer = () => {
+    if (i < items.length) {
+      const index = i;
+      return fn(items[index], i++, items)
+        .then((result) => {
+          results[index] = result;
+        });
+    }
+
+    return null;
+  };
+
+  const runner = new PromisePool(producer, limit);
+
+  await runner.start();
+  return results;
 }
 
 
@@ -300,19 +340,19 @@ export class Logger {
     if (this.options.verbose) {
       this.options.log = true;
     }
-  }
 
-  ///# @name log_types
-  ///# @static
-  ///# @type {object}
-  ///# @raw-code
-  static log_types = {
-    error: 'red',
-    warning: 'yellow',
-    success: 'green', // possibly remove
-    info: 'blue',
-    verbose: 'magenta',
-    log: 'gray'
+    ///# @name log_types
+    ///# @static
+    ///# @type {object}
+    ///# @raw-code
+    this.log_types = {
+      error: 'red',
+      warning: 'yellow',
+      success: 'green', // possibly remove
+      info: 'blue',
+      verbose: 'magenta',
+      log: 'gray'
+    };
   }
 
   ///# @name log
@@ -337,6 +377,11 @@ export class Logger {
       if (!to.keys(this.log_types).includes(type)) {
         args.unshift(type);
         type = 'log';
+      }
+
+      if (type === 'verbose') {
+        if (!this.options.verbose) return;
+        type = 'console';
       }
 
       const stamp = this.stamp(type);

@@ -1,0 +1,42 @@
+name: AirportRunways
+type: object
+key: _id
+data:
+  pre_run: >
+    this.data.fixed = documents.Airports.length;
+  dependencies:
+    - Airports
+    - Runways
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "return 'airport_' + this.airport_id + '_runways'"
+  airport_id:
+    type: integer
+    description: The airport id
+    data:
+      build: "return documents.Airports[document_index].airport_id"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: airport-runways
+  airport_ident:
+    type: string
+    description: The airports identifer
+    data:
+      build: "return documents.Airports[document_index].airport_ident"
+  runways:
+    type: array
+    description: An array of runway ids that belong to the airport
+    data:
+      build: >
+        var runways = [];
+        for (var i = 0; i < documents.Runways.length; i++) {
+          if (documents.Runways[i].airport_ident == documents.Airports[document_index].airport_ident) {
+            runways.push(documents.Runways[i].runway_id);
+          }
+        }
+        return runways;
