@@ -6,12 +6,8 @@ import { without } from 'lodash';
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
 
-// holds the schemas that still need to have validation on them on a per model basis
-const schemas_todo = {};
-
 /* istanbul ignore next */
 const models = require('./utils').models({
-  schemas_todo,
   root: models_root,
   // Get the models to test. This is used by the `models` function located at the bottom of this file
   modules: '*/models/*.yaml',

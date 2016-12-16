@@ -1,16 +1,20 @@
 /* eslint-disable func-names, babel/object-shorthand */
 
 var joi = require('joi');
-var to = require('to-js').default;
+var to = require('to-js');
+to = to.default;
 var p = require('path').join;
 var _ = require('lodash');
 var globby = require('globby');
 var chalk = require('chalk');
+var reduce = require('async-array-methods').reduce;
+var fs = require('fs-extra-promisify');
+var yaml = require('yamljs');
 
 /* istanbul ignore next: testing util */
 /// @name models
 /// @description This will setup the models function
-/// @arg {object} options
+/// @arg {object} settings
 /// ```js
 /// {
 ///   root: process.cwd(), // the root of the modules that are being tested
@@ -18,21 +22,27 @@ var chalk = require('chalk');
 ///   // the function to get the validation file for the model
 ///   validation: function(model) {
 ///     return model.replace(/models(.*)\.yaml/g, 'validation$1.data.js');
-///   }
+///   },
+///   // default match if match isn't passed to the individual tests
+///   match: null,
+///   // default todo list if match isn't passed to the individual tests
+///   todo: [],
 /// }
 /// ```
 /// @returns {function} - function that loops over each model that was found
-module.exports.models = function(options) {
-  options = to.extend({
+module.exports.models = function(settings) {
+  settings = to.extend({
     root: process.cwd(), // the root of the modules that are being tested
     modules: '', // The path to the modules to test
     // the function to get the validation file for the model
     validation: function(model) {
       return model.replace(/models(.*)\.yaml/g, 'validation$1.data.js');
-    }
-  }, options);
+    },
+    match: null,
+    todo: [],
+  }, settings || {});
 
-  options.modules = globby.sync(options.modules, { cwd: options.root });
+  settings.modules = globby.sync(settings.modules, { cwd: settings.root });
 
   // variable to store schemas so that after they've been required once
   // they don't have to be required again. The keys are the same as the model path
@@ -44,12 +54,14 @@ module.exports.models = function(options) {
   ///# This will loop through each of the models in the `fakeit_root` to run tests for each one.
   ///# It makes it easier to test each model against the different types of functionality.
   ///# @arg {function} cb - The function that's used to test each of the models
-  ///# @arg {number, string, array} match [null]
+  ///# @arg {number, string, array, object} match [null]
   ///# If you only want certain tests to run you can pass in a number which will match the index of the item.
   ///# If you pass in a string it will only run the test that matches the string.
   ///# If you pass in an array it will only run the tests that match an item in the array.
+  ///# If you pass in an object you must use `match`, `todo`, `run` as the keys.
   ///# The items in the array can either be numbers or strings
   ///# @arg {array, string} todo [[]] - The models todo
+  ///# @arg {boolean} run [true] - Determins if the models should run
   ///#
   ///# @returns {function} -
   ///# This is the main group function that will create a new group test for you.
@@ -75,27 +87,37 @@ module.exports.models = function(options) {
   ///#   // because it will be run through validation
   ///#   return actual
   ///# }))
-  function models(cb, match = null, todo = []) {
-    todo = to.array(todo);
+  function models(cb, match, todo, run) {
+    var options = to.arguments.apply(null, [
+      { match: null, todo: [], run: true },
+      match != null ? match : settings.match,
+      todo != null ? todo : settings.todo,
+      run != null ? run : true,
+    ].slice(0, to.array(arguments).length));
+
+    options.todo = to.array(options.todo);
+
     return function(test) {
+      if (!options.run) return;
       // loop over all the globs
-      options.modules.forEach(function(model) {
+      settings.modules.forEach(function(model) {
         // check if there's a matching test
-        const should_test = match === null ? true : !!to.flatten([ match ]).map(function(item) { // eslint-disable-line
+        const should_test = options.match === null ? true : !!to.flatten([ options.match ]).map(function(item) { // eslint-disable-line
           if (typeof item === 'number') {
-            item = options.modules[item];
+            item = settings.modules[item];
           }
+
           return !!item && item.includes(model);
         }).filter(Boolean).length;
 
         // if the model isn't in the todo list then run the tests
         if (
-          should_test && !todo.includes(model)
+          should_test && !options.todo.includes(model)
         ) {
           let schema;
           // get the schema to use for validating that the output is correct
           try {
-            schemas[model] = schema = schemas[model] || require(p(options.root, options.validation(model)));
+            schemas[model] = schema = schemas[model] || require(p(settings.root, settings.validation(model)));
           } catch (e) {
             schemas[model] = schema = {};
           }
@@ -120,7 +142,7 @@ module.exports.models = function(options) {
                 }
 
                 // validate the object that can be validated
-                var validate = (err) => {
+                function validate(err) {
                   if (err) {
                     let match = err.message.match(/(?:")[^"]+"/);
                     if (match) {
@@ -145,8 +167,8 @@ module.exports.models = function(options) {
               });
           });
         } else if (
-          match === null &&
-          todo.includes(model)
+          options.match === null &&
+          options.todo.indexOf(model) > -1
         ) {
           // if there's no specific match to test at they're
           // on the todo list then add that model to todo tests
@@ -156,8 +178,22 @@ module.exports.models = function(options) {
     };
   };
 
-  models.files = options.modules;
+  models.files = settings.modules;
   models.schemas_todo = {};
+
+  // this reads each of the models and parses the yaml string
+  // then stores it on an object by it's file name
+  // this can be used so you don't have to continually read the model files
+  models.getContents = function getContents() {
+    return reduce(models.files, function(prev, next) {
+      return fs.readFile(p(settings.root, next))
+        .then(function(contents) {
+          prev[next] = yaml.parse(to.string(contents));
+          return prev;
+        });
+    }, {});
+  };
+
   models.todo = function() {
     for (var schema in models.schemas_todo) { // eslint-disable-line
       for (var i = 0; i < models.schemas_todo[schema].length; i++) {
