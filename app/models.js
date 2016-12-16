@@ -5,13 +5,61 @@ import DependencyResolver from 'dependency-resolver';
 import * as utils from './utils';
 import Base from './base';
 import { set, get } from 'lodash';
-import to from 'to-js';
-
+import to, { is } from 'to-js';
+import { transform } from 'babel-core';
+import globby from 'globby';
 
 export default class Models extends Base {
   constructor(options = {}) {
-    super(options);
+    super(to.extend({
+      babel_config: '+(.babelrc|package.json)',
+    }, options));
+    // holds all the inputs that are registerd
+    this.inputs = {};
+
     this.models = []; // holds the parsed models
+
+    this.prepared = false;
+  }
+
+  ///# @name prepare
+  ///# @description
+  ///# This is used to prepare the saving functionality that is determined by the
+  ///# options that were passed to the constructor.
+  ///# It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
+  ///# This way when you go to save data it, that function will know if the setup is complete or not and
+  ///# wait for it to be done before it starts saving data.
+  ///# @returns {promise} - The setup function that was called
+  ///# @async
+  prepare() {
+    this.preparing = true;
+    this.preparing = this.setup();
+    return this.preparing;
+  }
+
+  ///# @name setup
+  ///# @description
+  ///# This is used to setup the saving function that will be used.
+  ///# @async
+  async setup() {
+    // if this.prepare hasn't been called then run it first.
+    if (this.preparing == null) {
+      return this.prepare();
+    }
+
+    let { babel_config } = this.options;
+
+    if (!is.string(babel_config)) return;
+
+    const dir = path.join(__dirname.split('node_modules')[0], '..');
+    let file = await globby(this.resolvePaths(babel_config, dir), { dot: true });
+    file = file[0];
+    let config = await fs.readJson(file);
+    if (file.includes('package')) {
+      config = config.babelConfig || {};
+    }
+    this.options.babel_config = config;
+    this.prepared = true;
   }
 
   async registerModels(models) {
@@ -19,6 +67,16 @@ export default class Models extends Base {
     if (!models) {
       return;
     }
+
+    /* istanbul ignore if */
+    if (this.prepared !== true) {
+      if (this.preparing == null) {
+        this.prepare();
+      }
+      await this.preparing;
+    }
+
+    this.options.babel_config = await this.options.babel_config;
 
     // get list of files
     let files = await utils.findFiles(this.resolvePaths(models));

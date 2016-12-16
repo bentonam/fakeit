@@ -1,7 +1,11 @@
 import Models from '../dist/models.js';
 import { join as p } from 'path';
+import path, { join as p } from 'path';
 import ava from 'ava-spec';
+import to from 'to-js';
+import is from 'joi';
 import { without } from 'lodash';
+import fs from 'fs-extra-promisify';
 
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
@@ -26,6 +30,14 @@ function filterDone() {
   return without(models.files, ...done);
 }
 
+let babel_config, contents;
+
+test.before(async () => {
+  babel_config = await fs.readJson(p(__dirname, '..', '.babelrc'));
+  // get the contents of the models store them on an object so it can be reused
+  contents = await models.getContents();
+});
+
 test.beforeEach((t) => {
   t.context = new Models({
     root: models_root,
@@ -35,12 +47,49 @@ test.beforeEach((t) => {
 
 test('without args', async (t) => {
   t.context.options.log = true;
-  t.deepEqual(t.context.options, {
-    root: models_root,
-    log: true,
-    verbose: false,
-    timestamp: true,
-  });
+  const { error } = is.object({
+    options: is.object({
+      babel_config: is.string().regex(/\+\(\.babelrc\|package\.json\)/),
+    })
+      .unknown()
+      .required(),
+    log_types: is.object().required(),
+    inputs: is.object().length(0),
+    models: is.array().length(0),
+    prepared: is.boolean(),
+  })
+    .validate(t.context);
+  if (error) {
+    t.fail(error);
+  } else {
+    t.pass();
+  }
+});
+
+test('prepare', async (t) => {
+  t.is(t.context.prepared, false);
+  t.is(t.context.preparing, undefined);
+  t.is(typeof t.context.options.babel_config, 'string');
+  const preparing = t.context.prepare();
+  t.is(typeof t.context.preparing.then, 'function');
+  t.is(t.context.prepared, false);
+  await preparing;
+  t.is(t.context.prepared, true);
+  t.is(typeof t.context.options.babel_config, 'object');
+  t.deepEqual(t.context.options.babel_config, babel_config);
+});
+
+test('setup', async (t) => {
+  t.is(t.context.prepared, false);
+  t.is(t.context.preparing, undefined);
+  t.is(typeof t.context.options.babel_config, 'string');
+  const preparing = t.context.setup();
+  t.is(typeof t.context.preparing.then, 'function');
+  t.is(t.context.prepared, false);
+  await preparing;
+  t.is(t.context.prepared, true);
+  t.is(typeof t.context.options.babel_config, 'object');
+  t.deepEqual(t.context.options.babel_config, babel_config);
 });
 
 test('registerModels without args', async (t) => {
