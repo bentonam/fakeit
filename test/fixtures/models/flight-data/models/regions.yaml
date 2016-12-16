@@ -13,12 +13,12 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'region_' + this.region_code"
+      post_build: "'region_' + this.region_code"
   region_id:
     type: integer
     description: The regions id
     data:
-      build: "return inputs.regions[document_index].id"
+      build: "inputs.regions[document_index].id"
   doc_type:
     type: string
     description: The document type
@@ -28,24 +28,24 @@ properties:
     type: string
     description: The ISO region code
     data:
-        build: "return inputs.regions[document_index].code"
+        build: "inputs.regions[document_index].code"
   local_code:
     type: string
     description: The local code for the region
     data:
-      build: "return inputs.regions[document_index].local_code"
+      build: "inputs.regions[document_index].local_code"
   region_name:
     type: string
     description: The regions name
     data:
-      build: "return inputs.regions[document_index].name"
+      build: "inputs.regions[document_index].name"
   continent_code:
     type: string
     description: The ISO continent code for the region
     data:
-      build: "return inputs.regions[document_index].continent"
+      build: "inputs.regions[document_index].continent"
   iso_country:
     type: string
     description: The ISO country code for the region
     data:
-      build: "return inputs.regions[document_index].iso_country"
+      build: "inputs.regions[document_index].iso_country"

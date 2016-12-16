@@ -12,12 +12,12 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'airport_' + this.airport_id + '_frequencies'"
+      post_build: "'airport_' + this.airport_id + '_frequencies'"
   airport_id:
     type: integer
     description: The airport id
     data:
-      pre_build: "return documents.Airports[document_index].airport_id"
+      pre_build: "documents.Airports[document_index].airport_id"
   doc_type:
     type: string
     description: The document type
@@ -27,7 +27,7 @@ properties:
     type: string
     description: The airports identifier
     data:
-      pre_build: "return documents.Airports[document_index].airport_ident"
+      pre_build: "documents.Airports[document_index].airport_ident"
   frequencies:
     type: array
     description: An array of frequency_ids used by the airport

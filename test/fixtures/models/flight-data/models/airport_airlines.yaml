@@ -12,12 +12,12 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'airport_' + this.airport_id + '_airlines'"
+      post_build: "'airport_' + this.airport_id + '_airlines'"
   airport_id:
     type: integer
     description: The route id
     data:
-      build: "return documents.Airports[document_index].airport_id"
+      build: "documents.Airports[document_index].airport_id"
   doc_type:
     type: string
     description: The document type
@@ -27,7 +27,7 @@ properties:
     type: string
     description: The airports iata / icao code
     data:
-      build: "return documents.Airports[document_index].airport_ident"
+      build: "documents.Airports[document_index].airport_ident"
   airlines:
     type: array
     description: An array of airline codes at the airport

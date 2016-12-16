@@ -13,12 +13,12 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'continent_' + this.continent_code"
+      post_build: "'continent_' + this.continent_code"
   continent_code:
     type: string
     description: The ISO continent code
     data:
-      build: "return inputs.continents[document_index].code"
+      build: "inputs.continents[document_index].code"
   doc_type:
     type: string
     description: The document type
@@ -28,4 +28,4 @@ properties:
     type: string
     description: The continent name
     data:
-      build: "return inputs.continents[document_index].name"
+      build: "inputs.continents[document_index].name"

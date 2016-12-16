@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'playlist_' + this.id;"
+      post_build: "'playlist_' + this.id;"
   type:
     type: string
     description: The document type
@@ -22,24 +22,24 @@ properties:
     type: string
     description: Unique identifier representing a specific playlist
     data:
-      build: "return faker.random.uuid();"
+      build: "faker.random.uuid();"
   created:
     type: string
     description: The date the track was created
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(this.created).toISOString();"
+      post_build: "new Date(this.created).toISOString();"
   updated:
     type: string
     description: The date the track was updated
     data:
       fake: "{{date.recent}}"
-      post_build: "return new Date(this.updated).toISOString();"
+      post_build: "new Date(this.updated).toISOString();"
   visibility:
     type: string
     description: The playlist visibility
     data:
-        build: "return faker.random.arrayElement(['PUBLIC', 'PRIVATE']);"
+        build: "faker.random.arrayElement([ 'PUBLIC', 'PRIVATE' ]);"
   owner:
     type: object
     description: The user that the playlist belongs to

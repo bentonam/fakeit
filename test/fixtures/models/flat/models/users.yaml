@@ -34,41 +34,41 @@ properties:
     description: The users home phone
     data:
       fake: "{{phone.phoneNumber}}"
-      post_build: "return this.home_phone.replace(/x[0-9]+$/, '')"
+      post_build: "this.home_phone.replace(/x[0-9]+$/, '')"
   mobile_phone:
     type: string
     description: The users mobile phone
     data:
       fake: "{{phone.phoneNumber}}"
-      post_build: "return this.mobile_phone.replace(/x[0-9]+$/, '')"
+      post_build: "this.mobile_phone.replace(/x[0-9]+$/, '')"
   address_1:
     type: string
     description: The address 1
     data:
-      build: "return faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+      build: "faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
   address_2:
     type: string
     description: The address_2
     data:
-      build: "return chance.bool({likelihood: 35}) ? faker.address.secondaryAddress() : '';"
+      build: "chance.bool({ likelihood: 35 }) ? faker.address.secondaryAddress() : '';"
   locality:
     type: string
     description: The locality
     data:
-      build: "return faker.address.city();"
+      build: "faker.address.city();"
   region:
     type: string
     description: The region / state / province
     data:
-      build: "return faker.address.stateAbbr();"
+      build: "faker.address.stateAbbr();"
   postal_code:
     type: string
     description: The zip code / postal code
     data:
-      build: "return faker.address.zipCode();"
+      build: "faker.address.zipCode();"
   country:
     type: string
     description: The country code
     data:
-      build: "return faker.address.countryCode();"
+      build: "faker.address.countryCode();"
 

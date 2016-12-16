@@ -4,9 +4,9 @@ key: _id
 data:
   fixed: 10000
   pre_run: |
-    globals.address_types = ['Home', 'Work', 'Other'];
-    globals.email_types = ['Home', 'Work', 'Other'];
-    globals.phone_types = ['Home', 'Work', 'Mobile', 'Main', 'Other', 'Fax'];
+    globals.address_types = [ 'Home', 'Work', 'Other' ];
+    globals.email_types = [ 'Home', 'Work', 'Other' ];
+    globals.phone_types = [ 'Home', 'Work', 'Mobile', 'Main', 'Other', 'Fax' ];
     globals.flattened_regions = {};
     for (var i = 0; i < documents.Regions.length; i++) {
       if (!globals.flattened_regions[documents.Regions[i].iso_country]) {
@@ -15,16 +15,16 @@ data:
       globals.flattened_regions[documents.Regions[i].iso_country].push(documents.Regions[i].region_code);
     }
   pre_build: |
-    globals.current_region = documents.Regions[chance.integer({min: 0, max: documents.Regions.length - 1})];
+    globals.current_region = documents.Regions[chance.integer({ min: 0, max: documents.Regions.length - 1 })];
   post_build: |
     if (this.phones.length) {
-      this.phones[chance.integer({min: 0, max: this.phones.length - 1})].primary = true;
+      this.phones[chance.integer({ min: 0, max: this.phones.length - 1 })].primary = true;
     }
     if (this.emails.length) {
-      this.emails[chance.integer({min: 0, max: this.emails.length - 1})].primary = true;
+      this.emails[chance.integer({ min: 0, max: this.emails.length - 1 })].primary = true;
     }
     if (this.addresses.length) {
-      this.addresses[chance.integer({min: 0, max: this.addresses.length - 1})].primary = true;
+      this.addresses[chance.integer({ min: 0, max: this.addresses.length - 1 })].primary = true;
     }
   dependencies:
     - Regions
@@ -33,7 +33,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'user_' + this.user_id;"
+      post_build: "'user_' + this.user_id;"
   doc_type:
     type: string
     description: The document type
@@ -43,7 +43,7 @@ properties:
     type: integer
     description: The users id
     data:
-      build: "return document_index + 1;"
+      build: "document_index + 1;"
   account:
     type: object
     properties:
@@ -61,17 +61,17 @@ properties:
         type: integer
         description: An epoch time of when the user was created
         data:
-          build: "return new Date(faker.date.past()).getTime();"
+          build: "new Date(faker.date.past()).getTime();"
       modified_on:
         type: integer
         description: An epoch time of when the user was last modified
         data:
-          build: "return new Date(faker.date.recent()).getTime();"
+          build: "new Date(faker.date.recent()).getTime();"
       last_login:
         type: integer
         description: An epoch time of when the contact was last modified
         data:
-          build: "return new Date(faker.date.recent()).getTime()"
+          build: "new Date(faker.date.recent()).getTime()"
   details:
     description: An object of the user details
     schema:
@@ -108,12 +108,12 @@ definitions:
         type: string
         description: The phone type
         data:
-          build: "return faker.random.arrayElement(globals.email_types);"
+          build: "faker.random.arrayElement(globals.email_types);"
       email_address:
         type: string
         description: The email address
         data:
-          build: "return faker.internet.email()"
+          build: "faker.internet.email()"
       primary:
         type: boolean
         description: If the email address is the primary email address or not
@@ -126,17 +126,17 @@ definitions:
         type: string
         description: The phone type
         data:
-          build: "return faker.random.arrayElement(globals.phone_types)"
+          build: "faker.random.arrayElement(globals.phone_types)"
       phone_number:
         type: string
         description: The phone number
         data:
-          build: "return chance.phone()"
+          build: "chance.phone()"
       extension:
         type: string
         description: The phone extension
         data:
-          build: "return chance.bool({likelihood: 20}) ? '' + chance.integer({min: 1000, max: 9999}) : null"
+          build: "chance.bool({ likelihood: 20 }) ? '' + chance.integer({ min: 1000, max: 9999 }) : null"
       primary:
         type: boolean
         description: If the phone is the primary phone or not
@@ -149,42 +149,42 @@ definitions:
         type: string
         description: The address type
         data:
-          build: "return faker.random.arrayElement(globals.address_types)"
+          build: "faker.random.arrayElement(globals.address_types)"
       address_1:
         type: string
         description: The address 1
         data:
-          build: "return faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+          build: "faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
       address_2:
         type: string
         description: The address_2
         data:
-          build: "return chance.bool({likelihood: 35}) ? faker.address.secondaryAddress() : null;"
+          build: "chance.bool({ likelihood: 35 }) ? faker.address.secondaryAddress() : null;"
       locality:
         type: string
         description: The locality
         data:
-          build: "return faker.address.city();"
+          build: "faker.address.city();"
       iso_region:
         type: string
         description: The ISO region / state / province code
         data:
           build: |
             var region = globals.current_region.region_code;
-            if (chance.bool({likelihood: 30})) {
-              region = globals.flattened_regions[globals.current_region.iso_country][chance.integer({min: 0, max: globals.flattened_regions[globals.current_region.iso_country].length - 1})]
+            if (chance.bool({ likelihood: 30 })) {
+              region = globals.flattened_regions[globals.current_region.iso_country][chance.integer({ min: 0, max: globals.flattened_regions[globals.current_region.iso_country].length - 1 })]
             }
             return region;
       postal_code:
         type: string
         description: The zip code / postal code
         data:
-          build: "return faker.address.zipCode();"
+          build: "faker.address.zipCode();"
       iso_country:
         type: string
         description: The ISO country code
         data:
-          build: "return globals.current_region.iso_country"
+          build: "globals.current_region.iso_country"
       primary:
         type: boolean
         description: If the email address is the primary email address or not
@@ -197,7 +197,7 @@ definitions:
         type: string
         description: The users prefix
         data:
-          build: "return chance.bool({likelihood: 40}) ? chance.prefix() : null"
+          build: "chance.bool({ likelihood: 40 }) ? chance.prefix() : null"
       first_name:
         type: string
         description: The users first name
@@ -207,34 +207,34 @@ definitions:
         type: string
         description: The users middle name
         data:
-          build: "return chance.bool() ? chance.name({middle: true}).split(' ')[1] : null"
+          build: "chance.bool() ? chance.name({ middle: true }).split(' ')[1] : null"
       last_name:
         type: string
         description: The users last name
         data:
-          build: "return chance.bool({likelihood: 70})  ? faker.name.lastName() : null"
+          build: "chance.bool({ likelihood: 70 }) ? faker.name.lastName() : null"
       suffix:
         type: string
         description: The users suffix
         data:
-          build: "return chance.bool({likelihood: 20}) ? chance.suffix() : null"
+          build: "chance.bool({ likelihood: 20 }) ? chance.suffix() : null"
       company:
         type: string
         description: The users company
         data:
-          build: "return chance.bool({likelihood: 30})  ? faker.company.companyName() : null"
+          build: "chance.bool({ likelihood: 30 }) ? faker.company.companyName() : null"
       job_title:
         type: string
         description: The users job title
         data:
-          build: "return chance.bool({likelihood: 30})  ? faker.name.jobTitle() : null"
+          build: "chance.bool({ likelihood: 30 }) ? faker.name.jobTitle() : null"
       dob:
         type: string
         description: The users date of birth
         data:
-          build: "return chance.bool() ? new Date(faker.date.past()).toISOString().split('T')[0] : null"
+          build: "chance.bool() ? new Date(faker.date.past()).toISOString().split('T')[0] : null"
       home_country:
         type: string
         description: The users ISO home country
         data:
-          build: "return globals.current_region.iso_country"
+          build: "globals.current_region.iso_country"

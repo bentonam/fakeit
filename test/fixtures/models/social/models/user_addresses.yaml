@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'user_' + this.user_id + '_addresses'"
+      post_build: "'user_' + this.user_id + '_addresses'"
   doc_type:
     type: string
     description: The document type
@@ -22,7 +22,7 @@ properties:
     type: integer
     description: The user_id the lookup is for
     data:
-      build: "return documents.Users[document_index].user_id"
+      build: "documents.Users[document_index].user_id"
   addresses:
     type: array
     description: The address id

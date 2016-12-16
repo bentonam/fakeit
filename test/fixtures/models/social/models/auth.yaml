@@ -11,7 +11,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'user_' + this.user_id + '_auth'"
+      post_build: "'user_' + this.user_id + '_auth'"
   doc_type:
     type: string
     description: The document type
@@ -31,4 +31,4 @@ properties:
     type: integer
     description: The users id
     data:
-      build: "return documents.Users[document_index].user_id"
+      build: "documents.Users[document_index].user_id"

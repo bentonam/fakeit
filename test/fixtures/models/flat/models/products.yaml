@@ -9,7 +9,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'product_' + this.product_id;"
+      post_build: "'product_' + this.product_id;"
   doc_type:
     type: string
     description: The document type
@@ -20,18 +20,18 @@ properties:
     description: Unique identifier representing a specific product
     data:
       # this had to be done because faker.fake("{{random.uuid}}") errors
-      build: "return faker.random.uuid();"
+      build: "faker.random.uuid();"
   price:
     type: double
     description: The product price
     data:
-      build: "return parseFloat(faker.commerce.price()) + '.' + faker.random.number({min: 0, max: 99});"
+      build: "parseFloat(faker.commerce.price()) + '.' + faker.random.number({ min: 0, max: 99 });"
   sale_price:
     type: double
     description: The product price
     data:
-      build: "return parseFloat(faker.commerce.price()) + '.' + faker.random.number({min: 0, max: 99});"
-      post_build: "return this.sale_price > this.price ? 0 : this.sale_price;"
+      build: "parseFloat(faker.commerce.price()) + '.' + faker.random.number({ min: 0, max: 99 });"
+      post_build: "this.sale_price > this.price ? 0 : this.sale_price;"
   display_name:
     type: string
     description: Display name of product.
@@ -53,7 +53,7 @@ properties:
     data:
       build: |
         var keywords = [];
-        for (var i = 0, rand = chance.integer({min: 2, max: 8}); i < rand; i++) {
+        for (var i = 0, rand = chance.integer({ min: 2, max: 8 }); i < rand; i++) {
           keywords.push(faker.random.word());
         }
         return keywords;
@@ -61,18 +61,18 @@ properties:
     type: string
     description: The availability status of the product
     data:
-      build: "return faker.random.arrayElement(['Preorder', 'In-Stock', 'Out of Stock', 'Discontinued']);"
+      build: "faker.random.arrayElement([ 'Preorder', 'In-Stock', 'Out of Stock', 'Discontinued' ]);"
   availability_date:
     type: integer
     description: An epoch time of when the document was last modified
     data:
       fake: "{{date.recent}}"
-      post_build: "return new Date(this.availability_date).getTime();"
+      post_build: "new Date(this.availability_date).getTime();"
   product_slug:
     type: string
     description: The URL friendly version of the product name
     data:
-      post_build: "return faker.helpers.slugify(this.display_name).toLowerCase();"
+      post_build: "faker.helpers.slugify(this.display_name).toLowerCase();"
   category:
     type: string
     description: Category for the Product
@@ -82,7 +82,7 @@ properties:
     type: string
     description: The URL friendly version of the category name
     data:
-      post_build: "return faker.helpers.slugify(this.category).toLowerCase();"
+      post_build: "faker.helpers.slugify(this.category).toLowerCase();"
   image:
     type: string
     description: Image URL representing the product.
@@ -93,10 +93,10 @@ properties:
     description: An epoch time of when the document was first created
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(this.created_on).getTime();"
+      post_build: "new Date(this.created_on).getTime();"
   modified_on:
     type: integer
     description: An epoch time of when the document was last modified
     data:
       fake: "{{date.recent}}"
-      post_build: "return new Date(this.modified_on).getTime();"
+      post_build: "new Date(this.modified_on).getTime();"

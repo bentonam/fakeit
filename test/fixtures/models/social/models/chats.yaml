@@ -11,7 +11,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'chat_' + this.chat_id;"
+      post_build: "'chat_' + this.chat_id;"
   doc_type:
     type: string
     description: The document type
@@ -21,12 +21,12 @@ properties:
     type: string
     description: The chat id as a GUID
     data:
-      build: "return chance.guid()"
+      build: "chance.guid()"
   created_on:
     type: integer
     description: The date of the post
     data:
-      build: "return new Date(chance.bool({likelihood: 30}) ? faker.date.past() : faker.date.recent()).getTime()"
+      build: "new Date(chance.bool({ likelihood: 30 }) ? faker.date.past() : faker.date.recent()).getTime()"
   users:
     type: array
     description: An array of user ids who are in the chat
@@ -35,9 +35,9 @@ properties:
         var user_ids = [];
         var rand;
         var user;
-        var rand = chance.bool({likelihood: 70}) ? 2 : chance.integer({min: 2, max: 10});
+        var rand = chance.bool({ likelihood: 70 }) ? 2 : chance.integer({ min: 2, max: 10 });
         for (var i = 0; i < rand; i++) {
-          user = documents.Users[chance.integer({min: 0, max: documents.Users.length -1})];
+          user = documents.Users[chance.integer({ min: 0, max: documents.Users.length -1 })];
           if (user_ids.indexOf(user.user_id) === -1) {
             user_ids.push(user.user_id);
           }

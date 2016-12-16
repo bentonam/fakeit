@@ -12,12 +12,12 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'airport_' + this.airport_id + '_runways'"
+      post_build: "'airport_' + this.airport_id + '_runways'"
   airport_id:
     type: integer
     description: The airport id
     data:
-      build: "return documents.Airports[document_index].airport_id"
+      build: "documents.Airports[document_index].airport_id"
   doc_type:
     type: string
     description: The document type
@@ -27,7 +27,7 @@ properties:
     type: string
     description: The airports identifer
     data:
-      build: "return documents.Airports[document_index].airport_ident"
+      build: "documents.Airports[document_index].airport_ident"
   runways:
     type: array
     description: An array of runway ids that belong to the airport
