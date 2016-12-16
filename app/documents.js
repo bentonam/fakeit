@@ -3,7 +3,7 @@ import Chance from 'chance';
 const chance = new Chance();
 import Base from './base';
 import { objectSearch } from './utils';
-import { set, get, extend } from 'lodash';
+import { set, get } from 'lodash';
 import to from 'to-js';
 
 export default class Document extends Base {
@@ -23,8 +23,6 @@ export default class Document extends Base {
     if (!model.data) {
       model.data = {};
     }
-
-    this.inputs = extend(this.inputs, model.data.inputs);
 
     // if there is a pre_run function call it
     this.runData(model.data.pre_run, model);

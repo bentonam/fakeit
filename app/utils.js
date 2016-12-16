@@ -144,8 +144,7 @@ export async function readFiles(files) {
     return info;
   });
 
-
-  return to.flatten(files);
+  return to.flatten(files).filter(Boolean);
 }
 
 /// @name pool

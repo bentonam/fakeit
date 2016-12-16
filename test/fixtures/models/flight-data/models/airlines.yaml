@@ -2,6 +2,7 @@ name: Airlines
 type: object
 key: _id
 data:
+  inputs: '../input/airlines.csv'
   pre_run: >
     if (!inputs.airlines) {
       throw new Error('airlines must be provided as an input');

@@ -52,7 +52,7 @@ export default class Fakeit extends Base {
     // @todo remove `this.options.models`
     await model.registerModels(models);
 
-    const document = new Document(this.options, this.documents, this.globals);
+    const document = new Document(this.options, this.documents, this.globals, model.inputs);
 
     await preparing;
 

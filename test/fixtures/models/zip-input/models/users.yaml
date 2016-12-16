@@ -4,6 +4,7 @@ key: _id
 data:
   min: 100
   max: 500
+  inputs: ../input/config.zip
   pre_run: >
     if (!inputs.countries) {
       throw new Error('countries must be provided as an input');

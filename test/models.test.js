@@ -1,11 +1,15 @@
-import Models from '../dist/models.js';
-import { join as p } from 'path';
+/* eslint-disable no-undefined */
+
+import Models, {
+  parseModelInputs,
+} from '../dist/models.js';
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
 import to from 'to-js';
 import is from 'joi';
 import { without } from 'lodash';
 import fs from 'fs-extra-promisify';
+import AdmZip from 'adm-zip';
 
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
@@ -106,6 +110,41 @@ test.group('registerModels', models(async (t, model) => {
   await t.context.registerModels(model);
   return t.context.models[0];
 }, null, filterDone()));
+
+test.group('parseModelInputs', models(async (t, file) => {
+  t.deepEqual(to.keys(t.context.inputs).length, 0);
+  const model = contents[file];
+
+  let files = model.data.inputs = t.context.resolvePaths(model.data.inputs, path.resolve(t.context.options.root, path.dirname(file)));
+  files = files.map((str) => {
+    if (!/.*\.zip/.test(str)) return str;
+    const zip = new AdmZip(str);
+    return zip.getEntries().map((entry) => {
+      if (!entry.isDirectory && !entry.entryName.match(/^(\.|__MACOSX)/)) {
+        return entry.entryName;
+      }
+    });
+  });
+  files = to.flatten(files).filter(Boolean);
+
+  const expected = files.reduce((prev, next) => {
+    prev[path.basename(next).split('.')[0]] = is.any().allow(is.array(), is.object());
+    return prev;
+  }, {});
+
+  const actual = await parseModelInputs(model);
+
+  const tests = [ t.context.inputs, actual, model.data.inputs ];
+
+  for (let item of tests) {
+    const { error } = is.object(expected).validate(item);
+    if (error) {
+      t.fail(error);
+    } else {
+      t.pass();
+    }
+  }
+}));
 
 
 // log all the schema keys that still need to be done

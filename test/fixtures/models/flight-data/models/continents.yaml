@@ -2,6 +2,7 @@ name: Continents
 type: object
 key: _id
 data:
+  inputs: ../input/continents.csv
   pre_run: >
     if (!inputs.continents) {
       throw new Error('continents must be provided as an input');

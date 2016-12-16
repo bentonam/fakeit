@@ -2,6 +2,7 @@ name: Navaids
 type: object
 key: _id
 data:
+  inputs: ../input/navaids.csv
   pre_run: >
     if (!inputs.navaids) {
       throw new Error('navaids must be provided as an input');

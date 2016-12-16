@@ -2,6 +2,7 @@ name: Runways
 type: object
 key: _id
 data:
+  inputs: ../input/runways.csv
   pre_run: >
     if (!inputs.runways) {
       throw new Error('runways must be provided as an input');

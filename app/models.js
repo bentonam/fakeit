@@ -116,14 +116,19 @@ export default class Models extends Base {
   ///# This is used to parse the model that was passed and add the functions, and fix the types, data, and defaults
   ///# @returns {object} - The model that's been updated
   async parseModel(model, file) {
-    model.data.inputs = this.resolvePaths(model.data.inputs, path.dirname(file));
-    const inputs = parseModelInputs(model);
     parseModelFunctions(model);
+    const root = path.resolve(this.options.root, path.dirname(file));
+    // resolve the input paths
+    model.data.inputs = this.resolvePaths(model.data.inputs, root);
+    const inputs = parseModelInputs(model, file);
     parseModelReferences(model);
     parseModelTypes(model);
     parseModelDefaults(model);
     parseModelCount(model, this.options.count);
-    await inputs;
+
+    // add this models inputs to the main inputs object
+    this.inputs = to.extend(this.inputs || {}, await inputs);
+
     return model;
   }
 }
@@ -133,20 +138,25 @@ export default class Models extends Base {
 /// @description
 /// This is used to parse files that are used to generate specific data
 /// @arg {object} model - The model to parse
+/// @returns {object}
 /// @async
-export async function parseModelInputs(model) {
-  if (!model.data.inputs.length) {
-    return model;
+/// @note {5} The `model.data.input` paths must already be resolved to be a absolute path.
+export async function parseModelInputs(model, current_file) {
+  if (
+    !model.data.inputs ||
+    !model.data.inputs.length
+  ) {
+    model.data.inputs = {};
+    return {};
   }
 
   const inputs = {};
 
-  // get list of files
-  let files = await utils.findFiles(model.data.inputs);
-  // flattens the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
-  files = to.flatten(files).filter((file) => !!file && /\.(csv|json|cson|ya?ml|zip)$/i.test(file));
+  // get list of files, flatten the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
+  let files = to.flatten(await utils.findFiles(model.data.inputs))
+   .filter((file) => !!file && /\.(csv|json|cson|ya?ml|zip)$/i.test(file));
 
-  if (!files.length) throw new Error('No valid input files found.');
+  if (!files.length) throw new Error(`No valid input files found for ${current_file}`);
 
   // loop over all the files, read them and parse them if needed
   files = await utils.readFiles(files);
@@ -163,6 +173,7 @@ export async function parseModelInputs(model) {
   });
 
   model.data.inputs = inputs;
+  return inputs;
 }
 
 // searches the model for any of the pre / post run and build functions and generates them
