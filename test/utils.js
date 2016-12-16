@@ -126,8 +126,18 @@ module.exports.models = function(settings) {
           const schema_keys = schema.isJoi ? _.map(schema._inner.children, 'key') : to.keys(schema);
           test(model, function(t) { // eslint-disable-line
             // run the call back with the `t` assertion object and the current model
+            var result = cb(t, model);
+
+            if (!result) {
+              return;
+            }
+
+            if (typeof result.then !== 'function') {
+              result = Promise.resolve(result);
+            }
+
             // assume that the callback will return a promise
-            return cb(t, model)
+            return result
               .then(function(actual) {
                 // find the keys that still need to be validated
                 var omitted = _.difference(to.keys(actual), schema_keys);

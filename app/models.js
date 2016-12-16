@@ -116,11 +116,11 @@ export default class Models extends Base {
   ///# This is used to parse the model that was passed and add the functions, and fix the types, data, and defaults
   ///# @returns {object} - The model that's been updated
   async parseModel(model, file) {
-    parseModelFunctions(model);
     const root = path.resolve(this.options.root, path.dirname(file));
     // resolve the input paths
     model.data.inputs = this.resolvePaths(model.data.inputs, root);
     const inputs = parseModelInputs(model, file);
+    parseModelFunctions(model, this.options.babel_config);
     parseModelReferences(model);
     parseModelTypes(model);
     parseModelDefaults(model);
@@ -176,8 +176,12 @@ export async function parseModelInputs(model, current_file) {
   return inputs;
 }
 
-// searches the model for any of the pre / post run and build functions and generates them
-export function parseModelFunctions(model) {
+/// @name parseModelFunctions
+/// @description
+/// searches the model for any of the pre / post run and build functions and generates them
+/// @arg {object} model - The model to update
+/// @arg {string, object} babel_config [{}] - The configuration to use for babel
+export function parseModelFunctions(model, babel_config = {}) {
   // console.log('models.parseModelFunctions');
   const paths = utils.objectSearch(model, /((pre|post)_run)|(pre_|post_)?build$/);
   paths.forEach((function_path) => {
@@ -188,18 +192,49 @@ export function parseModelFunctions(model) {
       name = function_path.split('.').pop();
     }
 
+    // get the function
+    let fn = get(model, function_path).trim().split('\n').filter(Boolean);
+
+    // if it's a single line function then ensure that the value is returned
+    // just like normal es6 arrow functions
+    if (fn.length === 1) {
+      fn = [ `return ${fn[0].replace(/^return\s+/, '')}` ];
+    }
+
+    // indent each line and create a string
+    fn = fn.map((line) => `  ${line}`).filter(Boolean).join('\n');
+
+    // wrap the users function in the function we're going to use to trigger their function
+    fn = `function __result(documents, globals, inputs, faker, chance, document_index) {\n${fn}\n}`;
+
+    // if a babel config exists then transform the function
+    if (
+      is.plainObject(babel_config) &&
+      !is.empty(babel_config)
+    ) {
+      try {
+        // transform the function and remove the `'use strict';\n` part that babel adds if it exists
+        fn = transform(fn, babel_config).code.replace(/^.use strict.;\n+/, '');
+      } catch (e) {
+        const file_message = model.file ? ` in ${model.file}` : '';
+        e.message = `Failed to transpile ${function_path} with babel${file_message}\n${e.message}`.trim();
+        throw e;
+      }
+    }
+
+    // create the main function that will be run.
+    /* eslint-disable indent */
+    fn = [
+      `function ${name}(_documents, _globals, _inputs, _faker, _chance, _document_index) {`,
+        // indent each line and create a string
+        fn.split('\n').map((line) => `  ${line}`).filter(Boolean).join('\n'),
+        '  return __result.apply(this, [].slice.call(arguments));',
+      '}'
+    ].join('\n');
+    /* eslint-enable indent */
+
     try {
-      set(
-        model,
-        function_path,
-        /* eslint-disable no-new-func */
-        new Function(`
-          return function ${name}(documents, globals, inputs, faker, chance, document_index) {
-            ${get(model, function_path)}
-          }
-        `)()
-        /* eslint-enable no-new-func */
-      );
+      set(model, function_path, new Function(`return ${fn}`)()); // eslint-disable-line no-new-func
     } catch (e) {
       throw new Error(`Function Error in model '${model.name}', for property: ${function_path}, Reason: ${e.message}`);
     }
