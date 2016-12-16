@@ -2,7 +2,7 @@ name: AirportAirlines
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Airports.length;
   dependencies:
     - Airports
@@ -32,7 +32,7 @@ properties:
     type: array
     description: An array of airline codes at the airport
     data:
-      build: >
+      build: |
         var airlines = [];
         var airline_code;
         for (var i = 0; i < documents.Routes.length; i++) {

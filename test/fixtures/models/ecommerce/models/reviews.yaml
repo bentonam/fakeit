@@ -27,14 +27,14 @@ properties:
     type: string
     description: The product_id the review is for
     data:
-      build: >
+      build: |
         var rand = Math.floor(Math.random() * (documents.Products.length - 1)) + 0;
         return documents.Products[rand].product_id;
   user_id:
     type: integer
     description: The user_id of the user who wrote the review
     data:
-      build: >
+      build: |
         var rand = Math.floor(Math.random() * (documents.Users.length - 1)) + 0;
         return documents.Users[rand].user_id;
   reviewer_name:

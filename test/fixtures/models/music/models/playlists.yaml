@@ -44,7 +44,7 @@ properties:
     type: object
     description: The user that the playlist belongs to
     data:
-        build: >
+        build: |
           var user = documents.Users[Math.floor(Math.random() * (documents.Users.length - 1)) + 0];
           return {
             firstName: user.firstName,
@@ -58,7 +58,7 @@ properties:
     type: array
     description: An array of track id's
     data:
-      build: >
+      build: |
         var tracks = [];
         var track;
         for (var i = 0, rand = Math.floor(Math.random() * 25) + 0; i < rand; i++) {

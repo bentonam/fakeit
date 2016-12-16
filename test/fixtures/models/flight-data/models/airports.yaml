@@ -2,7 +2,7 @@ name: Airports
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     if (!inputs.airports) {
       throw new Error('airports must be provided as an input');
     }
@@ -10,7 +10,7 @@ data:
       globals.codes = [];
     }
     this.data.fixed = inputs.airports.length;
-  post_build: >
+  post_build: |
     if (this.airport_iata) {
       globals.codes.push({
         id: this.airport_id,

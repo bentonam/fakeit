@@ -2,7 +2,7 @@ name: Addresses
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Users.length * 3;
   dependencies:
     - Users

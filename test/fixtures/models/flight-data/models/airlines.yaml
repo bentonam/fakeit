@@ -3,7 +3,7 @@ type: object
 key: _id
 data:
   inputs: '../input/airlines.csv'
-  pre_run: >
+  pre_run: |
     if (!inputs.airlines) {
       throw new Error('airlines must be provided as an input');
     }
@@ -11,7 +11,7 @@ data:
       globals.codes = [];
     }
     this.data.fixed = inputs.airlines.length;
-  post_build: >
+  post_build: |
     if (this.airline_iata) {
       globals.codes.push({
         id: this.airline_id,
@@ -70,7 +70,7 @@ properties:
     type: string
     description: The ISO country code the airline is based in
     data:
-      build: >
+      build: |
         var exists = false;
         for (var i = 0; i < documents.Countries.length; i++) {
           if (documents.Countries[i].country_code === inputs.airlines[document_index].iso_country) {

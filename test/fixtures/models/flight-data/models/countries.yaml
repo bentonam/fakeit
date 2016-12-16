@@ -3,7 +3,7 @@ type: object
 key: _id
 data:
   inputs: ../input/countries.csv
-  pre_run: >
+  pre_run: |
     if (!inputs.countries) {
       throw new Error('countries must be provided as an input');
     }

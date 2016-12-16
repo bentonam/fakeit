@@ -3,10 +3,10 @@ type: object
 key: _id
 data:
   inputs: '../input/countries.json'
-  pre_run: >
+  pre_run: |
     globals.index = 0;
     this.data.fixed = inputs.countries.length;
-  pre_build: >
+  pre_build: |
     globals.index = faker.random.number({ min: 0, max: inputs.length || 200 });
 properties:
   _id:
@@ -23,19 +23,19 @@ properties:
     type: string
     description: The 2 letter ISO country code
     data:
-      pre_build: >
+      pre_build: |
         return inputs.countries[globals.index].iso_2;
   region-number:
     type: string
     description: The countries region number
     data:
-      build: >
+      build: |
         return inputs.countries[globals.index].iso_m49 || inputs.countries[globals.index].region_number || chance.integer({min: 1, max: 999});
   name:
     type: string
     description: The name of the country
     data:
-      build: >
+      build: |
         return inputs.countries[globals.index].name || inputs.countries[globals.index].name || chance.country();
   updated:
     type: string

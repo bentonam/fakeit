@@ -2,7 +2,7 @@ name: UserPhones
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Users.length;
   dependencies:
     - Users
@@ -27,7 +27,7 @@ properties:
     type: array
     description: An array of phone_ids
     data:
-      build: >
+      build: |
         var phones = [];
         for (var i = 0; i < documents.Phones.length; i++) {
           if (documents.Phones[i].user_id === documents.Users[document_index].user_id) {

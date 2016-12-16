@@ -3,7 +3,7 @@ type: object
 key: _id
 data:
   inputs: ../input/routes.csv
-  pre_run: >
+  pre_run: |
     if (!inputs.routes) {
       throw new Error('routes must be provided as an input');
     }

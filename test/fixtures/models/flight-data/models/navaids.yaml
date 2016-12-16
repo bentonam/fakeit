@@ -3,7 +3,7 @@ type: object
 key: _id
 data:
   inputs: ../input/navaids.csv
-  pre_run: >
+  pre_run: |
     if (!inputs.navaids) {
       throw new Error('navaids must be provided as an input');
     }
@@ -11,7 +11,7 @@ data:
       globals.codes = [];
     }
     this.data.fixed = inputs.navaids.length;
-  post_build: >
+  post_build: |
     if (this.navaid_ident) {
       globals.codes.push({
         id: this.navaid_id,

@@ -5,7 +5,7 @@ data:
   min: 100
   max: 500
   inputs: ../input/config.zip
-  pre_run: >
+  pre_run: |
     if (!inputs.countries) {
       throw new Error('countries must be provided as an input');
     }
@@ -21,7 +21,7 @@ data:
     if (!inputs.address) {
       throw new Error('address_types must be provided as an input');
     }
-  pre_build: >
+  pre_build: |
     globals.country_code = faker.random.arrayElement(inputs.countries).code;
     globals.region_codes = inputs.regions.filter(function(value) {
       return value.iso_country === globals.country_code;

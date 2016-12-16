@@ -22,7 +22,7 @@ properties:
     type: integer
     description: The order_id
     data:
-      build: >
+      build: |
         var current_order_id = globals.orders_counter || 0;
         current_order_id += 1;
         globals.orders_counter = current_order_id;
@@ -31,7 +31,7 @@ properties:
     type: integer
     description: The user_id that placed the order
     data:
-      build: >
+      build: |
         var rand = Math.floor(Math.random() * (documents.Users.length - 1)) + 0;
         return documents.Users[rand].user_id;
   order_date:
@@ -145,7 +145,7 @@ properties:
     type: array
     description: The products that were ordered
     data:
-      build: >
+      build: |
         var items = [];
         var rand = 0;
         for (var i = 0, count = chance.integer({min: 1, max: 5}); i < count; i++) {
@@ -167,7 +167,7 @@ properties:
     type: float
     description: The grand total of the order
     data:
-      post_build: >
+      post_build: |
         var total = 0;
         total += this.tax;
         total += this.shipping_total;

@@ -9,7 +9,8 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'contact_' + this.contact_id;"
+      post_build: |
+        `contact_${this.contact_id}`;
   doc_type:
     type: string
     description: The document type
@@ -18,7 +19,7 @@ properties:
   channels:
     type: array
     data:
-      build: >
+      build: |
         return ['ufp-555555555'];
   contact_id:
     type: string

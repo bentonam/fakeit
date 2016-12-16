@@ -2,7 +2,7 @@ name: Likes
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Posts.length * 10;
   dependencies:
     - Users

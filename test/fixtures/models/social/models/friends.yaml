@@ -2,7 +2,7 @@ name: Friends
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Users.length;
   dependencies:
     - Users
@@ -26,7 +26,7 @@ properties:
     type: array
     description: An array of friends (user_id)
     data:
-      post_build: >
+      post_build: |
         var friends = [];
         var added = [];
         var rand = chance.integer({min: 10, max: 200});

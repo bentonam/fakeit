@@ -2,7 +2,7 @@ name: Chats
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Users.length * 10;
   dependencies:
     - Users
@@ -31,7 +31,7 @@ properties:
     type: array
     description: An array of user ids who are in the chat
     data:
-      post_build: >
+      post_build: |
         var user_ids = [];
         var rand;
         var user;

@@ -3,7 +3,7 @@ type: object
 key: _id
 data:
   inputs: ../input/regions.csv
-  pre_run: >
+  pre_run: |
     if (!inputs.regions) {
       throw new Error('regions must be provided as an input');
     }

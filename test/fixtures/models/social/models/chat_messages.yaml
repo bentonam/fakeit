@@ -2,9 +2,9 @@ name: ChatMessages
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Chats.length * 5;
-  pre_build: >
+  pre_build: |
     globals.chat_id = documents.Chats[chance.integer({min: 0, max: documents.Chats.length - 1})].chat_id;
   dependencies:
     - Users

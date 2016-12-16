@@ -3,7 +3,7 @@ type: object
 key: _id
 data:
   input: ../input/frequencies.csv
-  pre_run: >
+  pre_run: |
     if (!inputs.frequencies) {
       throw new Error('frequencies must be provided as an input');
     }

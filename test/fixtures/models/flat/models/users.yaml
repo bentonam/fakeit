@@ -9,7 +9,7 @@ properties:
     type: integer
     description: The users id
     data:
-        build: >
+        build: |
           var current_user_id = globals.user_counter || 0;
           current_user_id += 1;
           globals.user_counter = current_user_id;

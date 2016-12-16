@@ -48,7 +48,7 @@ properties:
     type: string
     description: The track mp3 url
     data:
-        post_build: >
+        post_build: |
           return faker.internet.url() + '/' + faker.internet.domainWord() + '/' + faker.random.arrayElement(['files', 'audio', 'mp3', 'downloads']) + '/' + encodeURIComponent(this.title) + '.mp3';
   genre:
     type: string
@@ -59,7 +59,7 @@ properties:
     type: array
     description: An array of ratings
     data:
-      build: >
+      build: |
         var ratings = [];
         var usernames = [];
         var username;

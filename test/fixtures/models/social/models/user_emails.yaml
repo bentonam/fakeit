@@ -2,7 +2,7 @@ name: UserEmails
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Users.length;
   dependencies:
     - Users
@@ -27,7 +27,7 @@ properties:
     type: array
     description: An array of email_ids
     data:
-      build: >
+      build: |
         var emails = [];
         for (var i = 0; i < documents.Emails.length; i++) {
           if (documents.Emails[i].user_id === documents.Users[document_index].user_id) {

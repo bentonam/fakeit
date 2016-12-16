@@ -4,7 +4,7 @@ key: _id
 data:
   min: 200
   max: 500
-  pre_run: >
+  pre_run: |
     globals.user_counter = 0;
 properties:
   _id:
@@ -63,7 +63,7 @@ properties:
     type: array
     description: An array of addresses
     data:
-      build: >
+      build: |
         var addresses = [];
         for (var i = 0, rand = Math.floor(Math.random() * 3) + 1; i < rand; i++) {
           addresses.push({

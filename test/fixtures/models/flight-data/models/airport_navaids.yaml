@@ -2,7 +2,7 @@ name: AirportNavaids
 type: object
 key: _id
 data:
-  pre_run: >
+  pre_run: |
     this.data.fixed = documents.Airports.length;
   dependencies:
     - Airports
@@ -32,7 +32,7 @@ properties:
     type: array
     description: An array of navaid_ids
     data:
-      build: >
+      build: |
         var navaids = [];
         for (var i = 0; i < documents.Navaids.length; i++) {
           if (

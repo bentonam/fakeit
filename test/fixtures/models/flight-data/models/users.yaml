@@ -3,7 +3,7 @@ type: object
 key: _id
 data:
   fixed: 10000
-  pre_run: >
+  pre_run: |
     globals.address_types = ['Home', 'Work', 'Other'];
     globals.email_types = ['Home', 'Work', 'Other'];
     globals.phone_types = ['Home', 'Work', 'Mobile', 'Main', 'Other', 'Fax'];
@@ -14,9 +14,9 @@ data:
       }
       globals.flattened_regions[documents.Regions[i].iso_country].push(documents.Regions[i].region_code);
     }
-  pre_build: >
+  pre_build: |
     globals.current_region = documents.Regions[chance.integer({min: 0, max: documents.Regions.length - 1})];
-  post_build: >
+  post_build: |
     if (this.phones.length) {
       this.phones[chance.integer({min: 0, max: this.phones.length - 1})].primary = true;
     }
@@ -169,7 +169,7 @@ definitions:
         type: string
         description: The ISO region / state / province code
         data:
-          build: >
+          build: |
             var region = globals.current_region.region_code;
             if (chance.bool({likelihood: 30})) {
               region = globals.flattened_regions[globals.current_region.iso_country][chance.integer({min: 0, max: globals.flattened_regions[globals.current_region.iso_country].length - 1})]
