@@ -3,6 +3,7 @@
 import Models, {
   parseModelInputs,
   parseModelFunctions,
+  parseModelReferences,
 } from '../dist/models.js';
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
@@ -33,6 +34,11 @@ const done = [
 
 function filterDone() {
   return _.without(models.files, ...done);
+}
+
+function getPaths(model, regex) {
+  return to.keys(to.flatten(model))
+    .filter((key) => regex.test(key));
 }
 
 let babel_config, contents;
@@ -114,7 +120,7 @@ test.group('registerModels', models(async (t, model) => {
 
 test.group('parseModelInputs', models(async (t, file) => {
   t.deepEqual(to.keys(t.context.inputs).length, 0);
-  const model = contents[file];
+  const model = to.clone(contents[file]);
 
   let files = model.data.inputs = t.context.resolvePaths(model.data.inputs, path.resolve(t.context.options.root, path.dirname(file)));
   files = files.map((str) => {
@@ -148,14 +154,9 @@ test.group('parseModelInputs', models(async (t, file) => {
 }));
 
 test.group('parseModelFunctions', (test) => {
-  function getFunctionPaths(model) {
-    return to.keys(to.flatten(model))
-      .filter((key) => /((pre|post)_run)|(pre_|post_)?build$/.test(key));
-  }
-
   test.group('ensure all `pre` and `post` instances are functions', models((t, file) => {
-    const model = contents[file];
-    const paths = getFunctionPaths(model);
+    const model = to.clone(contents[file]);
+    const paths = getPaths(model, /((pre|post)_run)|(pre_|post_)?build$/);
     const obj = _.pick(model, paths);
     parseModelFunctions(obj);
 
@@ -249,6 +250,31 @@ test.group('parseModelFunctions', (test) => {
   });
 });
 
+test.group('parseModelReferences', models((t, file) => {
+  const model = to.clone(contents[file]);
+  const original_model = to.clone(contents[file]);
+  const pattern = /\.(schema|items).\$ref$/;
+  const paths = getPaths(model, pattern);
+  parseModelReferences(model);
+  t.plan(paths.length);
+  for (let ref of paths) {
+    let set_location = ref.replace(pattern, '');
+    if (ref.includes('.items.')) {
+      set_location += '.items';
+    }
+    const get_location = _.get(original_model, ref).replace(/^#\//, '').replace('/', '.');
+    const expected = to.extend(to.clone(_.get(original_model, set_location)), _.get(original_model, get_location));
+    const actual = _.get(model, set_location);
+
+    const { error } = is.compile(expected).validate(actual);
+
+    if (error) {
+      t.fail(error);
+    } else {
+      t.pass();
+    }
+  }
+}));
 
 // log all the schema keys that still need to be done
 test.after(models.todo);

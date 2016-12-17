@@ -241,19 +241,26 @@ export function parseModelFunctions(model, babel_config = {}) {
   });
 }
 
-// searches the model for any '$ref' values that are pointing to definitions, sub_models, etc. and copies the reference to the schema
+/// @name parseModelReferences
+/// @description
+/// searches the model for any '$ref' values that are pointing to definitions,
+/// sub_models, etc. and copies the reference to the schema
+/// @arg {object} model - The model to update
 export function parseModelReferences(model) {
   // console.log('models.parseModelReferences');
   const pattern = /\.(schema|items).\$ref$/;
-  utils.objectSearch(model, pattern)
-    .sort() // sort the array so definitions come first before properties, this allows definitions to have definitions
-    .forEach((reference_path) => {
-      const property_path = reference_path.replace(pattern, '') + (reference_path.includes('.items.') ? '.items' : '');
-      let property = get(model, property_path);
-      const defined_path = get(model, reference_path).replace(/^#\//, '').replace('/', '.');
-      property = to.extend(to.clone(property), get(model, defined_path));
-      set(model, property_path, property);
-    });
+  // sort the array so definitions come first before properties, this allows definitions to have definitions
+  const paths = utils.objectSearch(model, pattern).sort();
+  for (let ref of paths) {
+    let set_location = ref.replace(pattern, '');
+    if (ref.includes('.items.')) {
+      set_location += '.items';
+    }
+    const original_property = get(model, set_location);
+    const get_location = get(model, ref).replace(/^#\//, '').replace('/', '.');
+    const updated_property = to.extend(to.clone(original_property), get(model, get_location));
+    set(model, set_location, updated_property);
+  }
 }
 
 // searches the model for any properties or items and makes sure the default types exist
