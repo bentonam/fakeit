@@ -263,18 +263,22 @@ export function parseModelReferences(model) {
   }
 }
 
-// searches the model for any properties or items and makes sure the default types exist
+/// @name parseModelTypes
+/// @description
+/// Searches the model for any properties or items and makes
+/// sure the default types exist
+/// @arg {object} model - The model to update
 export function parseModelTypes(model) {
   // console.log('models.parseModel_properties');
-  utils.objectSearch(model, /.*properties\.[^.]+(\.items)?$/)
-    .forEach((type_path) => {
-      const property = get(model, type_path);
-      // make sure there is a type property set
-      if (!property.hasOwnProperty('type')) {
-        property.type = 'undefined';
-        set(model, type_path, property);
-      }
-    });
+  for (let type_path of utils.objectSearch(model, /.*properties\.[^.]+(\.items)?$/)) {
+    // console.log(type_path);
+    const property = get(model, type_path);
+    // make sure there is a type property set
+    if (property.type == null) {
+      property.type = 'null';
+      set(model, type_path, property);
+    }
+  }
 }
 
 // sets any model defaults that are not defined

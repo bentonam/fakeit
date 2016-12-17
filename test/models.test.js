@@ -4,6 +4,7 @@ import Models, {
   parseModelInputs,
   parseModelFunctions,
   parseModelReferences,
+  parseModelTypes,
 } from '../dist/models.js';
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
@@ -12,12 +13,11 @@ import is from 'joi';
 import _ from 'lodash';
 import fs from 'fs-extra-promisify';
 import AdmZip from 'adm-zip';
-
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
-
 /* istanbul ignore next */
-const models = require('./utils').models({
+const utils = require('./utils');
+const models = utils.models({
   root: models_root,
   // Get the models to test. This is used by the `models` function located at the bottom of this file
   modules: '*/models/*.yaml',
@@ -36,10 +36,6 @@ function filterDone() {
   return _.without(models.files, ...done);
 }
 
-function getPaths(model, regex) {
-  return to.keys(to.flatten(model))
-    .filter((key) => regex.test(key));
-}
 
 let babel_config, contents;
 
@@ -156,7 +152,7 @@ test.group('parseModelInputs', models(async (t, file) => {
 test.group('parseModelFunctions', (test) => {
   test.group('ensure all `pre` and `post` instances are functions', models((t, file) => {
     const model = to.clone(contents[file]);
-    const paths = getPaths(model, /((pre|post)_run)|(pre_|post_)?build$/);
+    const paths = utils.getPaths(model, /((pre|post)_run)|(pre_|post_)?build$/);
     const obj = _.pick(model, paths);
     parseModelFunctions(obj);
 
@@ -254,7 +250,7 @@ test.group('parseModelReferences', models((t, file) => {
   const model = to.clone(contents[file]);
   const original_model = to.clone(contents[file]);
   const pattern = /\.(schema|items).\$ref$/;
-  const paths = getPaths(model, pattern);
+  const paths = utils.getPaths(model, pattern);
   parseModelReferences(model);
   t.plan(paths.length);
   for (let ref of paths) {
@@ -276,5 +272,22 @@ test.group('parseModelReferences', models((t, file) => {
   }
 }));
 
+test.group('parseModelTypes', models((t, file) => {
+  const model = to.clone(contents[file]);
+  const pattern = /.*properties\.[^.]+(\.items)?$/;
+  const paths = utils.getPaths(model, pattern);
+  const to_check = [];
+  for (let str of paths) {
+    if (_.get(model, str).type == null) {
+      to_check.push(str);
+    }
+  }
+
+  parseModelTypes(model);
+
+  for (let str of to_check) {
+    t.is(_.get(model, str).type, 'null');
+  }
+}, models.files));
 // log all the schema keys that still need to be done
 test.after(models.todo);

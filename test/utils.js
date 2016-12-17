@@ -214,3 +214,20 @@ module.exports.models = function(settings) {
 
   return models;
 };
+
+
+// this works the same as objectSearch
+/* istanbul ignore next: testing util */
+module.exports.getPaths = function getPaths(model, regex) {
+  return to.keys(to.flatten(model))
+    .reduce((result, next) => {
+      let current = '';
+      for (let key of next.split('.')) {
+        current = current.split('.').concat(key).filter(Boolean).join('.');
+        if (regex.test(current) && !result.includes(current)) {
+          result.push(current);
+        }
+      }
+      return result;
+    }, []);
+};
