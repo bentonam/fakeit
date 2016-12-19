@@ -19,6 +19,8 @@ export default class Models extends Base {
 
     this.models = []; // holds the parsed models
 
+    this.registered_models = []; // holds the paths that have already been added
+
     this.prepared = false;
   }
 
@@ -62,7 +64,16 @@ export default class Models extends Base {
     this.prepared = true;
   }
 
-  async registerModels(models) {
+  /// @name filterModelFiles
+  /// @description This is used to filter out valid and unregistered model files
+  /// @returns {array}
+  filterModelFiles(files) {
+    return to.flatten(files).filter((file) => {
+      return !!file && /\.(ya?ml)$/i.test(file) && !this.registered_models.includes(file);
+    });
+  }
+
+  async registerModels(models, dependency = false) {
     // if models weren't passed in then don't do anything
     if (!models) {
       return;

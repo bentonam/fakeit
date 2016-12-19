@@ -66,6 +66,7 @@ test('without args', async (t) => {
     inputs: is.object().length(0),
     models: is.array().length(0),
     prepared: is.boolean(),
+    registered_models: is.array().length(0),
   })
     .validate(t.context);
   if (error) {
@@ -115,6 +116,20 @@ test.group('registerModels', models(async (t, model) => {
   await t.context.registerModels(model);
   return t.context.models[0];
 }, null, filterDone()));
+test.group('filterModelFiles', (test) => {
+  test('filter none', (t) => {
+    t.deepEqual(t.context.registered_models, []);
+    t.deepEqual(t.context.filterModelFiles([ 'foo.yaml', 'bar.yaml' ]), [ 'foo.yaml', 'bar.yaml' ]);
+  });
+  test('filter files that aren\'t yaml', (t) => {
+    t.deepEqual(t.context.filterModelFiles([ 'foo.yaml', 'bar.yaml', 'baz.zip', 'qux.json', 'quxx.cson' ]), [ 'foo.yaml', 'bar.yaml' ]);
+  });
+  test('filter files that have been registered already', (t) => {
+    t.context.registered_models.push('foo.yaml');
+    t.deepEqual(t.context.filterModelFiles([ 'foo.yaml', 'bar.yaml', 'baz.zip', 'qux.json', 'quxx.cson' ]), [ 'bar.yaml' ]);
+  });
+});
+
 
 test.group('parseModelInputs', models(async (t, file) => {
   t.deepEqual(to.keys(t.context.inputs).length, 0);
