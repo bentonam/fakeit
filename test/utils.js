@@ -10,6 +10,7 @@ var chalk = require('chalk');
 var reduce = require('async-array-methods').reduce;
 var fs = require('fs-extra-promisify');
 var yaml = require('yamljs');
+var json = require('jsondiffpatch');
 
 /* istanbul ignore next: testing util */
 /// @name models
@@ -230,4 +231,16 @@ module.exports.getPaths = function getPaths(model, regex) {
       }
       return result;
     }, []);
+};
+
+/// @name checkDiff
+/// @description This is used to check and see if there's a difference between 2 different objects
+/// @arg {object} actual - The actual object
+/// @arg {object} expected - The expected object
+/// @returns {string} If the string is empty then there was no diff, else it returns the formatted difference between the objects.
+module.exports.checkDiff = function checkDiff(actual, expected) {
+  const delta = json.diff(actual, expected);
+  const spaces = '  ';
+  const diff = json.formatters.console.format(delta).split('\n').map((line) => spaces + spaces + line.trim()).join('\n').trim();
+  return diff;
 };
