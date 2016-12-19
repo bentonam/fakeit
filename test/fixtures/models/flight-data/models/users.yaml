@@ -27,7 +27,7 @@ data:
       this.addresses[chance.integer({ min: 0, max: this.addresses.length - 1 })].primary = true;
     }
   dependencies:
-    - Regions
+    - regions.yaml
 properties:
   _id:
     type: string

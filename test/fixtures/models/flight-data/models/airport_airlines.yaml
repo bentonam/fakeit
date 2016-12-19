@@ -5,8 +5,8 @@ data:
   pre_run: |
     this.data.count = documents.Airports.length;
   dependencies:
-    - Airports
-    - Routes
+    - airports.yaml
+    - routes.yaml
 properties:
   _id:
     type: string

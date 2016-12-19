@@ -1,4 +1,4 @@
-import { map } from 'async-array-methods';
+import { map, forEach } from 'async-array-methods';
 import fs from 'fs-extra-promisify';
 import path from 'path';
 import DependencyResolver from 'dependency-resolver';
@@ -51,7 +51,10 @@ export default class Models extends Base {
 
     let { babel_config } = this.options;
 
-    if (!is.string(babel_config)) return;
+    if (!is.string(babel_config)) {
+      this.prepare = true;
+      return;
+    }
 
     const dir = path.join(__dirname.split('node_modules')[0], '..');
     let file = await globby(this.resolvePaths(babel_config, dir), { dot: true });
@@ -87,18 +90,37 @@ export default class Models extends Base {
       await this.preparing;
     }
 
-    this.options.babel_config = await this.options.babel_config;
-
     // get list of files
-    let files = await utils.findFiles(this.resolvePaths(models));
-    // flattens the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
-    files = to.flatten(files).filter((file) => !!file && /\.ya?ml$/i.test(file));
+    const files = this.filterModelFiles(await utils.findFiles(this.resolvePaths(models)));
 
-    if (!files.length) throw new Error('No valid model files found.');
+    // if no modle files are found
+    if (!files.length) {
+      // If the models being registered aren't dependecies then throw an error
+      if (!dependency) {
+        throw new Error('No valid model files found.');
+      }
+      return;
+    };
 
-    this.models = await map(files, async (file) => {
+    await forEach(files, async (file) => {
+      // if the model aready exists then return
+      if (this.registered_models.includes(file)) {
+        return;
+      }
+
+      // add it to the models
+      this.registered_models.push(file);
+
       // read yaml file and convert it to json
       const model = await utils.parsers.yaml.parse(to.string(await fs.readFile(file)));
+      // used for debugging
+      model.file = file;
+
+      // sets the root of the model so that we can resolve inputs and dependencies later
+      model.root = path.resolve(this.options.root, path.dirname(model.file));
+
+      // used to determin if something is a dependency or not.
+      model.is_dependency = dependency;
 
       if (!model.name) {
         model.name = path.basename(file).split('.')[0];
@@ -113,24 +135,27 @@ export default class Models extends Base {
       }
 
       // add the parsed model to the global object should always have a model name
-      return this.parseModel(model, file);
+      await this.parseModel(model);
+      this.models.push(model);
     });
 
     // update the models order
     this.models = resolveDependenciesOrder(this.models);
-
     return this;
   }
 
   ///# @name parseModel
   ///# @description
   ///# This is used to parse the model that was passed and add the functions, and fix the types, data, and defaults
+  ///# @arg {object} model - The model to parse.
   ///# @returns {object} - The model that's been updated
-  async parseModel(model, file) {
-    const root = path.resolve(this.options.root, path.dirname(file));
+  async parseModel(model) {
     // resolve the input paths
-    model.data.inputs = this.resolvePaths(model.data.inputs, root);
-    const inputs = parseModelInputs(model, file);
+    model.data.inputs = this.resolvePaths(model.data.inputs, model.root);
+    // resolve the dependencies paths
+    model.data.dependencies = this.resolvePaths(model.data.dependencies, model.root);
+    const inputs = parseModelInputs(model);
+    const dependencies = this.parseModelDependencies(model);
     parseModelFunctions(model, this.options.babel_config);
     parseModelReferences(model);
     parseModelTypes(model);
@@ -139,8 +164,33 @@ export default class Models extends Base {
 
     // add this models inputs to the main inputs object
     this.inputs = to.extend(this.inputs || {}, await inputs);
-
+    await dependencies;
     return model;
+  }
+
+  ///# @name parseModel
+  ///# @description
+  ///# This is used to parse model dependencies if they have any
+  ///# @arg {object} model - The model to parse.
+  ///# @async
+  async parseModelDependencies(model) {
+    if (
+      !model.data.dependencies ||
+      !model.data.dependencies.length
+    ) {
+      model.data.dependencies = [];
+      return;
+    }
+
+    // get list of files, flatten the array of files and filter files for valid input formats: yaml
+    const files = this.filterModelFiles(await utils.findFiles(model.data.dependencies));
+
+    if (!files.length) {
+      model.data.dependencies = [];
+      return;
+    }
+
+    await this.registerModels(files, true);
   }
 }
 
@@ -152,7 +202,7 @@ export default class Models extends Base {
 /// @returns {object}
 /// @async
 /// @note {5} The `model.data.input` paths must already be resolved to be a absolute path.
-export async function parseModelInputs(model, current_file) {
+export async function parseModelInputs(model) {
   if (
     !model.data.inputs ||
     !model.data.inputs.length
@@ -167,7 +217,7 @@ export async function parseModelInputs(model, current_file) {
   let files = to.flatten(await utils.findFiles(model.data.inputs))
    .filter((file) => !!file && /\.(csv|json|cson|ya?ml|zip)$/i.test(file));
 
-  if (!files.length) throw new Error(`No valid input files found for ${current_file}`);
+  if (!files.length) throw new Error(`No valid input files found for ${model.file}`);
 
   // loop over all the files, read them and parse them if needed
   files = await utils.readFiles(files);

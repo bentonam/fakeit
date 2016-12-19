@@ -5,8 +5,8 @@ data:
   pre_run: |
     this.data.count = documents.Airports.length;
   dependencies:
-    - Airports
-    - Navaids
+    - airports.yaml
+    - navaids.yaml
 properties:
   _id:
     type: string

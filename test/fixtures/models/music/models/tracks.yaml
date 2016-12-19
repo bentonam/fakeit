@@ -3,7 +3,7 @@ type: object
 key: _id
 data:
   dependencies:
-    - Users
+    - users.yaml
   min: 500
   max: 800
 properties:

@@ -3,8 +3,8 @@ type: object
 key: _id
 data:
   dependencies:
-    - Products
-    - Users
+    - products.yaml
+    - users.yaml
   min: 300
   max: 600
 properties:

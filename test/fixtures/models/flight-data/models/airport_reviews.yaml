@@ -3,8 +3,8 @@ type: object
 key: _id
 data:
   dependencies:
-    - Airports
-    - Users
+    - airports.yaml
+    - users.yaml
   pre_run: |
     this.data.count = inputs.airports.length * 5;
   pre_build: |

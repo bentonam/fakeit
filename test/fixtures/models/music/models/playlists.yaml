@@ -3,8 +3,8 @@ type: object
 key: _id
 data:
   dependencies:
-    - Users
-    - Tracks
+    - users.yaml
+    - tracks.yaml
   min: 500
   max: 1000
 properties:

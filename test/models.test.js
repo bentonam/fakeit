@@ -130,6 +130,48 @@ test.group('filterModelFiles', (test) => {
   });
 });
 
+test.group('parseModelDependencies', models(async (t, file) => {
+  const model = to.clone(contents[file]);
+
+  model.data.dependencies = t.context.resolvePaths(model.data.dependencies, path.resolve(t.context.options.root, path.dirname(file)));
+
+  await t.context.parseModelDependencies(model);
+  if (model.data.dependencies.length === 0) {
+    t.plan(1);
+  } else {
+    const length = t.context.models.length;
+    t.plan(length * 2 + 2);
+    t.is(length, to.unique(t.context.registered_models).length);
+  }
+
+  let count = 0;
+
+  function check(dependencies) {
+    if (count++ >= 20) {
+      t.fail('parseModelDependencies has ran too many checks');
+      return;
+    }
+
+    for (let dependency_path of dependencies) {
+      t.truthy(t.context.registered_models.includes(dependency_path));
+      const dependency = _.find(t.context.models, [ 'file', dependency_path ]);
+      if (dependency_path === file) {
+        t.falsy(dependency.is_dependency);
+      } else {
+        t.truthy(dependency.is_dependency);
+      }
+      if (
+        dependency.data &&
+        dependency.data.dependencies &&
+        dependency.data.dependencies.length
+      ) {
+        check(dependency.data.dependencies);
+      }
+    }
+  }
+
+  check(model.data.dependencies);
+}));
 
 test.group('parseModelInputs', models(async (t, file) => {
   t.deepEqual(to.keys(t.context.inputs).length, 0);

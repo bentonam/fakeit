@@ -5,8 +5,8 @@ data:
   pre_run: |
     this.data.count = globals.codes.length
   dependencies:
-    - Airlines
-    - Airports
+    - airlines.yaml
+    - airports.yaml
 properties:
   _id:
     type: string

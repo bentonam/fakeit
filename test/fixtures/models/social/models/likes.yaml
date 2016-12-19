@@ -5,8 +5,8 @@ data:
   pre_run: |
     this.data.count = documents.Posts.length * 10;
   dependencies:
-    - Users
-    - Posts
+    - users.yaml
+    - posts.yaml
 properties:
   _id:
     type: string

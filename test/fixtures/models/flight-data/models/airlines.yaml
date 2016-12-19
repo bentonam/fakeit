@@ -29,7 +29,7 @@ data:
       });
     }
   dependencies:
-    - Countries
+    - countries.yaml
 properties:
   _id:
     type: string

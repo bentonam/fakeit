@@ -5,7 +5,7 @@ data:
   pre_run: |
     this.data.count = documents.Users.length;
   dependencies:
-    - Users
+    - users.yaml
 properties:
   _id:
     type: string
