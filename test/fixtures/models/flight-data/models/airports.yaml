@@ -9,7 +9,7 @@ data:
     if (!globals.codes) {
       globals.codes = [];
     }
-    this.data.fixed = inputs.airports.length;
+    this.data.count = inputs.airports.length;
   post_build: |
     if (this.airport_iata) {
       globals.codes.push({

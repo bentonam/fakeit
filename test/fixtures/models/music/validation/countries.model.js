@@ -37,7 +37,7 @@ module.exports = is.object({
   data: is.object({
     min: is.number().min(0).max(0),
     max: is.number().min(0).max(0),
-    fixed: is.number().min(0).max(0),
+    count: is.number().min(0).max(0),
     inputs: is.object({
       countries: is.array()
         .items(is.object({

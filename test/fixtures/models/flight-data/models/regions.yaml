@@ -7,7 +7,7 @@ data:
     if (!inputs.regions) {
       throw new Error('regions must be provided as an input');
     }
-    this.data.fixed = inputs.regions.length;
+    this.data.count = inputs.regions.length;
 properties:
   _id:
     type: string

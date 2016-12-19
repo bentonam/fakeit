@@ -37,7 +37,7 @@ module.exports = is.object({
   data: is.object({
     min: is.number().min(200).max(200),
     max: is.number().min(400).max(400),
-    fixed: is.number(),
+    count: is.number(),
     inputs: is.array().length(0),
   }),
   properties: is.object()
@@ -74,7 +74,7 @@ module.exports = is.object({
           data: is.object({
             min: is.number().min(1).max(1),
             max: is.number().min(3).max(3),
-            fixed: is.number().min(0).max(0),
+            count: is.number().min(0).max(0),
           }),
           type: types.object,
           properties: is.object({
@@ -93,7 +93,7 @@ module.exports = is.object({
           data: is.object({
             min: is.number().min(1).max(1),
             max: is.number().min(2).max(2),
-            fixed: is.number().min(0).max(0),
+            count: is.number().min(0).max(0),
             build: is.func(),
           }),
         }),
@@ -107,7 +107,7 @@ module.exports = is.object({
           data: is.object({
             min: is.number().min(1).max(1),
             max: is.number().min(2).max(2),
-            fixed: is.number().min(0).max(0),
+            count: is.number().min(0).max(0),
           }),
           properties: is.object({
             type: check('string', 'The address type', { build: is.func() }),
@@ -129,7 +129,7 @@ module.exports = is.object({
           data: is.object({
             min: is.number().min(1).max(1),
             max: is.number().min(8).max(8),
-            fixed: is.number().min(0).max(0),
+            count: is.number().min(0).max(0),
           }),
           properties: is.object({
             first_name: check('string', 'The childs first_name', { fake: string('{{name.firstName}}') }),
@@ -144,7 +144,7 @@ module.exports = is.object({
         items: check('string', {
           min: is.number().min(1).max(1),
           max: is.number().min(6).max(6),
-          fixed: is.number().min(0).max(0),
+          count: is.number().min(0).max(0),
           build: is.func(),
         }),
       }),

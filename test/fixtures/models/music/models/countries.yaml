@@ -5,7 +5,7 @@ data:
   inputs: '../input/countries.json'
   pre_run: |
     globals.index = 0;
-    this.data.fixed = inputs.countries.length;
+    this.data.count = inputs.countries.length;
   pre_build: |
     globals.index = faker.random.number({ min: 0, max: inputs.length || 200 });
 properties:

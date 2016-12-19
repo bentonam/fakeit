@@ -7,7 +7,7 @@ data:
     if (!inputs.frequencies) {
       throw new Error('frequencies must be provided as an input');
     }
-    this.data.fixed = inputs.frequencies.length;
+    this.data.count = inputs.frequencies.length;
 properties:
   _id:
     type: string

@@ -6,7 +6,7 @@ data:
     - Airports
     - Users
   pre_run: |
-    this.data.fixed = inputs.airports.length * 5;
+    this.data.count = inputs.airports.length * 5;
   pre_build: |
     globals.current_airport_index = chance.integer({ min: 0, max: documents.Airports.length - 1 });
 properties:

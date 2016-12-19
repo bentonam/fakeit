@@ -7,7 +7,7 @@ data:
     if (!inputs.continents) {
       throw new Error('continents must be provided as an input');
     }
-    this.data.fixed = inputs.continents.length;
+    this.data.count = inputs.continents.length;
 properties:
   _id:
     type: string

@@ -29,7 +29,7 @@ export default class Document extends Base {
 
     this.log('info', `Generating ${model.count} documents for ${model.name} model`);
 
-    for (let i = 0; i < model.count; i++) { // loop over each model and execute in order of dependency
+    for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
       const doc = this.buildDocument(model, getPaths(model), i);
       // build the key for the document
       let value;
@@ -138,13 +138,7 @@ export default class Document extends Base {
 
   // builds an array
   buildArray(doc, property, value, index) {
-    let number = property.items.data.fixed;
-    if (!number) {
-      number = chance.integer({
-        min: property.items.data.min || 0,
-        max: property.items.data.max || 0
-      });
-    }
+    const number = property.items.data.count;
 
     // builds a complex array
     if (property.items.type === 'object') {

@@ -10,7 +10,7 @@ data:
     if (!globals.codes) {
       globals.codes = [];
     }
-    this.data.fixed = inputs.navaids.length;
+    this.data.count = inputs.navaids.length;
   post_build: |
     if (this.navaid_ident) {
       globals.codes.push({

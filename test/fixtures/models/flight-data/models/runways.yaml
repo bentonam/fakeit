@@ -7,7 +7,7 @@ data:
     if (!inputs.runways) {
       throw new Error('runways must be provided as an input');
     }
-    this.data.fixed = inputs.runways.length;
+    this.data.count = inputs.runways.length;
 properties:
   _id:
     type: string

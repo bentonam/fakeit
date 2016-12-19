@@ -7,7 +7,7 @@ data:
     if (!inputs.routes) {
       throw new Error('routes must be provided as an input');
     }
-    this.data.fixed = inputs.routes.length;
+    this.data.count = inputs.routes.length;
 properties:
   _id:
     type: string

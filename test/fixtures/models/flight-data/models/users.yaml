@@ -2,7 +2,7 @@ name: Users
 type: object
 key: _id
 data:
-  fixed: 10000
+  count: 10000
   pre_run: |
     globals.address_types = [ 'Home', 'Work', 'Other' ];
     globals.email_types = [ 'Home', 'Work', 'Other' ];

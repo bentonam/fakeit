@@ -286,15 +286,15 @@ export function parseModelTypes(model) {
 /// Sets any model defaults that are not defined
 /// @arg {object} model - The model to update
 export function parseModelDefaults(model) {
-  // make sure it has the defaults for min, max, fixed
-  model.data = to.extend({ min: 0, max: 0, fixed: 0 }, model.data);
+  // make sure it has the defaults for min, max, count
+  model.data = to.extend({ min: 0, max: 0, count: 0 }, model.data);
 
   // find properties or items that do not have a data block and assign it
   for (let data_path of utils.objectSearch(model, /^(.*properties\.[^.]+)$/)) {
     let property = get(model, data_path) || {};
     // if it's an array and has items ensure it has defaults
     if (property.type === 'array' && property.items) {
-      property.items = to.extend({ data: { min: 0, max: 0, fixed: 0 } }, property.items);
+      property.items = to.extend({ data: { min: 0, max: 0, count: 0 } }, property.items);
     } else {
       property = to.extend({ data: {} }, property);
     }
@@ -303,11 +303,26 @@ export function parseModelDefaults(model) {
   }
 }
 
+
+/// @name parseModelCount
+/// @description Determins the total number of documents to run
+/// @arg {object} model - The model to update
+/// @arg {undefined, null, number} count - The count to override the model settings
 export function parseModelCount(model, count) {
-  if (!count) {
-    count = model.data.fixed || to.random(model.data.min, model.data.max) || 1;
+  for (let data_path of utils.objectSearch(model, /^(?:.*\.items\.data|data)$/)) {
+    let property = get(model, data_path);
+
+    if (!count) {
+      count = property.count || property.min && property.max && to.random(property.min, property.max);
+    }
+
+    // if count is null or 0 then set it to 1
+    if (!count) {
+      count = 1;
+    }
+
+    set(model, `${data_path}.count`, to.number(count) || 1);
   }
-  model.count = to.number(count);
 }
 
 export function resolveDependenciesOrder(models = []) {

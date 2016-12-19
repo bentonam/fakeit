@@ -6,6 +6,7 @@ import Models, {
   parseModelReferences,
   parseModelTypes,
   parseModelDefaults,
+  parseModelCount,
 } from '../dist/models.js';
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
@@ -298,12 +299,12 @@ test.group('parseModelDefaults', models((t, file) => {
   const paths = utils.getPaths(model, pattern);
   parseModelDefaults(model);
 
-  test_model.data = to.extend({ min: 0, max: 0, fixed: 0 }, test_model.data || {});
+  test_model.data = to.extend({ min: 0, max: 0, count: 0 }, test_model.data || {});
 
   t.deepEqual(model.data, test_model.data, 'The data should be defaulted');
   t.is(model.data.min, test_model.data.min);
   t.is(model.data.max, test_model.data.max);
-  t.is(model.data.fixed, test_model.data.fixed);
+  t.is(model.data.count, test_model.data.count);
 
   for (let data_path of paths) {
     let property = _.get(model, data_path);
@@ -312,12 +313,114 @@ test.group('parseModelDefaults', models((t, file) => {
       t.is(typeof property.items.data, 'object');
       t.is(typeof property.items.data.min, 'number');
       t.is(typeof property.items.data.max, 'number');
-      t.is(typeof property.items.data.fixed, 'number');
+      t.is(typeof property.items.data.count, 'number');
     } else {
       t.is(typeof property.data, 'object');
     }
   }
 }));
+
+test.group('parseModelCount', (test) => {
+  function getContext() {
+    const obj = { data: { count: 0 } };
+
+    obj.data.min = to.random(0, 100);
+    obj.data.max = to.random(obj.data.min, 300);
+    return obj;
+  }
+
+  test.group('uses passed count', (test) => {
+    {
+      const number = to.random(1, 100);
+      test(`(${number}) over data.min and data.max settings`, (t) => {
+        const obj = getContext();
+        t.falsy(obj.data.count);
+        parseModelCount(obj, number);
+        t.truthy(obj.data.count);
+        t.is(obj.data.count, number);
+      });
+    }
+    {
+      const number = to.random(1, 100);
+      test(`(${number}) over over data.count setting`, (t) => {
+        const obj = getContext();
+        t.falsy(obj.data.count);
+        obj.data.count = 200;
+        parseModelCount(obj, number);
+        t.truthy(obj.data.count);
+        t.not(obj.data.count, 200);
+        t.is(obj.data.count, number);
+      });
+    }
+  });
+
+  test('returns a typeof number when a string is passed in', (t) => {
+    const obj = getContext();
+    t.falsy(obj.data.count);
+    parseModelCount(obj, '1');
+    t.truthy(obj.data.count);
+    t.is(obj.data.count, 1);
+  });
+
+  test('returns a 1 when "0" is passed in as the count override', (t) => {
+    const obj = getContext();
+    t.falsy(obj.data.count);
+    parseModelCount(obj, '0');
+    t.truthy(obj.data.count);
+    t.is(obj.data.count, 1);
+  });
+
+  test('chooses random number', (t) => {
+    const obj = getContext();
+    t.falsy(obj.data.count);
+    parseModelCount(obj);
+    const actual = obj.data.count;
+    t.truthy(actual);
+    t.truthy(actual >= obj.data.min && actual <= obj.data.max);
+  });
+
+  test('uses data.count', (t) => {
+    const obj = getContext();
+    t.falsy(obj.data.count);
+    const expected = obj.data.count = to.random(1, 100);
+    parseModelCount(obj);
+    t.truthy(obj.data.count);
+    t.is(obj.data.count, expected);
+  });
+
+  test('returns 1 when nothing is set', async (t) => {
+    const obj = { data: {} };
+    parseModelCount(obj);
+    t.truthy(obj.data.count);
+    t.is(obj.data.count, 1);
+  });
+
+  test('doesn\'t do anything if no data keys exist', async (t) => {
+    const obj = {};
+    parseModelCount(obj);
+    t.deepEqual(obj, {});
+  });
+
+  test('returns 1 when data is 0', async (t) => {
+    const obj = {
+      data: { min: 0, max: 0, count: 0 },
+    };
+    parseModelCount(obj);
+    t.truthy(obj.data.count);
+    t.is(obj.data.count, 1);
+  });
+
+  test.group(models((t, file) => {
+    const model = to.clone(contents[file]);
+    // const original_model = to.clone(contents[file]);
+    parseModelDefaults(model);
+    parseModelCount(model);
+    for (let str of utils.getPaths(model, /^(?:.*\.items\.data|data)$/)) {
+      let property = _.get(model, str);
+      t.truthy(property.count > 0);
+    }
+  }, 0));
+});
 
 // log all the schema keys that still need to be done
 test.after(models.todo);
