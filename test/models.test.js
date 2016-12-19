@@ -5,6 +5,7 @@ import Models, {
   parseModelFunctions,
   parseModelReferences,
   parseModelTypes,
+  parseModelDefaults,
 } from '../dist/models.js';
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
@@ -289,5 +290,34 @@ test.group('parseModelTypes', models((t, file) => {
     t.is(_.get(model, str).type, 'null');
   }
 }, models.files));
+
+test.group('parseModelDefaults', models((t, file) => {
+  const test_model = to.clone(contents[file]);
+  const model = to.clone(contents[file]);
+  const pattern = /^(.*properties\.[^.]+)$/;
+  const paths = utils.getPaths(model, pattern);
+  parseModelDefaults(model);
+
+  test_model.data = to.extend({ min: 0, max: 0, fixed: 0 }, test_model.data || {});
+
+  t.deepEqual(model.data, test_model.data, 'The data should be defaulted');
+  t.is(model.data.min, test_model.data.min);
+  t.is(model.data.max, test_model.data.max);
+  t.is(model.data.fixed, test_model.data.fixed);
+
+  for (let data_path of paths) {
+    let property = _.get(model, data_path);
+    t.is(typeof property, 'object');
+    if (property.type === 'array' && property.items) {
+      t.is(typeof property.items.data, 'object');
+      t.is(typeof property.items.data.min, 'number');
+      t.is(typeof property.items.data.max, 'number');
+      t.is(typeof property.items.data.fixed, 'number');
+    } else {
+      t.is(typeof property.data, 'object');
+    }
+  }
+}));
+
 // log all the schema keys that still need to be done
 test.after(models.todo);

@@ -281,35 +281,25 @@ export function parseModelTypes(model) {
   }
 }
 
-// sets any model defaults that are not defined
+/// @name parseModelTypes
+/// @description
+/// Sets any model defaults that are not defined
+/// @arg {object} model - The model to update
 export function parseModelDefaults(model) {
-  // console.log('models.parseModelDefaults');
+  // make sure it has the defaults for min, max, fixed
+  model.data = to.extend({ min: 0, max: 0, fixed: 0 }, model.data);
+
   // find properties or items that do not have a data block and assign it
-  utils.objectSearch(model, /^(.*properties\.[^.]+)$/)
-    .forEach((data_path) => {
-      let property = get(model, data_path);
-      // if the property is an array that has an items block but not a data block, default it
-      if (property.type === 'array') {
-        if (property.items && !property.items.data) {
-          property.items.data = {};
-        }
-      } else if (!property.data) {
-        property.data = {};
-      }
-      set(model, data_path, property);
-    });
+  for (let data_path of utils.objectSearch(model, /^(.*properties\.[^.]+)$/)) {
+    let property = get(model, data_path) || {};
+    // if it's an array and has items ensure it has defaults
+    if (property.type === 'array' && property.items) {
+      property.items = to.extend({ data: { min: 0, max: 0, fixed: 0 } }, property.items);
+    } else {
+      property = to.extend({ data: {} }, property);
+    }
 
-  // find any data property at the root or that is a child of items and make sure it has the defaults for min, max, fixed
-  if (!model.data) { // if a data property wasn't set define it
-    model.data = {};
-  }
-
-  for (let data_path of utils.objectSearch(model, /^(.*properties\.[^.]+\.items\.data|(data))$/)) {
-    set(
-      model,
-      data_path,
-      to.extend({ min: 0, max: 0, fixed: 0 }, get(model, data_path))
-    );
+    set(model, data_path, property);
   }
 }
 
