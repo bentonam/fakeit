@@ -103,20 +103,66 @@ test('setup', async (t) => {
   t.deepEqual(t.context.options.babel_config, babel_config);
 });
 
-test('registerModels without args', async (t) => {
-  // you can run registerModels and nothing will happen
-  try {
-    await t.context.registerModels();
-    t.pass();
-  } catch (e) {
-    t.fail();
-  }
+
+test.group('registerModels', (test) => {
+  test('without args', async (t) => {
+    // you can run registerModels and nothing will happen
+    try {
+      await t.context.registerModels();
+      t.pass();
+    } catch (e) {
+      t.fail();
+    }
+  });
+
+  test.group(models(async (t, file) => {
+    const original_model = to.clone(contents[file]);
+    // min length of the models expected
+    const min = (original_model.data.dependencies || []).length;
+    // registerModel
+    await t.context.registerModels(file);
+
+    // ensure that the registered_models and models length is greater
+    // than the min length. We can't check for exact length here because
+    // a dependency might depend on other dependencies
+    t.truthy(t.context.registered_models.length >= min);
+    t.truthy(t.context.models.length >= min);
+    file = t.context.resolvePaths(file)[0];
+    const actual = _.find(t.context.models, [ 'file', file ]);
+    const dependencies = _.without(t.context.models, actual);
+    t.is(actual.is_dependency, false);
+    t.is(actual.root, path.resolve(t.context.options.root, path.dirname(actual.file)));
+    // ensure the dependencies are set as dependencies
+    for (let dependency of dependencies) {
+      t.is(dependency.is_dependency, true);
+    }
+
+
+    // helper to create test
+    // for (let key in actual.properties) {
+    //   if (actual.properties.hasOwnProperty(key)) {
+    //     const property = actual.properties[key];
+    //     let obj = '';
+    //     let result = `utils.check('${property.type}', '${property.description}', `;
+    //     for (var data_key in property.data) {
+    //       if (property.data.hasOwnProperty(data_key)) {
+    //         const data_property = property.data[data_key];
+    //         let type = to.type(data_property);
+    //         if (type === 'function') {
+    //           type = 'func';
+    //         }
+    //         obj += `${data_key}: is.${type}(), `;
+    //       }
+    //     }
+    //     result += `{ ${obj.trim()} })`;
+    //     console.log(`    ${key}: ${result},`);
+    //   }
+    // }
+
+    return actual;
+  }));
 });
 
-test.group('registerModels', models(async (t, model) => {
-  await t.context.registerModels(model);
-  return t.context.models[0];
-}, null, filterDone()));
 test.group('filterModelFiles', (test) => {
   test('filter none', (t) => {
     t.deepEqual(t.context.registered_models, []);

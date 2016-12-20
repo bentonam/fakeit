@@ -1,197 +1,171 @@
+var utils = require('../../../../utils.js');
 var is = require('joi');
-var escape = require('lodash').escape;
-
-var types = {
-  string: is.string().regex(/string/),
-  array: is.string().regex(/array/),
-  object: is.string().regex(/object/),
-  boolean: is.string().regex(/boolean/),
-  integer: is.string().regex(/integer/),
-};
-
-function string(str) {
-  return is.string().regex(new RegExp('^' + escape(str) + '$'));
-}
-
-function check(type, description, data) {
-  var result = {
-    type: types[type]
-  };
-  if (typeof description !== 'string') {
-    data = description;
-    description = null;
-  }
-  if (description) {
-    result.description = string(description);
-  }
-
-  result.data = is.object(data);
-
-  return is.object(result);
-};
 
 module.exports = is.object({
-  name: string('Contacts'),
-  type: types.object,
-  key: string('_id'),
+  name: utils.string('Contacts'),
+  file: is.string(),
+  root: is.string(),
+  is_dependency: is.boolean(),
+  type: utils.types.object,
+  key: utils.string('_id'),
   data: is.object({
     min: is.number().min(200).max(200),
     max: is.number().min(400).max(400),
-    count: is.number(),
-    inputs: is.array().length(0),
+    count: is.number().min(200).max(400),
+    inputs: is.object().length(0),
+    dependencies: is.array().length(0),
   }),
   properties: is.object()
     .keys({
-      _id: check('string', 'The document id', { post_build: is.func() }),
-      doc_type: check('string', 'The document type', { value: string('contact') }),
-      channels: check('array', { build: is.func(), }),
-      contact_id: check('string', 'The contact_id', { build: is.func() }),
-      created_on: check('integer', 'An epoch time of when the contact was created', { build: is.func() }),
-      modified_on: check('integer', 'An epoch time of when the contact was last modified', { build: is.func() }),
+      _id: utils.check('string', 'The document id', { post_build: is.func() }),
+      doc_type: utils.check('string', 'The document type', { value: utils.string('contact') }),
+      channels: utils.check('array', { build: is.func(), }),
+      contact_id: utils.check('string', 'The contact_id', { build: is.func() }),
+      created_on: utils.check('integer', 'An epoch time of when the contact was created', { build: is.func() }),
+      modified_on: utils.check('integer', 'An epoch time of when the contact was last modified', { build: is.func() }),
       details: is.object().keys({
-        type: types.object,
+        type: utils.types.object,
         schema: is.object({
           $ref: '#/definitions/Details',
         }),
         description: 'An object of the contacts details',
         properties: is.object({
-          prefix: check('string', 'The contacts prefix', { build: is.func() }),
-          first_name: check('string', 'The contacts first_name', { fake: string('{{name.firstName}}') }),
-          middle_name: check('string', 'The contacts middle_name', { build: is.func() }),
-          last_name: check('string', 'The contacts last_name', { build: is.func() }),
-          company: check('string', 'The contacts company', { build: is.func() }),
-          job_title: check('string', 'The contacts job_title', { build: is.func() }),
-          dob: check('string', 'The contacts dob', { build: is.func() }),
-          nickname: check('string', 'The contacts nickname', { build: is.func() }),
+          prefix: utils.check('string', 'The contacts prefix', { build: is.func() }),
+          first_name: utils.check('string', 'The contacts first_name', { fake: utils.string('{{name.firstName}}') }),
+          middle_name: utils.check('string', 'The contacts middle_name', { build: is.func() }),
+          last_name: utils.check('string', 'The contacts last_name', { build: is.func() }),
+          company: utils.check('string', 'The contacts company', { build: is.func() }),
+          job_title: utils.check('string', 'The contacts job_title', { build: is.func() }),
+          dob: utils.check('string', 'The contacts dob', { build: is.func() }),
+          nickname: utils.check('string', 'The contacts nickname', { build: is.func() }),
         }),
         data: is.object(),
       }),
       phones: is.object({
-        type: types.array,
-        description: string('An array of phone numbers'),
+        type: utils.types.array,
+        description: utils.string('An array of phone numbers'),
         items: is.object({
-          $ref: string('#/definitions/Phone'),
+          $ref: utils.string('#/definitions/Phone'),
           data: is.object({
             min: is.number().min(1).max(1),
             max: is.number().min(3).max(3),
-            count: is.number().min(0).max(0),
+            count: is.number().min(1).max(3),
           }),
-          type: types.object,
+          type: utils.types.object,
           properties: is.object({
-            type: check('string', 'The phone type', { build: is.func() }),
-            phone_number: check('string', 'The phone number', { build: is.func() }),
-            extension: check('string', 'The phone extension', { build: is.func() }),
+            type: utils.check('string', 'The phone type', { build: is.func() }),
+            phone_number: utils.check('string', 'The phone number', { build: is.func() }),
+            extension: utils.check('string', 'The phone extension', { build: is.func() }),
           }),
         }),
       }),
       emails: is.object({
-        type: types.array,
-        description: string('An array of emails'),
+        type: utils.types.array,
+        description: utils.string('An array of emails'),
         items: is.object({
-          $ref: string('#/definitions/Email'),
-          type: types.string,
+          $ref: utils.string('#/definitions/Email'),
+          type: utils.types.string,
           data: is.object({
             min: is.number().min(1).max(1),
             max: is.number().min(2).max(2),
-            count: is.number().min(0).max(0),
+            count: is.number().min(1).max(2),
             build: is.func(),
           }),
         }),
       }),
       addresses: is.object({
-        type: types.array,
-        description: string('An array of addresses'),
+        type: utils.types.array,
+        description: utils.string('An array of addresses'),
         items: is.object({
-          $ref: string('#/definitions/Address'),
-          type: types.object,
+          $ref: utils.string('#/definitions/Address'),
+          type: utils.types.object,
           data: is.object({
             min: is.number().min(1).max(1),
             max: is.number().min(2).max(2),
-            count: is.number().min(0).max(0),
+            count: is.number().min(1).max(2),
           }),
           properties: is.object({
-            type: check('string', 'The address type', { build: is.func() }),
-            address_1: check('string', 'The address 1', { build: is.func() }),
-            address_2: check('string', 'The address 2', { build: is.func() }),
-            locality: check('string', 'The locality', { build: is.func() }),
-            region: check('string', 'The region / state / province', { build: is.func() }),
-            postal_code: check('string', 'The zip code / postal code', { build: is.func() }),
-            country: check('string', 'The country code', { build: is.func() }),
+            type: utils.check('string', 'The address type', { build: is.func() }),
+            address_1: utils.check('string', 'The address 1', { build: is.func() }),
+            address_2: utils.check('string', 'The address 2', { build: is.func() }),
+            locality: utils.check('string', 'The locality', { build: is.func() }),
+            region: utils.check('string', 'The region / state / province', { build: is.func() }),
+            postal_code: utils.check('string', 'The zip code / postal code', { build: is.func() }),
+            country: utils.check('string', 'The country code', { build: is.func() }),
           }),
         }),
       }),
       children: is.object({
-        type: types.array,
-        description: string('An array of children'),
+        type: utils.types.array,
+        description: utils.string('An array of children'),
         items: is.object({
-          $ref: string('#/definitions/Children'),
-          type: types.object,
+          $ref: utils.string('#/definitions/Children'),
+          type: utils.types.object,
           data: is.object({
             min: is.number().min(1).max(1),
             max: is.number().min(8).max(8),
-            count: is.number().min(0).max(0),
+            count: is.number().min(1).max(8),
           }),
           properties: is.object({
-            first_name: check('string', 'The childs first_name', { fake: string('{{name.firstName}}') }),
-            gender: check('string', 'The childs gender', { build: is.func() }),
-            age: check('integer', 'The childs age', { build: is.func() }),
+            first_name: utils.check('string', 'The childs first_name', { fake: utils.string('{{name.firstName}}') }),
+            gender: utils.check('string', 'The childs gender', { build: is.func() }),
+            age: utils.check('integer', 'The childs age', { build: is.func() }),
           })
         }),
       }),
-      notes: check('string', 'Notes about the contact', { fake: string('{{lorem.sentence}}') }),
+      notes: utils.check('string', 'Notes about the contact', { fake: utils.string('{{lorem.sentence}}') }),
       tags: is.object({
-        type: types.array,
-        items: check('string', {
+        type: utils.types.array,
+        items: utils.check('string', {
           min: is.number().min(1).max(1),
           max: is.number().min(6).max(6),
-          count: is.number().min(0).max(0),
+          count: is.number().min(1).max(6),
           build: is.func(),
         }),
       }),
     }),
   definitions: is.object({
-    Email: check('string', { build: is.func() }),
+    Email: utils.check('string', { build: is.func() }),
     Phone: is.object({
-      type: types.object,
+      type: utils.types.object,
       properties: is.object({
-        type: check('string', 'The phone type', { build: is.func() }),
-        phone_number: check('string', 'The phone number', { build: is.func() }),
-        extension: check('string', 'The phone extension', { build: is.func() }),
+        type: utils.check('string', 'The phone type', { build: is.func() }),
+        phone_number: utils.check('string', 'The phone number', { build: is.func() }),
+        extension: utils.check('string', 'The phone extension', { build: is.func() }),
       }),
     }),
     Address: is.object({
-      type: types.object,
+      type: utils.types.object,
       properties: is.object({
-        type: check('string', 'The address type', { build: is.func() }),
-        address_1: check('string', 'The address 1', { build: is.func() }),
-        address_2: check('string', 'The address 2', { build: is.func() }),
-        locality: check('string', 'The locality', { build: is.func() }),
-        region: check('string', 'The region / state / province', { build: is.func() }),
-        postal_code: check('string', 'The zip code / postal code', { build: is.func() }),
-        country: check('string', 'The country code', { build: is.func() }),
+        type: utils.check('string', 'The address type', { build: is.func() }),
+        address_1: utils.check('string', 'The address 1', { build: is.func() }),
+        address_2: utils.check('string', 'The address 2', { build: is.func() }),
+        locality: utils.check('string', 'The locality', { build: is.func() }),
+        region: utils.check('string', 'The region / state / province', { build: is.func() }),
+        postal_code: utils.check('string', 'The zip code / postal code', { build: is.func() }),
+        country: utils.check('string', 'The country code', { build: is.func() }),
       }),
     }),
     Children: is.object({
-      type: types.object,
+      type: utils.types.object,
       properties: is.object({
-        first_name: check('string', 'The childs first_name', { fake: string('{{name.firstName}}') }),
-        gender: check('string', 'The childs gender', { build: is.func() }),
-        age: check('integer', 'The childs age', { build: is.func() }),
+        first_name: utils.check('string', 'The childs first_name', { fake: utils.string('{{name.firstName}}') }),
+        gender: utils.check('string', 'The childs gender', { build: is.func() }),
+        age: utils.check('integer', 'The childs age', { build: is.func() }),
       }),
     }),
     Details: is.object({
-      type: types.object,
+      type: utils.types.object,
       properties: is.object({
-        prefix: check('string', 'The contacts prefix', { build: is.func() }),
-        first_name: check('string', 'The contacts first_name', { fake: '{{name.firstName}}' }),
-        middle_name: check('string', 'The contacts middle_name', { build: is.func() }),
-        last_name: check('string', 'The contacts last_name', { build: is.func() }),
-        company: check('string', 'The contacts company', { build: is.func() }),
-        job_title: check('string', 'The contacts job_title', { build: is.func() }),
-        dob: check('string', 'The contacts dob', { build: is.func() }),
-        nickname: check('string', 'The contacts nickname', { build: is.func() }),
+        prefix: utils.check('string', 'The contacts prefix', { build: is.func() }),
+        first_name: utils.check('string', 'The contacts first_name', { fake: '{{name.firstName}}' }),
+        middle_name: utils.check('string', 'The contacts middle_name', { build: is.func() }),
+        last_name: utils.check('string', 'The contacts last_name', { build: is.func() }),
+        company: utils.check('string', 'The contacts company', { build: is.func() }),
+        job_title: utils.check('string', 'The contacts job_title', { build: is.func() }),
+        dob: utils.check('string', 'The contacts dob', { build: is.func() }),
+        nickname: utils.check('string', 'The contacts nickname', { build: is.func() }),
       }),
     }),
   }),
-  count: is.number().min(200).max(400),
 });

@@ -373,7 +373,7 @@ export function parseModelCount(model, count) {
   for (let data_path of utils.objectSearch(model, /^(?:.*\.items\.data|data)$/)) {
     let property = get(model, data_path);
 
-    if (!count) {
+    if (data_path !== 'data' || !count) {
       count = property.count || property.min && property.max && to.random(property.min, property.max);
     }
 

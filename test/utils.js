@@ -155,11 +155,17 @@ module.exports.models = function(settings) {
                 // validate the object that can be validated
                 function validate(err) {
                   if (err) {
-                    let match = err.message.match(/(?:")[^"]+"/);
-                    if (match) {
-                      match = match[0].slice(1, -1);
-                      if (picked[match]) {
-                        console.log(picked[match]);
+                    let segments = err.message.match(/(?:child\s+(?:"))([^"]+)(?:")/g);
+                    if (segments) {
+                      segments = segments.map(function(segment) {
+                        return segment.replace(/child\s+|"/g, '');
+                      });
+                      let item_path = segments.join('.');
+                      let item = _.get(picked, item_path);
+                      if (item) {
+                        console.log('   ', item_path, '=', item);
+                      } else {
+                        console.log('   path:', item_path);
                       }
                     }
                     t.fail(`${model} isn't valid ${err.message}`);
@@ -238,6 +244,7 @@ module.exports.getPaths = function getPaths(model, regex) {
 /// @arg {object} actual - The actual object
 /// @arg {object} expected - The expected object
 /// @returns {string} If the string is empty then there was no diff, else it returns the formatted difference between the objects.
+/* istanbul ignore next: testing util */
 module.exports.checkDiff = function checkDiff(actual, expected) {
   const delta = json.diff(actual, expected);
   const spaces = '  ';
@@ -246,4 +253,44 @@ module.exports.checkDiff = function checkDiff(actual, expected) {
     return '';
   }
   return diff;
+};
+
+
+/* istanbul ignore next: testing util */
+var types = {
+  string: joi.string().regex(/string/),
+  array: joi.string().regex(/array/),
+  object: joi.string().regex(/object/),
+  boolean: joi.string().regex(/boolean/),
+  integer: joi.string().regex(/integer/),
+  double: joi.string().regex(/double/),
+  float: joi.string().regex(/float/),
+};
+
+/* istanbul ignore next: testing util */
+module.exports.types = types;
+
+/* istanbul ignore next: testing util */
+function string(str) {
+  return joi.string().regex(new RegExp('^' + str.replace(/([\$\[\]\(\)])/, '\\$1') + '$'));
+}
+/* istanbul ignore next: testing util */
+module.exports.string = string;
+
+/* istanbul ignore next: testing util */
+module.exports.check = function check(type, description, data) {
+  var result = {
+    type: types[type]
+  };
+  if (typeof description !== 'string') {
+    data = description;
+    description = null;
+  }
+  if (description) {
+    result.description = string(description);
+  }
+
+  result.data = joi.object(data);
+
+  return joi.object(result);
 };

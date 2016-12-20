@@ -1,43 +1,17 @@
+var utils = require('../../../../utils.js');
 var is = require('joi');
-var escape = require('lodash').escape;
-
-var types = {
-  string: is.string().regex(/string/),
-  array: is.string().regex(/array/),
-  object: is.string().regex(/object/),
-  boolean: is.string().regex(/boolean/),
-  integer: is.string().regex(/integer/),
-};
-
-function string(str) {
-  return is.string().regex(new RegExp('^' + escape(str) + '$'));
-}
-
-function check(type, description, data) {
-  var result = {
-    type: types[type]
-  };
-  if (typeof description !== 'string') {
-    data = description;
-    description = null;
-  }
-  if (description) {
-    result.description = string(description);
-  }
-
-  result.data = is.object(data);
-
-  return is.object(result);
-};
 
 module.exports = is.object({
-  name: string('Countries'),
-  type: types.object,
-  key: string('_id'),
+  name: utils.string('Countries'),
+  type: utils.types.object,
+  file: is.string(),
+  root: is.string(),
+  is_dependency: is.boolean(),
+  key: utils.string('_id'),
   data: is.object({
     min: is.number().min(0).max(0),
     max: is.number().min(0).max(0),
-    count: is.number().min(0).max(0),
+    count: is.number().min(1).max(1),
     inputs: is.object({
       countries: is.array()
         .items(is.object({
@@ -47,18 +21,19 @@ module.exports = is.object({
           iso_m49: is.number(),
         }))
         .length(247),
-    }),
+    })
+      .length(1),
+    dependencies: is.array().length(0),
     pre_run: is.func(),
     pre_build: is.func(),
   }),
   properties: is.object({
-    _id: check('string', 'The document id', { post_build: is.func() }),
-    gdp: check('integer', 'The countries GDP', { build: is.func() }),
-    country_code: check('string', 'The 2 letter ISO country code', { pre_build: is.func() }),
-    'region-number': check('string', 'The countries region number', { build: is.func() }),
-    name: check('string', 'The name of the country', { build: is.func() }),
-    updated: check('string', 'The date the country was last updated', { fake: string('{{date.past}}'), post_build: is.func() }),
-    population: check('integer', 'The countries population', { build: is.func() }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    gdp: utils.check('integer', 'The countries GDP', { build: is.func() }),
+    country_code: utils.check('string', 'The 2 letter ISO country code', { pre_build: is.func() }),
+    'region-number': utils.check('string', 'The countries region number', { build: is.func() }),
+    name: utils.check('string', 'The name of the country', { build: is.func() }),
+    updated: utils.check('string', 'The date the country was last updated', { fake: utils.string('{{date.past}}'), post_build: is.func() }),
+    population: utils.check('integer', 'The countries population', { build: is.func() }),
   }),
-  count: is.number().max(1).min(1),
 });
