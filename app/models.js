@@ -386,18 +386,30 @@ export function parseModelCount(model, count) {
   }
 }
 
+
+/// @name resolveDependenciesOrder
+/// @description Resolves the dependency order that file models need to run in.
+/// @arg {array} models [[]] - The models to prioritize
+/// @returns {array} - The models are returned in order with all the models that don't have dependencies first
 export function resolveDependenciesOrder(models = []) {
+  if (models.length <= 1) {
+    return models;
+  }
+
   const resolver = new DependencyResolver();
   const order = {};
 
-  for (let [ i, { name, data } ] of to.entries(models)) {
-    order[name] = i;
-    resolver.add(name);
+  // mode models that don't have dependencies up to be first
+  models = models.sort((a, b) => !b.data.dependencies.length && !!a.data.dependencies.length ? 1 : 0);
+
+  for (let [ i, { file, data } ] of to.entries(models)) {
+    order[file] = i;
+    resolver.add(file);
     const dependencies = to.array(data && data.dependencies);
     for (let dependency of dependencies) {
-      resolver.setDependency(name, dependency);
+      resolver.setDependency(file, dependency);
     }
   }
 
-  return resolver.sort().map((name) => models[order[name]]);
+  return resolver.sort().map((file) => models[order[file]]);
 }

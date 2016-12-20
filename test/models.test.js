@@ -7,6 +7,7 @@ import Models, {
   parseModelTypes,
   parseModelDefaults,
   parseModelCount,
+  resolveDependenciesOrder,
 } from '../dist/models.js';
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
@@ -477,6 +478,137 @@ test.group('parseModelCount', (test) => {
       t.truthy(property.count > 0);
     }
   }, 0));
+});
+
+test.group('resolveDependenciesOrder', (test) => {
+  const tests = [];
+
+  function create(title, actual = [], expected) {
+    function createItem(item) {
+      if (typeof item === 'number') {
+        return actual[item];
+      }
+      item = to.array(item);
+      return {
+        file: item[0],
+        data: { dependencies: item.slice(1) },
+      };
+    }
+    actual = to.array(actual).map(createItem);
+    expected = !expected ? actual : expected.map(createItem);
+    tests.push({ title, actual, expected });
+  }
+
+  create('no models were passed');
+
+  create('single model passed', 'one');
+
+  create(
+    'one level of dependencies already in order',
+    [
+      'one',
+      [ 'two', 'one' ],
+    ]
+  );
+
+  create('one level of dependencies in reverse order',
+    // actual
+    [
+      [ 'one', 'two' ],
+      [ 'two' ],
+    ],
+    // expected
+    [ 1, 0 ],
+  );
+
+  create('one level of multiple dependencies',
+    // actual
+    [
+      [ 'one', 'two', 'three' ],
+      'two',
+      'three',
+    ],
+    // expected
+    [ 1, 2, 0 ],
+  );
+
+  create('multiple levels of dependencies',
+    // actual
+    [
+      [ 'one', 'two' ],
+      [ 'two', 'three' ],
+      'three',
+    ],
+    // expected
+    [ 2, 1, 0 ],
+  );
+
+  create('multiple levels of multiple dependencies',
+    // actual
+    [
+      [ 'one', 'two', 'four' ],
+      [ 'two', 'three' ],
+      'three',
+      'four',
+    ],
+    // expected
+    [ 2, 3, 1, 0 ],
+  );
+
+  create('multiple levels of multiple dependencies reversed',
+    // actual
+    [
+      'four',
+      'three',
+      [ 'two', 'three' ],
+      [ 'one', 'two', 'four' ],
+    ],
+    // expected
+    [ 0, 1, 2, 3 ],
+  );
+
+  create('multiple levels of multiple dependencies with same dependencies',
+    // actual
+    [
+      [ 'one', 'two', 'four' ],
+      [ 'two', 'three' ],
+      [ 'three', 'four' ],
+      [ 'four', 'five' ],
+      'five',
+      'six',
+      'seven',
+    ],
+    // expected
+    [ 4, 5, 6, 3, 2, 1, 0 ],
+  );
+
+  create('multiple levels of multiple dependencies with same dependencies variation',
+    // actual
+    [
+      [ 'two', 'three' ],
+      [ 'three', 'four' ],
+      [ 'four', 'five' ],
+      'five',
+      'six',
+      'seven',
+      [ 'one', 'two', 'four' ],
+    ],
+    // expected
+    [ 3, 4, 5, 2, 1, 0, 6 ],
+  );
+
+  tests.forEach(({ title, actual, expected }, i) => {
+    test(`${title} (${i})`, (t) => {
+      actual = resolveDependenciesOrder(actual);
+      const diff = utils.checkDiff(actual, expected);
+      if (diff) {
+        t.fail(title);
+        console.log(diff);
+      } else {
+        t.pass();
+      }
+    });
+  });
 });
 
 // log all the schema keys that still need to be done

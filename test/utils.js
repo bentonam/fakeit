@@ -241,6 +241,9 @@ module.exports.getPaths = function getPaths(model, regex) {
 module.exports.checkDiff = function checkDiff(actual, expected) {
   const delta = json.diff(actual, expected);
   const spaces = '  ';
-  const diff = json.formatters.console.format(delta).split('\n').map((line) => spaces + spaces + line.trim()).join('\n').trim();
+  const diff = json.formatters.console.format(delta).split('\n').map((line) => spaces + spaces + line).join('\n');
+  if (!diff.trim()) {
+    return '';
+  }
   return diff;
 };
