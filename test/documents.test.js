@@ -64,8 +64,18 @@ test.todo('buildProcess');
 
 test.todo('buildProcessCallback');
 
-test.todo('getPaths');
+test.group('getPaths', models(async (t, file) => {
+  await t.context.model.registerModels(file);
+  const model = _.find(t.context.model.models, (obj) => {
+    return obj.file.includes(file);
+  });
+  const paths = getPaths(model);
 
-test.todo('getPaths');
+  t.is(to.type(paths), 'object');
+  t.deepEqual(to.keys(paths), [ 'model', 'document' ]);
+  t.falsy(paths.model.join(',').includes('items.properties'), 'shouldn\'t have an instance of `items.properties`');
+  t.falsy(paths.document.join(',').includes('properties.'), 'shouldn\'t have an instance of `properties`');
+  t.is(paths.model.length, paths.document.length, 'They should have the same length');
+}));
 
 test.todo('typeToValue');

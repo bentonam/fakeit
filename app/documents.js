@@ -238,8 +238,17 @@ export default class Document extends Base {
   }
 }
 
-// finds all the paths to be used
-function getPaths(obj) {
+/// @name getPaths
+/// @description finds all the paths to be used
+/// @arg {object} obj - The object to be searched
+/// @returns {object}
+/// ```js
+/// {
+///   model: [],
+///   document: [],
+/// }
+/// ```
+export function getPaths(obj) {
   // finds all of the properties paths in a model
   const model = objectSearch(obj, /^properties\.([^.]+|(?!items\.).+properties\.[^.]+)$/)
     .filter((str) => !str.includes('items.properties'));
