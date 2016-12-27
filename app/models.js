@@ -9,6 +9,11 @@ import to, { is } from 'to-js';
 import { transform } from 'babel-core';
 import globby from 'globby';
 
+////
+/// @name Models
+/// @page api/models
+////
+
 export default class Models extends Base {
   constructor(options = {}) {
     super(to.extend({

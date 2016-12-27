@@ -6,6 +6,11 @@ import { objectSearch } from './utils';
 import { set, get } from 'lodash';
 import to from 'to-js';
 
+////
+/// @name Document
+/// @page api/document
+////
+
 export default class Document extends Base {
   constructor(options, documents = {}, globals = {}, inputs = {}) {
     super(options);

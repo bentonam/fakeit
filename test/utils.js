@@ -140,6 +140,10 @@ module.exports.models = function(settings) {
             // assume that the callback will return a promise
             return result
               .then(function(actual) {
+                if (!actual) {
+                  return;
+                }
+
                 // find the keys that still need to be validated
                 var omitted = _.difference(to.keys(actual), schema_keys);
                 // test the keys that exsit
