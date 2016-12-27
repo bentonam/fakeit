@@ -29,8 +29,8 @@ export default class Base extends utils.Logger {
   ///# @description
   ///# This is ued to parsed paths that are passed to the different functions
   ///# @arg {string, array} paths - The paths to normalize
-  ///# @arg {}
-  resolvePaths(paths) {
+  ///# @arg {string} root [this.options.root] - This is the base that will resolve other paths
+  resolvePaths(paths, root = this.options.root) {
     if (!paths) {
       return [];
     }
@@ -41,7 +41,7 @@ export default class Base extends utils.Logger {
         if (path.isAbsolute(file)) {
           return file;
         }
-        return path.join(this.options.root, file);
+        return path.join(root, file);
       });
   }
 }

@@ -4,14 +4,14 @@ key: _id
 data:
   min: 200
   max: 500
-  pre_run: >
+  pre_run: |
     globals.user_counter = 0;
 properties:
   _id:
     type: string
     description: The document id
     data:
-      post_build: "return 'user_' + this.user_id;"
+      post_build: "'user_' + this.user_id;"
   doc_type:
     type: string
     description: The document type
@@ -21,7 +21,7 @@ properties:
     type: integer
     description: The users id
     data:
-      build: "return ++globals.user_counter;"
+      build: "++globals.user_counter;"
   first_name:
     type: string
     description: The users first name
@@ -52,22 +52,22 @@ properties:
     description: The users home phone
     data:
       fake: "{{phone.phoneNumber}}"
-      post_build: "return this.home_phone.replace(/x[0-9]+$/, '')"
+      post_build: "this.home_phone.replace(/x[0-9]+$/, '')"
   mobile_phone:
     type: string
     description: The users mobile phone
     data:
       fake: "{{phone.phoneNumber}}"
-      post_build: "return this.mobile_phone.replace(/x[0-9]+$/, '')"
+      post_build: "this.mobile_phone.replace(/x[0-9]+$/, '')"
   addresses:
     type: array
     description: An array of addresses
     data:
-      build: >
+      build: |
         var addresses = [];
         for (var i = 0, rand = Math.floor(Math.random() * 3) + 1; i < rand; i++) {
           addresses.push({
-            type: faker.random.arrayElement(['Home', 'Work', 'Other']),
+            type: faker.random.arrayElement([ 'Home', 'Work', 'Other' ]),
             address_1: faker.address.streetAddress() + ' ' + faker.address.streetSuffix(),
             address_2: faker.random.boolean() ? faker.address.secondaryAddress() : '',
             locality: faker.address.city(),
@@ -82,4 +82,4 @@ properties:
     description: An epoch time of when the user was created
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(this.created_on).getTime();"
+      post_build: "new Date(this.created_on).getTime();"

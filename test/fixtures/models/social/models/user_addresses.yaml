@@ -2,17 +2,17 @@ name: UserAddresses
 type: object
 key: _id
 data:
-  pre_run: >
-    this.data.fixed = documents.Users.length;
+  pre_run: |
+    this.data.count = documents.Users.length;
   dependencies:
-    - Users
-    - Addresses
+    - users.yaml
+    - addresses.yaml
 properties:
   _id:
     type: string
     description: The document id
     data:
-      post_build: "return 'user_' + this.user_id + '_addresses'"
+      post_build: "'user_' + this.user_id + '_addresses'"
   doc_type:
     type: string
     description: The document type
@@ -22,12 +22,12 @@ properties:
     type: integer
     description: The user_id the lookup is for
     data:
-      build: "return documents.Users[document_index].user_id"
+      build: "documents.Users[document_index].user_id"
   addresses:
     type: array
     description: The address id
     data:
-      build: >
+      build: |
         var addresses = [];
         for (var i = 0; i < documents.Addresses.length; i++) {
           if (documents.Addresses[i].user_id === documents.Users[document_index].user_id) {

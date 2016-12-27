@@ -46,11 +46,11 @@
   "dependencies": {
     "adm-zip": "^0.4.7",
     "async-array-methods": "^2.1.0",
+    "babel-core": "~6.20.0",
     "babel-helpers": "~6.16.0",
     "babel-runtime": "^6.18.0",
     "chalk": "^1.1.3",
     "chance": "^1.0.4",
-    "class-mixin": "~2.0.0",
     "commander": "^2.9.0",
     "couchbase-promises": "~2.2.0",
     "cson": "^4.0.0",
@@ -83,10 +83,21 @@
     "docs-core": "0.0.0-alpha-6.1",
     "docs-theme-default": "0.0.0-alpha-6.1",
     "joi": "~10.0.5",
+    "jsondiffpatch": "~0.2.4",
     "lint-rules": "github:ma-shop/lint-rules",
     "nock": "~9.0.2",
     "nyc": "~9.0.1",
     "test-console": "~1.0.0"
+  },
+  "babelConfig": {
+    "presets": [
+      "latest",
+      "stage-0"
+    ],
+    "plugins": [
+      "transform-runtime",
+      "external-helpers"
+    ]
   },
   "ava": {
     "files": [
@@ -94,7 +105,7 @@
     ],
     "source": [
       "dist/**/*",
-      "test/fixtures/models/*/validation/*",
+      "test/fixtures/models/*/+(models|validation)/*",
       "test/utils.js"
     ],
     "failFast": true

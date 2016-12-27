@@ -2,16 +2,16 @@ name: Auth
 type: object
 key: _id
 data:
-  pre_run: >
-    this.data.fixed = documents.Users.length;
+  pre_run: |
+    this.data.count = documents.Users.length;
   dependencies:
-    - Users
+    - users.yaml
 properties:
   _id:
     type: string
     description: The document id
     data:
-      post_build: "return 'user_' + this.user_id + '_auth'"
+      post_build: "'user_' + this.user_id + '_auth'"
   doc_type:
     type: string
     description: The document type
@@ -31,4 +31,4 @@ properties:
     type: integer
     description: The users id
     data:
-      build: "return documents.Users[document_index].user_id"
+      build: "documents.Users[document_index].user_id"

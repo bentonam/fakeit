@@ -7,13 +7,13 @@ data:
 properties:
   id:
     data:
-      post_build: "return 'user_' + this.user_id"
+      post_build: "'user_' + this.user_id"
   type:
     data:
       value: "user"
   user_id:
     data:
-      build: "return document_index"
+      build: "document_index"
   first_name:
     data:
       fake: "{{name.firstName}}"
@@ -26,11 +26,11 @@ properties:
       fake: "{{internet.email}}"
   phone:
     data:
-      build: "return chance.phone();"
+      build: "chance.phone();"
   active:
     data:
-      build: "return chance.bool({likelihood: 70});"
+      build: "chance.bool({ likelihood: 70 });"
   created_on:
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(this.created_on).toISOString();"
+      post_build: "new Date(this.created_on).toISOString();"

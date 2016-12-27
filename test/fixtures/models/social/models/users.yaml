@@ -2,13 +2,13 @@ name: Users
 type: object
 key: _id
 data:
-  fixed: 1000
+  count: 1000
 properties:
   _id:
     type: string
     description: The document id
     data:
-      post_build: "return 'user_' + this.user_id;"
+      post_build: "'user_' + this.user_id;"
   doc_type:
     type: string
     description: The document type
@@ -18,7 +18,7 @@ properties:
     type: integer
     description: The users id
     data:
-      build: "return document_index + 1"
+      build: "document_index + 1"
   first_name:
     type: string
     description: The users first name
@@ -28,7 +28,7 @@ properties:
     type: string
     description: The users middle_name
     data:
-      build: "return chance.bool() ? chance.name({middle: true}).split(' ')[1] : null;"
+      build: "chance.bool() ? chance.name({ middle: true }).split(' ')[1] : null;"
   last_name:
     type: string
     description: The users last name
@@ -38,28 +38,28 @@ properties:
     type: string
     description: The users company
     data:
-      build: "return chance.bool({likelihood: 30})  ? faker.company.companyName() : null;"
+      build: "chance.bool({ likelihood: 30 }) ? faker.company.companyName() : null;"
   job_title:
     type: string
     description: The users job title
     data:
-      build: "return chance.bool({likelihood: 30})  ? faker.name.jobTitle() : null;"
+      build: "chance.bool({ likelihood: 30 }) ? faker.name.jobTitle() : null;"
   gender:
     type: string
     description: The users gender
     data:
-      build: "return chance.bool({likelihood: 70})? faker.random.arrayElement(['M', 'F']) : null;"
+      build: "chance.bool({ likelihood: 70 })? faker.random.arrayElement([ 'M', 'F' ]) : null;"
   dob:
     type: string
     description: The users dob
     data:
-      build: "return chance.bool() ? new Date(faker.date.past()).toISOString().split('T')[0] : null;"
+      build: "chance.bool() ? new Date(faker.date.past()).toISOString().split('T')[0] : null;"
   created_on:
     type: integer
     description: An epoch time of when the user was created
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(this.created_on).getTime();"
+      post_build: "new Date(this.created_on).getTime();"
   children:
     type: array
     description: An array of children
@@ -81,9 +81,9 @@ definitions:
         type: string
         description: The childs gender
         data:
-          build: "return chance.bool({likelihood: 60})? faker.random.arrayElement(['M', 'F']) : null;"
+          build: "chance.bool({ likelihood: 60 })? faker.random.arrayElement([ 'M', 'F' ]) : null;"
       age:
         type: integer
         description: The childs age
         data:
-          build: "return chance.integer({min: 1, max: 17})"
+          build: "chance.integer({ min: 1, max: 17 })"

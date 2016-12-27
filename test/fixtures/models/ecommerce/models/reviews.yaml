@@ -3,8 +3,8 @@ type: object
 key: _id
 data:
   dependencies:
-    - Products
-    - Users
+    - products.yaml
+    - users.yaml
   min: 500
   max: 1000
 properties:
@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "return 'review_' + this.review_id;"
+      post_build: "'review_' + this.review_id;"
   doc_type:
     type: string
     description: The document type
@@ -22,19 +22,19 @@ properties:
     type: string
     description: Unique identifier representing a specific review
     data:
-      build: "return faker.random.uuid();"
+      build: "faker.random.uuid();"
   product_id:
     type: string
     description: The product_id the review is for
     data:
-      build: >
+      build: |
         var rand = Math.floor(Math.random() * (documents.Products.length - 1)) + 0;
         return documents.Products[rand].product_id;
   user_id:
     type: integer
     description: The user_id of the user who wrote the review
     data:
-      build: >
+      build: |
         var rand = Math.floor(Math.random() * (documents.Users.length - 1)) + 0;
         return documents.Users[rand].user_id;
   reviewer_name:
@@ -51,7 +51,7 @@ properties:
     type: integer
     description: The review rating
     data:
-      build: "return Math.floor(Math.random() * 5) + 1"
+      build: "Math.floor(Math.random() * 5) + 1"
   review_title:
     type: string
     description: The review title
@@ -67,4 +67,4 @@ properties:
     description: The review content
     data:
       fake: "{{date.past}}"
-      post_build: "return new Date(this.review_date).getTime();"
+      post_build: "new Date(this.review_date).getTime();"

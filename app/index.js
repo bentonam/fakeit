@@ -1,10 +1,8 @@
-import Input from './input';
 import Models from './models';
 import { series } from 'async-array-methods';
 import Output from './output/index';
 import Base from './base';
 import to from 'to-js';
-import mixin from 'class-mixin';
 import Document from './documents';
 
 /// @name Fakeit
@@ -27,36 +25,12 @@ import Document from './documents';
 /// }
 /// ```
 /* istanbul ignore next: These are already tested in other files */
-export default class Fakeit extends mixin(Base, Input, Models) {
+export default class Fakeit extends Base {
   constructor(options = {}) {
-    options = to.extend({
-      // defined in `input.js` and used in `models.js` and `documents.js`
-      inputs: '', ///# @todo remove
-
-      exclude: '', ///# @todo remove
-
-      // used by `models.js` only
-      count: null,
-
-      // Base options
-      root: process.cwd(), // the root folder to work from
-
-      // options for the logger
-      log: true,
-      verbose: false,
-      timestamp: true,
-    }, options);
     super(options);
-    this.options = options;
 
     this.documents = {};
     this.globals = {};
-
-    // defined in `input.js`
-    this.inputs = {};
-
-    // defined in `model.js`
-    this.models = []; // holds the parsed models
   }
 
   async generate(models, output_options = {}) {
@@ -68,24 +42,18 @@ export default class Fakeit extends mixin(Base, Input, Models) {
     if (!models) {
       return;
     }
-
+    const model = new Models(this.options);
     const output = new Output(this.options, output_options);
     const preparing = output.prepare();
 
-    // @todo remove this when we can resolve inputs and dependencies automatically
-    if (this.options.input) {
-      await this.input(this.options.input);
-    }
+    await model.registerModels(models);
 
-    // @todo remove `this.options.models`
-    await this.registerModels(models);
-
-    const document = new Document(this.options, this.documents, this.globals, this.inputs);
+    const document = new Document(this.options, this.documents, this.globals, model.inputs);
 
     await preparing;
 
-    const data = await series(to.flatten(this.models), async (model) => {
-      return output.output(await document.build(model));
+    const data = await series(to.flatten(model.models), async (obj) => {
+      return output.output(await document.build(obj));
     });
 
     await output.finalize();

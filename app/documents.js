@@ -4,6 +4,7 @@ const chance = new Chance();
 import Base from './base';
 import { objectSearch } from './utils';
 import { set, get } from 'lodash';
+import to from 'to-js';
 
 export default class Document extends Base {
   constructor(options, documents = {}, globals = {}, inputs = {}) {
@@ -22,12 +23,13 @@ export default class Document extends Base {
     if (!model.data) {
       model.data = {};
     }
+
     // if there is a pre_run function call it
     this.runData(model.data.pre_run, model);
 
     this.log('info', `Generating ${model.count} documents for ${model.name} model`);
 
-    for (let i = 0; i < model.count; i++) { // loop over each model and execute in order of dependency
+    for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
       const doc = this.buildDocument(model, getPaths(model), i);
       // build the key for the document
       let value;
@@ -48,7 +50,11 @@ export default class Document extends Base {
   // used to run the different functions that the users can pass in
   runData(data, context, index) {
     if (data) {
-      return data.apply(context, [ this.documents, this.globals, this.inputs, faker, chance, index ]);
+      try {
+        return data.call(context, this.documents, this.globals, this.inputs, faker, chance, index);
+      } catch (e) {
+        this.log('error', `${to.dotCase(data.name)} ${e.message}`);
+      }
     }
   }
 
@@ -132,13 +138,7 @@ export default class Document extends Base {
 
   // builds an array
   buildArray(doc, property, value, index) {
-    let number = property.items.data.fixed;
-    if (!number) {
-      number = chance.integer({
-        min: property.items.data.min || 0,
-        max: property.items.data.max || 0
-      });
-    }
+    const number = property.items.data.count;
 
     // builds a complex array
     if (property.items.type === 'object') {

@@ -2,15 +2,16 @@ name: Airlines
 type: object
 key: _id
 data:
-  pre_run: >
+  inputs: '../input/airlines.csv'
+  pre_run: |
     if (!inputs.airlines) {
       throw new Error('airlines must be provided as an input');
     }
     if (!globals.codes) {
       globals.codes = [];
     }
-    this.data.fixed = inputs.airlines.length;
-  post_build: >
+    this.data.count = inputs.airlines.length;
+  post_build: |
     if (this.airline_iata) {
       globals.codes.push({
         id: this.airline_id,
@@ -28,13 +29,13 @@ data:
       });
     }
   dependencies:
-    - Countries
+    - countries.yaml
 properties:
   _id:
     type: string
     description: The document id
     data:
-      post_build: "return 'airline_' + this.airline_id"
+      post_build: "'airline_' + this.airline_id"
   doc_type:
     type: string
     description: The document type
@@ -44,32 +45,32 @@ properties:
     type: integer
     description: The airlines id
     data:
-      pre_build: "return inputs.airlines[document_index].id"
+      pre_build: "inputs.airlines[document_index].id"
   airline_name:
     type: string
     description: The name of the airline
     data:
-      build: "return inputs.airlines[document_index].name"
+      build: "inputs.airlines[document_index].name"
   airline_iata:
     type: string
     description: The airlines iata code if availabe, otherwise null
     data:
-      build: "return inputs.airlines[document_index].iata_code || null"
+      build: "inputs.airlines[document_index].iata_code || null"
   airline_icao:
     type: string
     description: The airlines icao code if available, otherwise null
     data:
-      build: "return inputs.airlines[document_index].icao_code || null"
+      build: "inputs.airlines[document_index].icao_code || null"
   callsign:
     type: string
     description: The airlines callsign if available
     data:
-      build: "return inputs.airlines[document_index].callsign || null"
+      build: "inputs.airlines[document_index].callsign || null"
   iso_country:
     type: string
     description: The ISO country code the airline is based in
     data:
-      build: >
+      build: |
         var exists = false;
         for (var i = 0; i < documents.Countries.length; i++) {
           if (documents.Countries[i].country_code === inputs.airlines[document_index].iso_country) {
@@ -82,5 +83,5 @@ properties:
     type: boolean
     description: Whether or not the airline is active
     data:
-      pre_build: "return inputs.airlines[document_index].active === 'Y'"
-      post_build: "return this.active && Boolean(this.iso_country) && Boolean(this.airline_icao) && Boolean(this.airline_iata)"
+      pre_build: "inputs.airlines[document_index].active === 'Y'"
+      post_build: "this.active && Boolean(this.iso_country) && Boolean(this.airline_icao) && Boolean(this.airline_iata)"

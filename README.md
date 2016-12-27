@@ -56,7 +56,7 @@ At the root of a model the following keys are used:
 - `data:` *(optional)* Defines how many documents should be generated for the model, as well as event callbacks. The following properties are used:
   - `min:` *(optional)* The minimum number of documents to generate
   - `max:` *(optional)* The maximum number of documents to generate
-  - `fixed:` *(optional)* A fixed number of documents to generate
+  - `count:` *(optional)* A fixed number of documents to generate
   - `pre_run:` *(optional)* A function to be run *before the model* generation starts
   - `pre_build:` *(optional)* A function to be run *before each document* is generated
   - `post_build:` *(optional)* A function to be run *after each document* is generated
@@ -399,7 +399,7 @@ type: object
 key: _id
 data:
   pre_run: >
-    this.data.fixed = 100;
+    this.data.count = 100;
 ...
 ```
 
@@ -420,7 +420,7 @@ data:
     if (!inputs.countries) {
       throw new Error('countries must be provided as an input');
     }
-    this.data.fixed = inputs.countries.length;
+    this.data.count = inputs.countries.length;
 ```
 
 ## Examples

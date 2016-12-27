@@ -2,22 +2,22 @@ name: Codes
 type: object
 key: _id
 data:
-  pre_run: >
-    this.data.fixed = globals.codes.length
+  pre_run: |
+    this.data.count = globals.codes.length
   dependencies:
-    - Airlines
-    - Airports
+    - airlines.yaml
+    - airports.yaml
 properties:
   _id:
     type: string
     description: The document id
     data:
-      post_build: "return this.designation + '_code_' + this.code"
+      post_build: "this.designation + '_code_' + this.code"
   id:
     type: integer
     description: The id of the airline, airport, or navaid the code is for
     data:
-      build: "return globals.codes[document_index].id"
+      build: "globals.codes[document_index].id"
   doc_type:
     type: string
     description: The document type
@@ -27,14 +27,14 @@ properties:
     type: string
     description: The designation of the code, can be airline, airport, or navaid
     data:
-      build: "return globals.codes[document_index].designation"
+      build: "globals.codes[document_index].designation"
   code_type:
     type: string
     description: The type of code, can be iata, icao, ident
     data:
-      build: "return globals.codes[document_index].code_type"
+      build: "globals.codes[document_index].code_type"
   code:
     type: string
     description: The document type
     data:
-      build: "return globals.codes[document_index].code"
+      build: "globals.codes[document_index].code"
