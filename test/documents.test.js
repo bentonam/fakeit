@@ -40,11 +40,32 @@ test.beforeEach(async (t) => {
     log: false,
     babel_config,
   });
+  t.context.documents = {};
+  t.context.globals = {};
+  t.context.inputs = {};
+  t.context.document = new Document({
+    root: documents_root,
+    log: false,
+  }, t.context.documents, t.context.globals, t.context.inputs);
 
   await t.context.model.setup();
 });
 
-test.todo('without args');
+test('without args', (t) => {
+  const doc = t.context.document;
+  // rest the log option to what it is by default.
+  doc.options.log = true;
+  t.deepEqual(doc.options, {
+    root: documents_root,
+    log: true,
+    verbose: false,
+    timestamp: true,
+  });
+  t.is(to.type(doc.log_types), 'object');
+  t.deepEqual(doc.documents, {});
+  t.deepEqual(doc.globals, {});
+  t.deepEqual(doc.inputs, {});
+});
 
 test.todo('build');
 
