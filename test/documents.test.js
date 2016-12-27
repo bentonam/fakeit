@@ -73,7 +73,53 @@ test.todo('runData');
 
 test.todo('buildDocument');
 
-test.todo('initializeDocument');
+test.group('initializeDocument', (test) => {
+  test('throws if wrong paths were passed in', (t) => {
+    // highjack the log function
+    t.context.document.log = (type, message) => {
+      if (type === 'error') {
+        throw new Error(message);
+      }
+    };
+    const tester = () => t.context.document.initializeDocument({}, { model: [ 'a' ], document: [ 'a' ] });
+    t.throws(tester);
+  });
+
+  test.group(models(async (t, file) => {
+    await t.context.model.registerModels(file);
+    const model = _.find(t.context.model.models, (obj) => {
+      return obj.file.includes(file);
+    });
+
+    const doc = t.context.document.initializeDocument(model);
+    t.deepEqual(to.keys(doc), to.keys(model.properties));
+    function get(key) {
+      let result = _.get(model, `properties.${key}`);
+      if (!result) {
+        result = _.get(model, `properties.${key.split('.').join('.properties.')}`);
+      }
+      if (result) {
+        return typeToValue(result.type);
+      }
+      return null;
+    }
+
+    const keys = utils.getPaths(doc);
+
+    for (let key of keys) {
+      const expected = get(key);
+      const actual = _.get(doc, key);
+      const type = to.type(actual);
+      if (type !== 'object') {
+        if (type === 'array') {
+          t.deepEqual(actual, expected);
+        } else {
+          t.is(actual, expected);
+        }
+      }
+    }
+  }));
+});
 
 test.todo('buildObject');
 

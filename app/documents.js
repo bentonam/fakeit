@@ -11,6 +11,9 @@ import to from 'to-js';
 /// @page api/document
 ////
 
+
+/// @name Document
+/// @description This is used to generate documents based off a model
 export default class Document extends Base {
   constructor(options, documents = {}, globals = {}, inputs = {}) {
     super(options);
@@ -80,20 +83,25 @@ export default class Document extends Base {
     return doc;
   }
 
-  // initializes a documents default values
+  ///# @name initializeDocument
+  ///# @description initializes a documents default values
+  ///# @arg {object} model - The model to parse
+  ///# @arg {object} paths - The paths to loop over
+  ///# @returns {object} - The document with the defaults
   initializeDocument(model, paths) {
-    // console.log('inputs.this.initializeDocument');
-    const doc = {};
-    let key;
-    try {
-      paths.model.forEach((path, i) => {
-        key = paths.document[i]; // set a key for error messaging
-        set(doc, key, typeToValue(get(model, path).type));
-      });
-      return doc;
-    } catch (e) {
-      throw new Error(`Error: Initializing Properties in Model: "${model.name}" for Key: "${key}", Reason: ${e.message}`);
+    if (!paths || !paths.model || !paths.document) {
+      paths = getPaths(model);
     }
+    const doc = {};
+    for (let [ i, str ] of to.entries(paths.model)) {
+      let key = paths.document[i]; // set a key for error messaging
+      try {
+        set(doc, key, typeToValue(get(model, str).type));
+      } catch (e) {
+        this.log('error', `Initializing Properties in Model: "${model.name}" for Key: "${key}"\n`, e);
+      }
+    }
+    return doc;
   }
 
   // builds an object based on a model
