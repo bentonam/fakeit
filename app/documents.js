@@ -260,20 +260,18 @@ export function getPaths(obj) {
   };
 }
 
+/// @name typeToValue
+/// @description generates the initial value for a variable based on the data type
+/// @arg {string} type
+/// @returns {*} - What ever the value is that matches it.
+/// @raw-code
+export function typeToValue(type) {
+  const types = {};
+  types.string = '';
+  types.object = types.structure = {};
+  types.number = types.integer = types.double = types.long = types.float = 0;
+  types.array = [];
+  types.boolean = types.bool = false;
 
-// generates the initial value for a variable based on the data type
-function typeToValue(type) {
-  // console.log('documents.typeToValue');
-  if (type === 'string') {
-    return '';
-  } else if (type === 'object') {
-    return {};
-  } else if ('number,integer,double,long,float'.includes(type)) {
-    return 0;
-  } else if (type === 'array') {
-    return [];
-  } else if ('boolean,bool'.includes(type)) {
-    return false;
-  }
-  return null;
+  return types[type] != null ? types[type] : null;
 }

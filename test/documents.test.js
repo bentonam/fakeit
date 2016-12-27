@@ -78,4 +78,30 @@ test.group('getPaths', models(async (t, file) => {
   t.is(paths.model.length, paths.document.length, 'They should have the same length');
 }));
 
-test.todo('typeToValue');
+test.group('typeToValue', (test) => {
+  const tests = [
+    { actual: 'string', expected: '' },
+    { actual: 'object', expected: {} },
+    { actual: 'structure', expected: {} },
+    { actual: 'number', expected: 0 },
+    { actual: 'integer', expected: 0 },
+    { actual: 'double', expected: 0 },
+    { actual: 'long', expected: 0 },
+    { actual: 'float', expected: 0 },
+    { actual: 'array', expected: [] },
+    { actual: 'boolean', expected: false },
+    { actual: 'bool', expected: false },
+    { actual: 'null', expected: null },
+    { actual: 'undefined', expected: null },
+  ];
+
+  tests.forEach(({ actual, expected }) => {
+    test(actual, (t) => {
+      if ('object,structure,array'.includes(actual)) {
+        t.deepEqual(typeToValue(actual), expected);
+      } else {
+        t.is(typeToValue(actual), expected);
+      }
+    });
+  });
+});
