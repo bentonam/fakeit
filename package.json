@@ -89,6 +89,16 @@
     "nyc": "~9.0.1",
     "test-console": "~1.0.0"
   },
+  "babelConfig": {
+    "presets": [
+      "latest",
+      "stage-0"
+    ],
+    "plugins": [
+      "transform-runtime",
+      "external-helpers"
+    ]
+  },
   "ava": {
     "files": [
       "test/**/*.test.js"

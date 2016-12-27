@@ -31,9 +31,6 @@ export default class Fakeit extends Base {
 
     this.documents = {};
     this.globals = {};
-
-    // defined in `model.js`
-    this.models = []; // holds the parsed models
   }
 
   async generate(models, output_options = {}) {
@@ -49,7 +46,6 @@ export default class Fakeit extends Base {
     const output = new Output(this.options, output_options);
     const preparing = output.prepare();
 
-    // @todo remove `this.options.models`
     await model.registerModels(models);
 
     const document = new Document(this.options, this.documents, this.globals, model.inputs);

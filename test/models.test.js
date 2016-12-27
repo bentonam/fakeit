@@ -35,7 +35,7 @@ const done = [
   p('music', 'models', 'countries.yaml')
 ];
 
-function filterDone() {
+function filterDone() { // eslint-disable-line
   return _.without(models.files, ...done);
 }
 
@@ -90,17 +90,47 @@ test('prepare', async (t) => {
   t.deepEqual(t.context.options.babel_config, babel_config);
 });
 
-test('setup', async (t) => {
-  t.is(t.context.prepared, false);
-  t.is(t.context.preparing, undefined);
-  t.is(typeof t.context.options.babel_config, 'string');
-  const preparing = t.context.setup();
-  t.is(typeof t.context.preparing.then, 'function');
-  t.is(t.context.prepared, false);
-  await preparing;
-  t.is(t.context.prepared, true);
-  t.is(typeof t.context.options.babel_config, 'object');
-  t.deepEqual(t.context.options.babel_config, babel_config);
+test.group('setup', (test) => {
+  test('babel_config as a string', async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    t.is(typeof t.context.options.babel_config, 'string');
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.prepared, true);
+    t.is(typeof t.context.options.babel_config, 'object');
+    t.deepEqual(t.context.options.babel_config, babel_config);
+  });
+
+  test('babel_config as an object', async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    t.context.options.babel_config = babel_config;
+    t.is(to.type(t.context.options.babel_config), 'object');
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.prepared, true);
+    t.is(to.type(t.context.options.babel_config), 'object');
+    t.deepEqual(t.context.options.babel_config, babel_config);
+  });
+
+  test('babel_config in the package.json', async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    t.context.options.babel_config = 'package.json';
+    t.is(typeof t.context.options.babel_config, 'string');
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.prepared, true);
+    t.is(to.type(t.context.options.babel_config), 'object');
+    t.deepEqual(t.context.options.babel_config, babel_config);
+  });
 });
 
 
@@ -114,6 +144,12 @@ test.group('registerModels', (test) => {
       t.fail();
     }
   });
+
+  // throws error if this isn't defined
+  test.todo('without model.type value');
+
+  // throws error if this isn't defined
+  test.todo('without model.key value');
 
   test.group(models(async (t, file) => {
     const original_model = to.clone(contents[file]);
@@ -161,6 +197,10 @@ test.group('registerModels', (test) => {
 
     return actual;
   }));
+});
+
+test('parseModel', (t) => {
+  t.is(typeof t.context.parseModel, 'function');
 });
 
 test.group('filterModelFiles', (test) => {

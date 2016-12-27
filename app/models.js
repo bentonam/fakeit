@@ -52,7 +52,9 @@ export default class Models extends Base {
     let { babel_config } = this.options;
 
     if (!is.string(babel_config)) {
-      this.prepare = true;
+      process.nextTick(() => {
+        this.prepared = true;
+      });
       return;
     }
 
@@ -122,14 +124,18 @@ export default class Models extends Base {
       // used to determin if something is a dependency or not.
       model.is_dependency = dependency;
 
+      /* istanbul ignore if : currently hard to test */
       if (!model.name) {
         model.name = path.basename(file).split('.')[0];
       }
 
       // validate the model
+      /* istanbul ignore if : currently hard to test */
       if (!model.type) {
         this.log('error', new Error(`The model ${model.name} must have a "type" property.`));
       }
+
+      /* istanbul ignore if : currently hard to test */
       if (!model.key) {
         this.log('error', new Error(`The model ${model.name} must have a "key" property.`));
       }
@@ -246,12 +252,7 @@ export function parseModelFunctions(model, babel_config = {}) {
   // console.log('models.parseModelFunctions');
   const paths = utils.objectSearch(model, /((pre|post)_run)|(pre_|post_)?build$/);
   paths.forEach((function_path) => {
-    let name;
-    try {
-      name = to.camelCase(function_path);
-    } catch (e) {
-      name = function_path.split('.').pop();
-    }
+    let name = to.camelCase(function_path);
 
     // get the function
     let fn = get(model, function_path).trim().split('\n').filter(Boolean);
