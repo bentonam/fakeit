@@ -224,10 +224,10 @@ test.group('parseModelDependencies', models(async (t, file) => {
 
   await t.context.parseModelDependencies(model);
   if (model.data.dependencies.length === 0) {
-    t.plan(1);
+    t.plan(0);
   } else {
     const length = t.context.models.length;
-    t.plan(length * 2 + 2);
+    t.plan(length * 2 + 1);
     t.is(length, to.unique(t.context.registered_models).length);
   }
 

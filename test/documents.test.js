@@ -9,6 +9,7 @@ const Model = require('../dist/models.js').default;
 import { join as p } from 'path';
 import ava from 'ava-spec';
 import to from 'to-js';
+import is from 'joi';
 import _ from 'lodash';
 import fs from 'fs-extra-promisify';
 const test = ava.group('documents');
@@ -121,7 +122,74 @@ test.group('initializeDocument', (test) => {
   }));
 });
 
-test.todo('buildObject');
+test.group('buildObject', (test) => {
+  const model = {
+    name: 'test',
+    data: {
+      count: 1,
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return to.random([ 'Home', 'Work', 'Mobile', 'Main', 'Other' ]);
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return '(333) 333 - 3333';
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  test((t) => {
+    const paths = getPaths(model);
+    const doc = t.context.document.initializeDocument(model, paths);
+    const actual = t.context.document.buildObject(model, to.clone(doc), paths, 1);
+
+    const schema = is.object({
+      phone: is.object({
+        type: is.string(),
+        phone_number: is.string().regex(/\(333\) 333 \- 3333/),
+      })
+    });
+
+    const { error } = schema.validate(actual);
+    if (error) {
+      t.fail(error);
+    } else {
+      t.pass();
+    }
+
+    t.notDeepEqual(doc, actual);
+  });
+
+  test('throws error', (t) => {
+    const paths = getPaths(model);
+    const doc = t.context.document.initializeDocument(model, paths);
+    // highjack the log function
+    t.context.document.log = (type, message) => {
+      if (type === 'error') {
+        throw new Error(message);
+      }
+    };
+
+    const tester = () => t.context.document.buildObject(model, to.clone(doc), { model: [ 'a' ], document: [ 'b' ] }, 1);
+    t.throws(tester);
+  });
+});
+
 
 test.todo('buildValue');
 

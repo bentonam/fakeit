@@ -242,7 +242,8 @@ module.exports.getPaths = function getPaths(model, regex) {
         }
       }
       return result;
-    }, []);
+    }, [])
+    .map((str) => str.replace(/\.([0-9]+)(\.?)/, '[$1]$2'));
 };
 
 /// @name checkDiff

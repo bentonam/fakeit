@@ -104,24 +104,25 @@ export default class Document extends Base {
     return doc;
   }
 
-  // builds an object based on a model
+  ///# @name buildObject
+  ///# @description builds an object based on a model
+  ///# @arg {object} model - The model to parse
+  ///# @arg {object} doc - The document to update
+  ///# @arg {object} paths - The paths to loop over
+  ///# @arg {number} index - The current index
+  ///# @returns {object} - The document with the defaults
   buildObject(model, doc, paths, index) {
-    // console.log('documents.this.buildObject');
-    let key;
-    try {
-      paths.model.forEach((path, i) => {
-        key = paths.document[i]; // set a key for error messaging
-        set(doc, key, this.buildValue(
-          doc,
-          get(model, path),
-          get(doc, key),
-          index
-        ));
-      });
-      return doc;
-    } catch (e) {
-      throw new Error(`Error: Building Properties in Model: "${model.name}" for Key: "${key}", Reason: ${e.message}`);
+    for (let [ i, str ] of to.entries(paths.model)) {
+      let key = paths.document[i]; // set a key for error messaging
+      try {
+        const value = this.buildValue(doc, get(model, str), get(doc, key), index);
+        set(doc, key, value);
+      } catch (e) {
+        this.log('error', `Building Properties in Model: "${model.name}" for Key: "${key}"\n`, e);
+      }
     }
+
+    return doc;
   }
 
   // builds a single value based on a property definition
