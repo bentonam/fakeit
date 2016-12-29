@@ -54,13 +54,18 @@ export default class Document extends Base {
     return this.documents[model.name];
   }
 
-  // used to run the different functions that the users can pass in
-  runData(data, context, index) {
-    if (data) {
+  ///# @name runData
+  ///# @description used to run the different functions that the users can pass in into the data object
+  ///# @arg {function} fn - The function to run
+  ///# @arg {*} context - The `this` context
+  ///# @arg {number} index [0] - The current index of the generated items
+  ///# @returns {*} - What ever the function that runs returns
+  runData(fn, context, index = 0) {
+    if (to.type(fn) === 'function') {
       try {
-        return data.call(context, this.documents, this.globals, this.inputs, faker, chance, index);
+        return fn.call(context, this.documents, this.globals, this.inputs, faker, chance, index);
       } catch (e) {
-        this.log('error', `${to.dotCase(data.name)} ${e.message}`);
+        this.log('error', `${fn.name} failed\n`, e);
       }
     }
   }

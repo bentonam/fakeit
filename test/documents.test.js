@@ -71,9 +71,38 @@ test('without args', (t) => {
 
 test.todo('build');
 
-test.todo('runData');
+test.group('runData', (test) => {
+  test('function wasn\'t passed', (t) => {
+    const tester = () => t.context.document.runData();
+    t.notThrows(tester);
+    t.is(tester(), undefined); // eslint-disable-line
+  });
 
-test.todo('buildDocument');
+  test('returns the context that\'s passed', (t) => {
+    function Foo() {
+      return this;
+    }
+    t.is(t.context.document.runData(Foo, 'context'), 'context');
+  });
+
+  test('throws error because of something in function', (t) => {
+    function Foo() {
+      const bar = {};
+      return bar.data.woohoo;
+    }
+    // highjack the log function
+    t.context.document.log = (type, message, err) => {
+      if (type === 'error') {
+        throw new Error(message + err.message);
+      }
+    };
+    const tester = () => t.context.document.runData(Foo, 'context');
+    t.throws(tester, /Foo failed\nCannot read property 'woohoo' of undefined/);
+  });
+});
+
+// not needed because it just calls other functions that have been tested
+// test.todo('buildDocument');
 
 test.group('initializeDocument', (test) => {
   test('throws if wrong paths were passed in', (t) => {
