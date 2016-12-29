@@ -191,9 +191,287 @@ test.group('buildObject', (test) => {
 });
 
 
-test.todo('buildValue');
+test.group('buildValue', (test) => {
+  test('passed value', (t) => {
+    t.is(t.context.document.buildValue({}, 'value'), 'value');
+    t.is(t.context.document.buildValue({}, 1), 1);
+    t.deepEqual(t.context.document.buildValue({}, [ 'woohoo' ]), [ 'woohoo' ]);
+    t.deepEqual(t.context.document.buildValue({}, { foo: 'foo' }), { foo: 'foo' });
+  });
 
-test.todo('buildArray');
+  test.group('property.data.pre_build', (test) => {
+    test('without passed value', (t) => {
+      const actual = t.context.document.buildValue({
+        data: { pre_build: () => 'pre_build' }
+      });
+
+      t.is(actual, 'pre_build');
+    });
+
+    test('with passed value', (t) => {
+      const actual = t.context.document.buildValue({
+        data: { pre_build: () => 'pre_build' }
+      }, 'passed value');
+      t.not(actual, 'passed value');
+      t.is(actual, 'pre_build');
+    });
+  });
+
+  test.group('property.data.value', (test) => {
+    test((t) => {
+      const actual = t.context.document.buildValue({ data: { value: 'value' } });
+
+      t.is(actual, 'value');
+    });
+
+    test('with property.data.pre_build', (t) => {
+      const actual = t.context.document.buildValue({
+        data: {
+          pre_build: () => 'pre_build',
+          value: 'value',
+        }
+      });
+
+      t.not(actual, 'pre_build');
+      t.is(actual, 'value');
+    });
+
+    test('with property.data.build', (t) => {
+      const actual = t.context.document.buildValue({
+        data: {
+          build: () => 'build',
+          value: 'value',
+        }
+      });
+
+      t.not(actual, 'build');
+      t.is(actual, 'value');
+    });
+
+    test('with property.data.fake', (t) => {
+      const actual = t.context.document.buildValue({
+        data: {
+          fake: '{{name.firstName}}',
+          value: 'value',
+        }
+      });
+
+      t.falsy(/[A-Z]/.test(actual));
+      t.is(actual, 'value');
+    });
+
+    test('with passed value', (t) => {
+      const actual = t.context.document.buildValue({
+        data: { value: 'value' }
+      }, 'passed value');
+
+      t.not(actual, 'passed value');
+      t.is(actual, 'value');
+    });
+  });
+
+  test.group('property.data.build', (test) => {
+    test((t) => {
+      const actual = t.context.document.buildValue({
+        data: { build: () => 'build' }
+      });
+      t.is(actual, 'build');
+    });
+
+    test('with property.data.pre_build', (t) => {
+      const actual = t.context.document.buildValue({
+        data: {
+          pre_build: () => 'pre_build',
+          build: () => 'build',
+        }
+      });
+      t.not(actual, 'pre_build');
+      t.is(actual, 'build');
+    });
+
+    test('with global value set in pre_build', (t) => {
+      const actual = t.context.document.buildValue({
+        data: {
+          pre_build: (context, documents, globals) => {
+            globals.pre_build_global = 'pre_build_global';
+          },
+          build: (context, documents, globals) => globals.pre_build_global,
+        }
+      });
+
+      t.is(actual, 'pre_build_global');
+    });
+
+    test('with property.data.fake', (t) => {
+      const actual = t.context.document.buildValue({
+        data: {
+          fake: '{{name.firstName}}',
+          build: () => 'build',
+        }
+      });
+
+      t.falsy(/[A-Z]/.test(actual));
+      t.is(actual, 'build');
+    });
+
+    test('with passed value', (t) => {
+      const actual = t.context.document.buildValue({
+        data: { build: () => 'build' }
+      });
+      t.not(actual, 'passed value');
+      t.is(actual, 'build');
+    });
+  });
+
+  test.group('property.data.fake', (test) => {
+    const fake = '{{name.firstName}}';
+    test((t) => {
+      const actual = t.context.document.buildValue({ data: { fake } });
+
+      t.not(actual, fake);
+      t.truthy(/[A-Z]/.test(actual));
+    });
+
+    test('with property.data.pre_build', (t) => {
+      const actual = t.context.document.buildValue({
+        data: {
+          pre_build: () => 'pre_build',
+          fake,
+        }
+      });
+
+      t.not(actual, 'pre_build');
+      t.not(actual, fake);
+      t.truthy(/[A-Z]/.test(actual));
+    });
+
+    test('with passed value', (t) => {
+      const actual = t.context.document.buildValue({
+        data: { fake }
+      }, 'passed value');
+
+      t.not(actual, 'passed value');
+      t.not(actual, fake);
+      t.truthy(/[A-Z]/.test(actual));
+    });
+  });
+
+  test.group('property.items', (test) => {
+    function items(obj) {
+      return {
+        type: 'array',
+        items: obj,
+      };
+    }
+
+    test('with passed value', (t) => {
+      t.plan(7);
+      const actual = t.context.document.buildValue(items({
+        type: 'string',
+        data: {
+          count: 5,
+        }
+      }), []);
+
+      t.is(to.type(actual), 'array');
+      t.is(actual.length, 5);
+      // expect all items to be empty strings
+      actual.forEach((item) => t.is(item, ''));
+    });
+
+    test('with property.items.data.pre_build', (t) => {
+      t.plan(7);
+      const actual = t.context.document.buildValue(items({
+        type: 'string',
+        data: {
+          count: 5,
+          pre_build: () => 'pre_build',
+        }
+      }), []);
+
+      t.is(to.type(actual), 'array');
+      t.is(actual.length, 5);
+      actual.forEach((item) => t.is(item, 'pre_build'));
+    });
+
+    test('with property.items.data.value', (t) => {
+      t.plan(7);
+      const actual = t.context.document.buildValue(items({
+        type: 'string',
+        data: {
+          count: 5,
+          value: 'value',
+        }
+      }), []);
+
+      t.is(to.type(actual), 'array');
+      t.is(actual.length, 5);
+      actual.forEach((item) => t.is(item, 'value'));
+    });
+
+    test('with property.items.data.build', (t) => {
+      t.plan(7);
+      const actual = t.context.document.buildValue(items({
+        type: 'string',
+        data: {
+          count: 5,
+          build: () => 'build',
+        }
+      }), []);
+
+      t.is(to.type(actual), 'array');
+      t.is(actual.length, 5);
+      actual.forEach((item) => t.is(item, 'build'));
+    });
+
+    test('with property.items.data.fake', (t) => {
+      t.plan(7);
+      const actual = t.context.document.buildValue(items({
+        type: 'string',
+        data: {
+          count: 5,
+          fake: '{{name.firstName}}',
+        }
+      }), []);
+
+      t.is(to.type(actual), 'array');
+      t.is(actual.length, 5);
+      actual.forEach((item) => t.truthy(/[A-Z]/.test(item)));
+    });
+
+    test('complex array', (t) => {
+      const actual = t.context.document.buildValue(items({
+        type: 'object',
+        data: { count: 5 },
+        properties: {
+          first_name: {
+            type: 'string',
+            description: 'The childs first_name',
+            data: { fake: '{{name.firstName}}' },
+          },
+          gender: {
+            type: 'string',
+            description: 'The childs gender',
+            data: { build: () => to.random(1, 10) >= 3 ? to.random([ 'M', 'F' ]) : null },
+          },
+          age: {
+            type: 'integer',
+            description: 'The childs age',
+            data: { build: () => to.random(1, 17) },
+          },
+        }
+      }), []);
+
+      is.assert(actual, is.array()
+        .items(is.object({
+          first_name: is.string().regex(/[A-Z][a-zA-Z\s]+/),
+          gender: [ is.string().regex(/M|F/), is.allow(null) ],
+          age: is.number().min(1).max(17),
+        }))
+        .length(5));
+    });
+  });
+});
 
 test.todo('buildProcess');
 

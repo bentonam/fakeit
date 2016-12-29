@@ -11,7 +11,6 @@ import to from 'to-js';
 /// @page api/document
 ////
 
-
 /// @name Document
 /// @description This is used to generate documents based off a model
 export default class Document extends Base {
@@ -115,7 +114,7 @@ export default class Document extends Base {
     for (let [ i, str ] of to.entries(paths.model)) {
       let key = paths.document[i]; // set a key for error messaging
       try {
-        const value = this.buildValue(doc, get(model, str), get(doc, key), index);
+        const value = this.buildValue(get(model, str), get(doc, key), doc, index);
         set(doc, key, value);
       } catch (e) {
         this.log('error', `Building Properties in Model: "${model.name}" for Key: "${key}"\n`, e);
@@ -125,49 +124,74 @@ export default class Document extends Base {
     return doc;
   }
 
-  // builds a single value based on a property definition
-  buildValue(doc, property, value, index) {
-    // console.log('documents.this.buildValue');
+  ///# @name buildValue
+  ///# @description builds a single value based on a property definition
+  ///# @arg {object} property - The property to run
+  ///# To build a normal value
+  ///# ```js
+  ///# {
+  ///#   type: '',  // 'object', 'structure', 'string', 'number', 'float', 'integer', etc..
+  ///#   data: {
+  ///#     pre_build() {}, // optional
+  ///#     value: '', // optional
+  ///#     build() {}, // optional
+  ///#     fake: '', // optional
+  ///#   }
+  ///# }
+  ///# ```
+  ///# To build an array
+  ///# ```js
+  ///# {
+  ///#   type: 'array',
+  ///#   items: {
+  ///#     type: '',  // 'object', 'structure', 'string', 'number', 'float', 'integer', etc..
+  ///#     data: {
+  ///#       pre_build() {}, // optional
+  ///#       value: '', // optional
+  ///#       build() {}, // optional
+  ///#       fake: '', // optional
+  ///#     }
+  ///#   }
+  ///# }
+  ///# ```
+  ///# @arg {*} value - The default value
+  ///# @arg {object} doc [{}] - The current document
+  ///# @arg {number} index [0] - The place in the list this item is being run from
+  ///# @return {*} - The result
+  buildValue(property, value, doc = {}, index = 0) {
     if (property.data) {
-      // if there is a pre_build block
-
       if (property.data.pre_build) {
         value = this.runData(property.data.pre_build, doc, index);
       }
-      if (property.data.fake) {
-        value = faker.fake(property.data.fake);
-      } else if (property.data.value) {
-        value = property.data.value;
+      if (property.data.value) {
+        return property.data.value;
       } else if (property.data.build) {
-        value = this.runData(property.data.build, doc, index);
+        return this.runData(property.data.build, doc, index);
+      } else if (property.data.fake) {
+        return faker.fake(property.data.fake);
       }
     } else if (
       property.type === 'array' &&
       property.items
     ) {
-      value = this.buildArray(doc, property, value, index);
-    }
-    return value;
-  }
+      const count = property.items.data.count;
 
-  // builds an array
-  buildArray(doc, property, value, index) {
-    const number = property.items.data.count;
+      // builds a complex array
+      if (property.items.type === 'object') {
+        const paths = getPaths(property.items);
+        for (let i = 0; i < count; i++) {
+          value[i] = this.buildDocument(property.items, paths, index);
+        }
+        return value;
+      }
 
-    // builds a complex array
-    if (property.items.type === 'object') {
-      const paths = getPaths(property.items);
-      for (let i = 0; i < number; i++) {
-        value[i] = this.buildDocument(property.items, paths, index);
+      // builds a simple array
+      for (let i = 0; i < count; i++) {
+        value[i] = this.buildValue(property.items, typeToValue(property.items.type), doc, index);
       }
       return value;
     }
 
-
-    // builds a simple array
-    for (let i = 0; i < number; i++) {
-      value[i] = this.buildValue(doc, property.items, typeToValue(property.items.type), index);
-    }
     return value;
   }
 
