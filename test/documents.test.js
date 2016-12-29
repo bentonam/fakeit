@@ -478,32 +478,90 @@ test.group('buildValue', (test) => {
 test.group('postProcess', (test) => {
   const model = {
     name: 'test',
+    type: 'object',
     data: {
       count: 1,
     },
     properties: {
-      phone: {
-        type: 'object',
-        properties: {
-          type: {
-            type: 'string',
-            data: {
-              build() {
-                return to.random([ 'home', 'work', 'mobile', 'main', 'other' ]);
-              },
-              post_build() {
-                return to.titleCase(this.phone.type);
-              }
+      nochanges: {
+        type: 'string',
+        data: {
+          value: 'woohoo',
+          post_build() {
+            // since this is returning undefined it will not change `nochange`
+            return;
+          },
+        },
+      },
+      changes: {
+        type: 'string',
+        data: {
+          value: 'woohoo',
+          post_build() {
+            return to.upperCase(this.changes);
+          },
+        },
+      },
+      emails: {
+        type: 'array',
+        items: {
+          type: 'string',
+          data: {
+            count: to.random(1, 4),
+            build() {
+              return `${to.random([ 'one', 'two', 'three', 'four' ])}@example.com`;
+            },
+            post_build() {
+              let str = this.split('@');
+              str[0] = to.upperCase(str[0]);
+              return str.join('@');
+            }
+          }
+        }
+      },
+      phones: {
+        type: 'array',
+        items: {
+          type: 'object',
+          data: {
+            count: to.random(1, 4),
+            post_build() {
+              return;
             }
           },
-          phone_number: {
-            type: 'string',
-            data: {
-              build() {
-                return '3333333333';
-              },
-              post_build() {
-                return this.phone.phone_number.replace(/([0-9]{3})([0-9]{3})([0-9]{4})/, '($1) $2 - $3');
+          properties: {
+            type: {
+              type: 'string',
+              data: {
+                build() {
+                  return to.random([ 'home', 'work', 'mobile', 'main', 'other' ]);
+                },
+                post_build() {
+                  return to.titleCase(this.type);
+                }
+              }
+            },
+            extension: {
+              type: 'string',
+              data: {
+                build() {
+                  return '10';
+                },
+                post_build() {
+                  // since this is returning undefined it will not change the extention
+                  return;
+                }
+              }
+            },
+            phone_number: {
+              type: 'string',
+              data: {
+                build() {
+                  return '3333333333';
+                },
+                post_build() {
+                  return this.phone_number.replace(/([0-9]{3})([0-9]{3})([0-9]{4})/, '($1) $2 - $3');
+                }
               }
             }
           }
@@ -518,12 +576,24 @@ test.group('postProcess', (test) => {
     doc = t.context.document.buildObject(model, doc, paths, 1);
     const actual = t.context.document.postProcess(model, to.clone(doc), paths);
     const schema = is.object({
-      phone: is.object({
-        type: is.string(),
-        phone_number: is.string().regex(/\(333\) 333 \- 3333/),
-      })
+      nochanges: is.string().lowercase(),
+      changes: is.string().uppercase(),
+      emails: is.array()
+        .items(is.string().regex(/[A-Z]+\@example\.com/))
+        .min(1)
+        .max(4),
+      phones: is.array()
+        .items(is.object({
+          type: is.string(),
+          extension: is.string().regex(/10/),
+          phone_number: is.string().regex(/\(333\) 333 \- 3333/),
+        }))
+        .min(1)
+        .max(4),
     });
 
+    t.truthy(/[a-z]+/.test(doc.changes));
+    t.truthy(/[A-Z]+/.test(actual.changes));
     is.assert(actual, schema);
     t.notDeepEqual(doc, actual);
   });
@@ -543,8 +613,6 @@ test.group('postProcess', (test) => {
     t.throws(tester);
   });
 });
-
-test.todo('buildProcessCallback');
 
 
 test.group('transformValueToType', (test) => {

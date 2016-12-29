@@ -206,35 +206,34 @@ export default class Document extends Base {
     for (let [ i, str ] of to.entries(paths.model)) {
       let key = paths.document[i]; // set a key for error messaging
       try {
-        const value = this.postProcessCallback(model, doc, get(model, str), get(doc, key), index);
-        set(doc, key, value);
+        const { data = {}, items = {}, type } = get(model, str);
+        let value = get(doc, key);
+
+        // if there is a post_build block
+        if (data.post_build) {
+          let temp = this.runData(data.post_build, doc, index);
+          if (temp != null) {
+            value = temp;
+          }
+        } else if (
+          (items.data || {}).post_build &&
+          items.type !== 'object' // if the type is an object it will run each item through this function already
+        ) {
+          for (let a = 0; a < value.length; a++) {
+            let temp = transformValueToType(items.type, this.runData(items.data.post_build, doc[key][a], index));
+            if (temp != null) {
+              value[a] = temp;
+            }
+          }
+        }
+
+        set(doc, key, transformValueToType(type, value));
       } catch (e) {
         this.log('error', `Transforming Properties in Model: "${model.name}" for Key: "${key}"\n`, e);
       }
     }
 
     return doc;
-  }
-
-  // callback the is used by this.postProcess
-  postProcessCallback(model, doc, property, value, index) {
-    // if there is a post_build block
-    if (
-      property.data &&
-      property.data.post_build
-    ) {
-      value = this.runData(property.data.post_build, doc, index);
-    } else if (
-      property.items &&
-      property.items.data &&
-      property.items.data.post_build
-    ) {
-      for (let i = 0; i < value.length; i++) {
-        value[i] = transformValueToType(property.items.type, this.runData(property.items.data.post_build, doc, index));
-      }
-    }
-
-    return transformValueToType(property.type, value);
   }
 }
 
