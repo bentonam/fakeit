@@ -230,48 +230,62 @@ export default class Document extends Base {
       property.items.data.post_build
     ) {
       for (let i = 0; i < value.length; i++) {
-        value[i] = this.runData(property.items.data.post_build, doc, index);
+        value[i] = transformValueToType(property.items.type, this.runData(property.items.data.post_build, doc, index));
       }
     }
-    // if the value is not null try to convert it to the correct type
-    if (value !== null) {
-      // if it is an integer make sure it is treated as such
-      if ('number,integer,long'.includes(property.type)) {
-        value = parseInt(value);
-      }
-      // if it is a double / float make sure it is treated as such
-      if ('double,float'.includes(property.type)) {
-        value = parseFloat(value);
-      }
-      // if it is a string make sure it is treated as such
-      if (
-        property.type === 'string' &&
-        typeof value !== 'undefined'
-      ) {
-        value = value.toString();
-      }
-      // if it is a string make sure it is treated as such
-      if (
-        'boolean,bool'.includes(property.type) &&
-        typeof value !== 'undefined'
-      ) {
-        // if the value is a string that is 'false', '0', 'undefined', or 'null' as a string set a boolean false
-        if (
-          typeof value === 'string' && (
-            value === 'false' ||
-            value === '0' ||
-            value === 'undefined' ||
-            value === 'null'
-          )
-        ) {
-          value = false;
-        }
-        value = Boolean(value);
-      }
-    }
-    return value;
+
+    return transformValueToType(property.type, value);
   }
 }
+
+
+/// @name transformValueToType
+/// @description This will transform a value to the correct type
+/// @arg {string} type - The type to convert the value to
+/// @arg {*} value - The actual value
+/// @returns {*} - The converted value
+export function transformValueToType(type, value) {
+  if (
+    type == null ||
+    value == null ||
+    type === 'array'
+  ) {
+    return value;
+  }
+
+  // if it is an integer make sure it is treated as such
+  if ('number,integer,long'.includes(type)) {
+    return parseInt(value);
+  }
+  // if it is a double / float make sure it is treated as such
+  if ('double,float'.includes(type)) {
+    return parseFloat(value);
+  }
+
+  // if it is a string make sure it is treated as such
+  if (type === 'string') {
+    return value.toString();
+  }
+
+  // if it is a string make sure it is treated as such
+  if ('boolean,bool'.includes(type)) {
+    // if the value is a string that is 'false', '0', 'undefined', or 'null' as a string set a boolean false
+    if (
+      typeof value === 'string' && (
+        value === 'false' ||
+        value === '0' ||
+        value === 'undefined' ||
+        value === 'null'
+      )
+    ) {
+      return false;
+    }
+    return Boolean(value);
+  }
+
+  return value;
+}
+
 
 /// @name getPaths
 /// @description finds all the paths to be used

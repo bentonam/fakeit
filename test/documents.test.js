@@ -1,6 +1,7 @@
 /* eslint-disable no-undefined */
 
 import Document, {
+  transformValueToType,
   getPaths,
   typeToValue,
 } from '../dist/documents.js';
@@ -544,6 +545,104 @@ test.group('postProcess', (test) => {
 });
 
 test.todo('buildProcessCallback');
+
+
+test.group('transformValueToType', (test) => {
+  const tests = [
+    {
+      actual: [ null, 'woohoo' ],
+      expected: 'woohoo',
+    },
+    {
+      actual: [ 'number', null ],
+      expected: null,
+    },
+    {
+      actual: [ 'number', undefined ], // eslint-disable-line
+      expected: undefined,
+    },
+    {
+      actual: [ 'array', [ 'one', 'two', 'three' ] ],
+      expected: [ 'one', 'two', 'three' ],
+    },
+    {
+      actual: [ 'number', '100' ],
+      expected: 100,
+    },
+    {
+      actual: [ 'integer', '100' ],
+      expected: 100,
+    },
+    {
+      actual: [ 'long', '100' ],
+      expected: 100,
+    },
+    {
+      actual: [ 'double', '0.0100000' ],
+      expected: 0.01,
+    },
+    {
+      actual: [ 'float', '000000.01' ],
+      expected: 0.01,
+    },
+    {
+      actual: [ 'float', '000000.01' ],
+      expected: 0.01,
+    },
+    {
+      actual: [ 'string', 'woohoo' ],
+      expected: 'woohoo',
+    },
+    {
+      actual: [ 'string', {} ],
+      expected: '[object Object]',
+    },
+    {
+      actual: [ 'boolean', false ],
+      expected: false,
+    },
+    {
+      actual: [ 'boolean', true ],
+      expected: true,
+    },
+    {
+      actual: [ 'boolean', 'false' ],
+      expected: false,
+    },
+    {
+      actual: [ 'bool', '0' ],
+      expected: false,
+    },
+    {
+      actual: [ 'bool', 'undefined' ],
+      expected: false,
+    },
+    {
+      actual: [ 'bool', 'null' ],
+      expected: false,
+    },
+    {
+      actual: [ 'object', {} ],
+      expected: {},
+    },
+  ];
+
+  tests.forEach(({ actual, expected }) => {
+    let value = actual[1];
+    if (to.type(value) === 'object') {
+      value = '{}';
+    } else if (to.type(value) === 'array') {
+      value = `[ '${value.join('\', \'')}' ]`;
+    }
+    test(`type is \`${actual[0]}\` and value is \`${value}\``, (t) => {
+      if ('array,object'.includes(to.type(expected))) {
+        t.deepEqual(transformValueToType(...actual), expected);
+      } else {
+        t.is(transformValueToType(...actual), expected);
+      }
+    });
+  });
+});
 
 test.group('getPaths', models(async (t, file) => {
   await t.context.model.registerModels(file);
