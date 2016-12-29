@@ -74,7 +74,7 @@ export default class Document extends Base {
     this.runData(model.data.pre_build, doc, index);
 
     doc = this.buildObject(model, doc, paths, index);
-    doc = this.buildProcess(model, doc, paths, index);
+    doc = this.postProcess(model, doc, paths, index);
 
     // if there is a post_build function for the document call it
     this.runData(model.data.post_build, doc, index);
@@ -195,27 +195,29 @@ export default class Document extends Base {
     return value;
   }
 
-  // processes a document after generation
-  buildProcess(model, doc, paths, index) {
-    // console.log('documents.this.buildProcess');
-    let key;
-    try {
-      paths.model.forEach((path, i) => {
-        key = paths.document[i]; // set a key for error messaging
-        set(
-          doc,
-          key,
-          this.buildProcessCallback(model, doc, get(model, path), get(doc, key), index)
-        );
-      });
-      return doc;
-    } catch (e) {
-      throw new Error(`Error: Transforming Properties in Model: "${model.name}" for Key: "${key}", Reason: ${e.message}`);
+  ///# @name postProcess
+  ///# @description Post process a document after generation
+  ///# @arg {object} model - The model to parse
+  ///# @arg {object} doc - The document to update
+  ///# @arg {object} paths - The paths to loop over
+  ///# @arg {number} index [0] - The current index
+  ///# @returns {object} - The updated document
+  postProcess(model, doc, paths, index = 0) {
+    for (let [ i, str ] of to.entries(paths.model)) {
+      let key = paths.document[i]; // set a key for error messaging
+      try {
+        const value = this.postProcessCallback(model, doc, get(model, str), get(doc, key), index);
+        set(doc, key, value);
+      } catch (e) {
+        this.log('error', `Transforming Properties in Model: "${model.name}" for Key: "${key}"\n`, e);
+      }
     }
+
+    return doc;
   }
 
-  // callback the is used by this.buildProcess
-  buildProcessCallback(model, doc, property, value, index) {
+  // callback the is used by this.postProcess
+  postProcessCallback(model, doc, property, value, index) {
     // if there is a post_build block
     if (
       property.data &&

@@ -473,7 +473,75 @@ test.group('buildValue', (test) => {
   });
 });
 
-test.todo('buildProcess');
+
+test.group('postProcess', (test) => {
+  const model = {
+    name: 'test',
+    data: {
+      count: 1,
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return to.random([ 'home', 'work', 'mobile', 'main', 'other' ]);
+              },
+              post_build() {
+                return to.titleCase(this.phone.type);
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return '3333333333';
+              },
+              post_build() {
+                return this.phone.phone_number.replace(/([0-9]{3})([0-9]{3})([0-9]{4})/, '($1) $2 - $3');
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  test((t) => {
+    const paths = getPaths(model);
+    let doc = t.context.document.initializeDocument(model, paths);
+    doc = t.context.document.buildObject(model, doc, paths, 1);
+    const actual = t.context.document.postProcess(model, to.clone(doc), paths);
+    const schema = is.object({
+      phone: is.object({
+        type: is.string(),
+        phone_number: is.string().regex(/\(333\) 333 \- 3333/),
+      })
+    });
+
+    is.assert(actual, schema);
+    t.notDeepEqual(doc, actual);
+  });
+
+  test('throws error', (t) => {
+    const paths = getPaths(model);
+    let doc = t.context.document.initializeDocument(model, paths);
+    doc = t.context.document.buildObject(model, doc, paths, 1);
+    // highjack the log function
+    t.context.document.log = (type, message) => {
+      if (type === 'error') {
+        throw new Error(message);
+      }
+    };
+
+    const tester = () => t.context.document.postProcess(model, to.clone(doc), { model: [ 'a' ], document: [ 'b' ] }, 1);
+    t.throws(tester);
+  });
+});
 
 test.todo('buildProcessCallback');
 
