@@ -37,7 +37,7 @@ export default class Document extends Base {
     this.log('info', `Generating ${model.count} documents for ${model.name} model`);
 
     for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
-      const doc = this.buildDocument(model, getPaths(model), i);
+      const doc = this.buildDocument(model, i);
       // build the key for the document
       let value;
       if (model.key.build) {
@@ -70,8 +70,13 @@ export default class Document extends Base {
     }
   }
 
-  // builds a document
-  buildDocument(model, paths, index) {
+  ///# @name buildDocument
+  ///# @description
+  ///# builds a document
+  ///# @arg {object} model - The model to build the document from
+  ///# @arg {number} index [0] - The place in the list this item is being run from
+  buildDocument(model, index = 0) {
+    const paths = getPaths(model);
     // generate the initial values
     let doc = this.initializeDocument(model, paths);
 
@@ -183,9 +188,8 @@ export default class Document extends Base {
 
       // builds a complex array
       if (property.items.type === 'object') {
-        const paths = getPaths(property.items);
         for (let i = 0; i < count; i++) {
-          value[i] = this.buildDocument(property.items, paths, index);
+          value[i] = this.buildDocument(property.items, index);
         }
         return value;
       }
