@@ -10,7 +10,7 @@ module.exports = is.object({
   key: utils.string('_id'),
   data: is.object({
     min: is.number().min(0).max(0),
-    max: is.number().min(0).max(0),
+    max: is.number().min(10000).max(10000),
     count: is.number().min(10000).max(10000),
     dependencies: is.array().items(is.string()).length(1),
     inputs: is.object().length(0),

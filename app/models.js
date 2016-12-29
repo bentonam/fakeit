@@ -380,7 +380,12 @@ export function parseModelCount(model, count) {
     let property = get(model, data_path);
 
     if (data_path !== 'data' || !count) {
-      count = property.count || property.min && property.max && to.random(property.min, property.max);
+      count = null;
+      if (property.count > 0) {
+        count = property.count;
+      } else if (property.min != null && property.max != null) {
+        count = to.random(property.min, property.max);
+      }
     }
 
     // if count is null or 0 then set it to 1
@@ -388,7 +393,11 @@ export function parseModelCount(model, count) {
       count = 1;
     }
 
-    set(model, `${data_path}.count`, to.number(count) || 1);
+    if (!property.max) {
+      set(model, `${data_path}.max`, to.number(count));
+    }
+
+    set(model, `${data_path}.count`, to.number(count));
   }
 }
 

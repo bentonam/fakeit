@@ -1,4 +1,25 @@
 var is = require('joi');
 
-module.exports = is.object()
-  .pattern(/_id|[a-z][_a-z]+/, is.string().min(3));
+module.exports = is.object({
+  _id: is.string().regex(/^product_[a-z0-9\-]+$/),
+  doc_type: 'product',
+  product_id: is.string().uuid(),
+  price: is.number().precision(2),
+  sale_price: [ is.number().precision(2), is.allow(null) ],
+  display_name: is.string(),
+  short_description: is.string(),
+  long_description: is.string(),
+  keywords: is.array()
+    .items(is.string())
+    .sparse(false)
+    .min(2)
+    .max(8),
+  availability: [ 'Preorder', 'In-Stock', 'Out of Stock', 'Discontinued' ],
+  availability_date: is.date(),
+  product_slug: is.string().regex(/^[a-z][a-z-]+[a-z]$/),
+  category: is.string(),
+  category_slug: is.string().regex(/^[a-z][a-z-]+[a-z]$/),
+  image: is.string().uri(),
+  created_on: is.date(),
+  modified_on: is.date(),
+});

@@ -2,6 +2,7 @@ name: Airports
 type: object
 key: _id
 data:
+  inputs: ../input/airports.csv
   pre_run: |
     if (!inputs.airports) {
       throw new Error('airports must be provided as an input');
@@ -40,7 +41,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'airport_' + this.airport_id"
+      post_build: "`airport_${this.airport_id}`"
   airport_id:
     type: integer
     description: The airports id

@@ -13,7 +13,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'runway_' + this.runway_id"
+      post_build: "`runway_${this.runway_id}`"
   runway_id:
     type: integer
     description: The runway id

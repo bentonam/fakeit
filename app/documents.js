@@ -22,14 +22,20 @@ export default class Document extends Base {
     this.inputs = inputs;
   }
 
-  async build(model) {
+  ///# @name build
+  ///# @description
+  ///# This builds the documents from the passed model
+  ///# @arg {object} model - The model to generate data from
+  ///# @returns {array} - The array of documents that were generated
+  build(model) {
     if (!this.documents[model.name]) {
       this.documents[model.name] = [];
     }
 
     if (!model.data) {
-      model.data = {};
+      model.data = { count: 1 };
     }
+    const key_type = to.type(model.key);
 
     // if there is a pre_run function call it
     this.runData(model.data.pre_run, model);
@@ -39,13 +45,17 @@ export default class Document extends Base {
     for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
       const doc = this.buildDocument(model, i);
       // build the key for the document
-      let value;
-      if (model.key.build) {
-        value = model.key.build.apply(doc, [ null, null, null, faker, chance, null ]);
+      let key;
+      if (key_type === 'object') {
+        key = this.buildValue({ data: model.key }, null, doc, i);
+      } else if (key_type === 'string') {
+        key = doc[model.key];
       } else {
-        value = doc[model.key];
+        key = `${model.name}${i}`;
       }
-      Object.defineProperty(doc, '__key', { value });
+
+      // @todo update this to use `new Map`, or `new WeakMap`;
+      Object.defineProperty(doc, '__key', { value: key });
       Object.defineProperty(doc, '__name', { value: model.name });
       this.documents[model.name].push(doc);
     }
@@ -196,7 +206,10 @@ export default class Document extends Base {
 
       // builds a simple array
       for (let i = 0; i < count; i++) {
-        value[i] = this.buildValue(property.items, typeToValue(property.items.type), doc, index);
+        const result = this.buildValue(property.items, typeToValue(property.items.type), doc, index);
+        if (result !== undefined) { // eslint-disable-line no-undefined
+          value.push(result);
+        }
       }
       return value;
     }

@@ -13,7 +13,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'route_' + this.route_id"
+      post_build: "`route_${this.route_id}`"
   route_id:
     type: string
     description: The route id

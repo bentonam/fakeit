@@ -24,7 +24,19 @@ module.exports = is.object({
     display_name: utils.check('string', 'Display name of product.', { fake: is.string(), }),
     short_description: utils.check('string', 'Description of product.', { fake: is.string(), }),
     long_description: utils.check('string', 'Description of product.', { fake: is.string(), }),
-    keywords: utils.check('string', 'An array of keywords', { build: is.func(), }),
+    keywords: is.object({
+      type: utils.types.array,
+      description: utils.string('An array of keywords'),
+      items: is.object({
+        type: utils.types.string,
+        data: is.object({
+          min: is.number().min(2).max(2),
+          max: is.number().min(8).max(8),
+          count: is.number().min(2).max(8),
+          build: is.func(),
+        }),
+      }),
+    }),
     availability: utils.check('string', 'The availability status of the product', { build: is.func(), }),
     availability_date: utils.check('integer', 'An epoch time of when the document was last modified', { fake: is.string(), post_build: is.func(), }),
     product_slug: utils.check('string', 'The URL friendly version of the product name', { post_build: is.func(), }),

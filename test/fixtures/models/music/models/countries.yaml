@@ -7,13 +7,13 @@ data:
     globals.index = 0;
     this.data.count = inputs.countries.length;
   pre_build: |
-    globals.index = faker.random.number({ min: 0, max: inputs.length || 200 });
+    globals.index = faker.random.number({ min: 0, max: inputs.countries.length - 1 });
 properties:
   _id:
     type: string
     description: The document id
     data:
-      post_build: "'country_' + this.country_code;"
+      post_build: "`country_${this.country_code}`"
   gdp:
     type: integer
     description: The countries GDP
@@ -23,8 +23,7 @@ properties:
     type: string
     description: The 2 letter ISO country code
     data:
-      pre_build: |
-        return inputs.countries[globals.index].iso_2;
+      pre_build: "inputs.countries[globals.index].iso_2"
   region-number:
     type: string
     description: The countries region number

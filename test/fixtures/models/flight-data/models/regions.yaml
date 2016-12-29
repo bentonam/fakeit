@@ -13,7 +13,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'region_' + this.region_code"
+      post_build: "`region_${this.region_code}`"
   region_id:
     type: integer
     description: The regions id

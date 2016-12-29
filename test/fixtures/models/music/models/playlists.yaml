@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'playlist_' + this.id;"
+      post_build: "`playlist_${this.id}`"
   type:
     type: string
     description: The document type
@@ -39,13 +39,13 @@ properties:
     type: string
     description: The playlist visibility
     data:
-        build: "faker.random.arrayElement([ 'PUBLIC', 'PRIVATE' ]);"
+        build: "chance.bool({ likelihood: 75 }) ? 'PUBLIC' : 'PRIVATE'"
   owner:
     type: object
     description: The user that the playlist belongs to
     data:
         build: |
-          var user = documents.Users[Math.floor(Math.random() * (documents.Users.length - 1)) + 0];
+          const user = faker.random.arrayElement(documents.Users);
           return {
             firstName: user.firstName,
             lastName: user.lastName,
@@ -57,14 +57,13 @@ properties:
   tracks:
     type: array
     description: An array of track id's
-    data:
-      build: |
-        var tracks = [];
-        var track;
-        for (var i = 0, rand = Math.floor(Math.random() * 25) + 0; i < rand; i++) {
-          track = documents.Tracks[Math.floor(Math.random() * (documents.Tracks.length - 1)) + 0].id;
-          if (tracks.indexOf(track) === -1) {
-            tracks.push(track);
+    items:
+      type: string
+      data:
+        min: 3
+        max: 25
+        build: |
+          const track = faker.random.arrayElement(documents.Tracks).id
+          if (!this.tracks.includes(track)) {
+            this.tracks.push(track)
           }
-        }
-        return tracks;

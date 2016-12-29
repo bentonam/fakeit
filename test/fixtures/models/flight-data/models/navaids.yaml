@@ -25,7 +25,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'navaid_' + this.navaid_id"
+      post_build: "`navaid_${this.navaid_id}`"
   navaid_id:
     type: integer
     description: The navaid id

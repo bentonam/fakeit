@@ -145,7 +145,8 @@ module.exports.models = function(settings) {
                 }
 
                 // find the keys that still need to be validated
-                var omitted = _.difference(to.keys(actual), schema_keys);
+                var omitted = _.difference(to.keys(actual), schema_keys)
+                  .filter((key) => ![ '__key', '__name' ].includes(key));
                 // test the keys that exsit
                 var picked = _.pick(actual, schema_keys);
 

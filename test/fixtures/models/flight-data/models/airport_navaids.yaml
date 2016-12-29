@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'airport_' + this.airport_id + '_navaids'"
+      post_build: "`airport_${this.airport_id}_navaids`"
   airport_id:
     type: integer
     description: The airport id
@@ -33,8 +33,8 @@ properties:
     description: An array of navaid_ids
     data:
       build: |
-        var navaids = [];
-        for (var i = 0; i < documents.Navaids.length; i++) {
+        const navaids = [];
+        for (let i = 0; i < documents.Navaids.length; i++) {
           if (
             documents.Navaids[i].associated_airport_icao_code &&
             (

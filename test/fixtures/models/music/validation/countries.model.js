@@ -10,7 +10,7 @@ module.exports = is.object({
   key: utils.string('_id'),
   data: is.object({
     min: is.number().min(0).max(0),
-    max: is.number().min(0).max(0),
+    max: is.number().min(1).max(1),
     count: is.number().min(1).max(1),
     inputs: is.object({
       countries: is.array()

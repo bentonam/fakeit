@@ -11,7 +11,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'user_' + this.user_id + '_friends'"
+      post_build: "`user_${this.user_id}_friends`"
   doc_type:
     type: string
     description: The document type
@@ -27,12 +27,15 @@ properties:
     description: An array of friends (user_id)
     data:
       post_build: |
-        var friends = [];
-        var added = [];
-        var rand = chance.integer({ min: 10, max: 200 });
-        for (var i = 0; i < rand; i++) {
-          user = documents.Users[chance.integer({ min: 0, max: documents.Users.length -1 })];
-          if (user.user_id !== this.user_id && added.indexOf(user.user_id) === -1) {
+        const friends = [];
+        const added = [];
+        const rand = chance.integer({ min: 10, max: 200 });
+        for (let i = 0; i < rand; i++) {
+          let user = faker.random.arrayElement(documents.Users);
+          if (
+            user.user_id !== this.user_id &&
+            !added.includes(user.user_id)
+          ) {
             added.push(user.user_id);
             friends.push({
               user_id: user.user_id,

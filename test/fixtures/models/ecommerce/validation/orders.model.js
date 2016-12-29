@@ -42,6 +42,6 @@ module.exports = is.object({
     shipping_total: utils.check('double', 'The shipping total', { build: is.func(), }),
     tax: utils.check('double', 'The tax total', { build: is.func(), }),
     line_items: utils.check('array', 'The products that were ordered', { build: is.func(), }),
-    grand_total: utils.check('float', 'The grand total of the order', { post_build: is.func(), }),
+    grand_total: utils.check('double', 'The grand total of the order', { post_build: is.func(), }),
   }),
 });

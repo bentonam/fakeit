@@ -7,7 +7,7 @@ import Document, {
 } from '../dist/documents.js';
 /* istanbul ignore next : needed to test models */
 const Model = require('../dist/models.js').default;
-import { join as p } from 'path';
+import path, { join as p } from 'path';
 import ava from 'ava-spec';
 import to from 'to-js';
 import is from 'joi';
@@ -28,12 +28,10 @@ const models = utils.models({
 });
 
 
-let babel_config, contents;
+let babel_config;
 
 test.before(async () => {
   babel_config = await fs.readJson(p(__dirname, '..', '.babelrc'));
-  // get the contents of the models store them on an object so it can be reused
-  contents = await models.getContents();
 });
 
 test.beforeEach(async (t) => {
@@ -69,7 +67,150 @@ test('without args', (t) => {
   t.deepEqual(doc.inputs, {});
 });
 
-test.todo('build');
+test.group('build', (test) => {
+  test('model with no data', (t) => {
+    const model = {
+      name: 'build_test',
+      type: 'object',
+      properties: {
+        test: {
+          type: 'string',
+          data: {
+            build(documents, globals) {
+              globals.woohoo = 'woohoo';
+              return 'woohoo';
+            },
+          }
+        }
+      }
+    };
+
+    const doc = t.context.document;
+    t.deepEqual(doc.globals, {});
+    t.deepEqual(doc.documents, {});
+    const actual = doc.build(model);
+    const schema = is.array()
+      .items(is.object({
+        test: is.string().regex(/woohoo/),
+      }))
+      .length(1);
+    is.assert(actual, schema);
+    is.assert(doc.documents, is.object({ build_test: schema }));
+    t.deepEqual(doc.globals, { woohoo: 'woohoo' });
+  });
+
+  test.group('key', (test) => {
+    const model = {
+      name: 'key_test',
+      type: 'object',
+      properties: {
+        _id: {
+          type: 'string',
+          data: {
+            value: '00000',
+          }
+        },
+        test: {
+          type: 'string',
+          data: {
+            value: 'woohoo',
+          }
+        }
+      }
+    };
+
+    const tests = [
+      {
+        expected: 'key_test0',
+      },
+      {
+        actual: { value: 'value' },
+        expected: 'value',
+      },
+      {
+        actual: { build: () => 'build' },
+        expected: 'build',
+      },
+      {
+        actual: { fake: '{{finance.account}}' },
+        expected: /^[0-9]{8}$/,
+      },
+      {
+        actual: '_id',
+        expected: '00000',
+      },
+    ];
+
+    tests.forEach(({ actual, expected }) => {
+      let title = actual;
+      if (to.type(title) === 'object') {
+        title = to.keys(title)[0];
+      }
+      test(`is ${title}`, (t) => {
+        const doc = t.context.document;
+        const obj = to.clone(model);
+        if (actual != null) {
+          obj.key = actual;
+        }
+        const result = doc.build(obj);
+        if (to.type(expected) === 'regexp') {
+          t.truthy(expected.test(result[0].__key)); // eslint-disable-line
+        } else {
+          t.is(result[0].__key, expected); // eslint-disable-line
+        }
+      });
+    });
+  });
+
+  test.group(models(async (t, file) => {
+    const { document, model } = t.context;
+    await model.registerModels(file);
+
+    // overwrite the inputs to only include 1 item in it's array because several models
+    // in flight-data overwrite the data.count to be what ever the model length is and that is
+    // brutal on testing performance.
+    if ([ 'flight-data', 'music' ].includes(file.split(path.sep)[0])) {
+      model.inputs = to.map(model.inputs, ({ key, value }) => {
+        return { [key]: [ 0, 0, 0, 0, 0, 0 ].map(() => to.random(value)) };
+      });
+    }
+
+    // set the document inputs to be what the model inputs are
+    document.inputs = model.inputs;
+
+    let actual = [];
+
+    for (let obj of model.models) {
+      t.truthy(obj.data.count >= obj.data.min);
+      if (obj.data.max !== 0) {
+        t.truthy(obj.data.count <= obj.data.max);
+      }
+
+      // overwrite the count to be 1 so thousands of documents don't have to be created for the test
+      // this will happen in the `index.test.js` file
+      obj.data.count = !obj.is_dependency ? 1 : to.random(3, 6);
+
+      let fn = (obj.data.pre_run || {}).toString();
+      // if data.count is being set in the pre_run function then replace it with the overwritten count
+      if (/this\.data\.count/.test(fn)) {
+        fn = fn.replace(/this\.data\.count = [^\n]+/, `this.data.count = ${obj.data.count};`);
+        // eslint-disable-next-line
+        obj.data.pre_run = new Function(`return ${fn}`)();
+      }
+
+      const result = document.build(obj);
+      if (!obj.is_dependency) {
+        actual.push(result);
+      }
+    }
+
+    t.is(actual.length, 1);
+    actual = actual[0];
+    t.is(actual.length, 1);
+    actual = actual[0];
+    return actual;
+  }));
+});
 
 test.group('runData', (test) => {
   test('function wasn\'t passed', (t) => {
@@ -782,3 +923,6 @@ test.group('typeToValue', (test) => {
     });
   });
 });
+
+
+test.after(models.todo);

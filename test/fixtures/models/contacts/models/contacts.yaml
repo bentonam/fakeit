@@ -107,7 +107,7 @@ definitions:
         type: string
         description: The phone extension
         data:
-          build: "chance.bool({ likelihood: 20 }) ? '' + chance.integer({ min: 1000, max: 9999 }) : null;"
+          build: "chance.bool({ likelihood: 20 }) ? chance.integer({ min: 1000, max: 9999 }).toString() : null;"
   Address:
     type: object
     properties:
@@ -120,7 +120,7 @@ definitions:
         type: string
         description: The address 1
         data:
-          build: "faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+          build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`"
       address_2:
         type: string
         description: The address 2

@@ -9,7 +9,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'user_' + this.username;"
+      post_build: "`user_${this.username}`"
   type:
     type: string
     description: The document type
@@ -57,9 +57,9 @@ properties:
         var data = {};
         data.state = faker.address.state();
         data.city = faker.address.city();
-        data.country_code = faker.address.country_code();
+        data.country_code = faker.address.countryCode();
         data.street = faker.address.streetAddress();
-        data.postalCode = faker.address.zipCode();
+        data.postal_code = faker.address.zipCode();
         return data;
   phones:
     type: array
@@ -97,7 +97,7 @@ properties:
     type: string
     description: The users status
     data:
-      build: "faker.random.arrayElement([ 'active', 'active', 'inactive', 'active' ]);"
+      build: "chance.bool({ likelihood: 75 }) ? 'active' : 'inactive'"
   created:
     type: string
     description: The date the user was created

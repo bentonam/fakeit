@@ -1,4 +1,8 @@
 var is = require('joi');
 
-module.exports = is.object()
-  .pattern(/_id|[a-z][_a-z]+/, is.string().min(3));
+module.exports = is.object({
+  _id: is.string().regex(/^continent_[A-Z0-9]+$/),
+  continent_code: is.string().uppercase(),
+  doc_type: 'continent',
+  continent_name: is.string().regex(/^[A-Z][A-ZZa-z\s]+$/),
+});

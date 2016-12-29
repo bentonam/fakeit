@@ -11,7 +11,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'address_' + this.address_id"
+      post_build: "`address_${this.address_id}`"
   doc_type:
     type: string
     description: The document type
@@ -36,7 +36,7 @@ properties:
     type: string
     description: The address 1
     data:
-      build: "faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+      build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`;"
   address_2:
     type: string
     description: The address_2

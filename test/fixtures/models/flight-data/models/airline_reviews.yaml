@@ -14,7 +14,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'airline_' + this.airline_id + '_review_' + this.review_id;"
+      post_build: "`airline_${this.airline_id}_review_${this.review_id}`"
   doc_type:
     type: string
     description: The document type
@@ -44,7 +44,7 @@ properties:
     type: integer
     description: The review rating
     data:
-      build: "chance.integer({ min: 1, max: 5 })"
+      build: "chance.integer({ min: 0, max: 5 })"
   review_title:
     type: string
     description: The review title

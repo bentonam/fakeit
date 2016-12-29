@@ -23,6 +23,18 @@ module.exports = is.object({
     updated: utils.check('string', 'The date the track was updated', { fake: is.string(), post_build: is.func(), }),
     visibility: utils.check('string', 'The playlist visibility', { build: is.func(), }),
     owner: utils.check('object', 'The user that the playlist belongs to', { build: is.func(), }),
-    tracks: utils.check('array', 'An array of track id\'s', { build: is.func(), }),
+    tracks: is.object({
+      type: utils.types.array,
+      description: utils.string('An array of track id\'s'),
+      items: is.object({
+        type: utils.types.string,
+        data: is.object({
+          min: is.number().min(3).max(3),
+          max: is.number().min(25).max(25),
+          count: is.number().min(3).max(25),
+          build: is.func(),
+        }),
+      }),
+    }),
   }),
 });
