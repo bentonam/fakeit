@@ -62,7 +62,7 @@ properties:
     data:
       build: |
         const max = documents.Users.length - 1
-        const total = max > 12 ? chance.integer({ min: 0, max: 12 }) : chance.integer({ min: 2, max })
+        const total = max > 12 ? chance.integer({ min: 0, max: 12 }) : chance.integer({ min: max > 3 ? 2 : 0, max })
         return chance.n(chance.integer, total, { min: 0, max })
           .filter((num, i, arr) => !arr.includes(num, i + 1))
           .map((num) => {
@@ -70,6 +70,6 @@ properties:
             return {
               created: new Date(faker.date.past()).toISOString(),
               rating: chance.integer({ min: 0, max: 5 }),
-              username: documents.Users[num].username,
+              username: user.username,
             }
           })

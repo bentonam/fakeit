@@ -7,6 +7,6 @@ module.exports = is.object({
   created_on: is.date(),
   users: is.array()
     .items(is.number().min(1).max(6))
-    .min(2)
+    .min(1)
     .max(10),
 });

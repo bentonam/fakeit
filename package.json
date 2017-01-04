@@ -87,6 +87,7 @@
     "lint-rules": "github:ma-shop/lint-rules",
     "nock": "~9.0.2",
     "nyc": "~9.0.1",
+    "proxyquire": "~1.7.10",
     "test-console": "~1.0.0"
   },
   "babelConfig": {

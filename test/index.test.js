@@ -1,4 +1,4 @@
-import Fakeit from '../dist/index.js';
+import proxyquire from 'proxyquire';
 import default_options from '../dist/output/default-options';
 import to from 'to-js';
 import { stdout } from 'test-console';
@@ -6,6 +6,36 @@ import { join as p } from 'path';
 import { stripColor } from 'chalk';
 import ava from 'ava-spec';
 import { without } from 'lodash';
+
+/* istanbul ignore next */
+const Document = require('../dist/documents.js').default;
+Document.prototype.originalBuild = Document.prototype.build;
+Document.prototype.build = function MockBuild(model) {
+  // overwrite the count to be 1 so thousands of documents don't have to be created for the test
+  // this will happen in the `index.test.js` file
+  if (!model.is_dependency) {
+    model.data.count = 1;
+  } else if (model.file.includes('flight-data')) {
+    model.data.count = to.random(1, 2);
+  } else {
+    model.data.count = to.random(3, 6);
+  }
+
+  let fn = (model.data.pre_run || {}).toString();
+  // if data.count is being set in the pre_run function then replace it with the overwritten count
+  if (/this\.data\.count/.test(fn)) {
+    fn = fn.replace(/this\.data\.count = [^\n]+/, `this.data.count = ${model.data.count};`);
+    // eslint-disable-next-line
+    model.data.pre_run = new Function(`return ${fn}`)();
+  }
+
+  return this.originalBuild(model);
+};
+
+const Fakeit = proxyquire('../dist/index.js', {
+  './documents': { default: Document }
+}).default;
+
 
 const test = ava.group('fakeit');
 const fakeit_root = p(__dirname, 'fixtures', 'models');
