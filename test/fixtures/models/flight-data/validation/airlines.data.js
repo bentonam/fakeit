@@ -5,9 +5,9 @@ module.exports = is.object({
   doc_type: 'airline',
   airline_id: is.number(),
   airline_name: is.string(),
-  airline_iata: [ is.string(), is.allow(null) ],
-  airline_icao: [ is.string(), is.allow(null) ],
-  callsign: [ is.string(), is.allow(null) ],
-  iso_country: [ is.string(), is.allow(null) ],
+  airline_iata: [ is.string(), null ],
+  airline_icao: [ is.string(), null ],
+  callsign: [ is.string(), null ],
+  iso_country: [ is.string(), null ],
   active: is.boolean(),
 });

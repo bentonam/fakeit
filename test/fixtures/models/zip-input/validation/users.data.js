@@ -1,3 +1,4 @@
+var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
@@ -18,8 +19,8 @@ module.exports = is.object({
   phones: is.array()
     .items({
       type: is.string(),
-      phone_number: is.string().regex(/[0-9\(\)\-\s\.]+/),
-      extension: [ is.string().regex(/[0-9\(\)\-\s\.]+/), null ],
+      phone_number: utils.phone,
+      extension: [ utils.phone, null ],
     })
     .min(1)
     .max(3),
@@ -30,7 +31,7 @@ module.exports = is.object({
       address_2: [ is.string(), null ],
       locality: is.string(),
       region: is.string(),
-      postal_code: is.string().regex(/^[0-9]{5}(?:\-[0-9]{4})?$/).min(5).max(10),
+      postal_code: utils.postal_code,
       country: is.string().uppercase().length(2),
     })
     .min(1)

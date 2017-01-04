@@ -3,19 +3,19 @@ var is = require('joi');
 
 module.exports = is.object({
   name: 'Orders',
-  type: utils.types.object,
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
   key: '_id',
-  data: is.object({
+  data: {
     min: is.number().min(300).max(300),
     max: is.number().min(600).max(600),
     count: is.number().min(300).max(600),
     dependencies: is.array().items(is.string()).length(2),
     inputs: is.object().length(0),
-  }),
-  properties: is.object({
+  },
+  properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),
     doc_type: utils.check('string', 'The document type', { value: is.string(), }),
     order_id: utils.check('integer', 'The order_id', { build: is.func(), }),
@@ -43,5 +43,5 @@ module.exports = is.object({
     tax: utils.check('double', 'The tax total', { build: is.func(), }),
     line_items: utils.check('array', 'The products that were ordered', { build: is.func(), }),
     grand_total: utils.check('double', 'The grand total of the order', { post_build: is.func(), }),
-  }),
+  },
 });

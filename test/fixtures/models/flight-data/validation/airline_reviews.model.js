@@ -3,12 +3,12 @@ var is = require('joi');
 
 module.exports = is.object({
   name: 'AirlineReviews',
-  type: utils.types.object,
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
   key: '_id',
-  data: is.object({
+  data: {
     min: is.number().min(0).max(0),
     max: is.number().min(1).max(1),
     count: is.number().min(1).max(1),
@@ -16,8 +16,8 @@ module.exports = is.object({
     inputs: is.object().length(0),
     pre_run: is.func(),
     pre_build: is.func(),
-  }),
-  properties: is.object({
+  },
+  properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),
     doc_type: utils.check('string', 'The document type', { value: is.string(), }),
     review_id: utils.check('string', 'Unique identifier representing a specific review', { build: is.func(), }),
@@ -28,5 +28,5 @@ module.exports = is.object({
     review_title: utils.check('string', 'The review title', { fake: is.string(), }),
     review_body: utils.check('string', 'The review content', { fake: is.string(), }),
     review_date: utils.check('integer', 'The review content', { fake: is.string(), post_build: is.func(), }),
-  }),
+  },
 });

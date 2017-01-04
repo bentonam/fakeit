@@ -1,3 +1,4 @@
+var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
@@ -5,7 +6,7 @@ module.exports = is.object({
   doc_type: 'product',
   product_id: is.string().uuid(),
   price: is.number().precision(2),
-  sale_price: [ is.number().precision(2), is.allow(null) ],
+  sale_price: [ is.number().precision(2), null ],
   display_name: is.string(),
   short_description: is.string(),
   long_description: is.string(),
@@ -16,9 +17,9 @@ module.exports = is.object({
     .max(8),
   availability: [ 'Preorder', 'In-Stock', 'Out of Stock', 'Discontinued' ],
   availability_date: is.date(),
-  product_slug: is.string().regex(/^[a-z][a-z-]+[a-z]$/),
+  product_slug: utils.slug,
   category: is.string(),
-  category_slug: is.string().regex(/^[a-z][a-z-]+[a-z]$/),
+  category_slug: utils.slug,
   image: is.string().uri(),
   created_on: is.date(),
   modified_on: is.date(),

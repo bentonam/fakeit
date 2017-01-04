@@ -1,3 +1,4 @@
+var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
@@ -9,25 +10,22 @@ module.exports = is.object({
   contact_id: is.string().guid(),
   created_on: is.date(),
   modified_on: is.date(),
-  details: is.object({
-    prefix: [ is.string(), is.allow(null) ],
+  details: {
+    prefix: [ is.string(), null ],
     first_name: is.string(),
-    middle_name: [ is.string(), is.allow(null) ],
-    last_name: [ is.string(), is.allow(null) ],
-    company: [ is.string(), is.allow(null) ],
-    job_title: [ is.string(), is.allow(null) ],
-    dob: [ is.date(), is.allow(null) ],
-    nickname: [ is.string(), is.allow(null) ],
-  })
-    .length(8),
+    middle_name: [ is.string(), null ],
+    last_name: [ is.string(), null ],
+    company: [ is.string(), null ],
+    job_title: [ is.string(), null ],
+    dob: [ is.date(), null ],
+    nickname: [ is.string(), null ],
+  },
   phones: is.array()
-    .items(
-      is.object({
-        type: [ 'Home', 'Work', 'Mobile', 'Main', 'Other' ],
-        phone_number: is.string().regex(/[0-9\(\)\-\s\.]+/),
-        extension: [ is.string().regex(/[0-9\(\)\-\s\.]+/), is.allow(null) ],
-      })
-    )
+    .items({
+      type: [ 'Home', 'Work', 'Mobile', 'Main', 'Other' ],
+      phone_number: utils.phone,
+      extension: [ utils.phone, null ],
+    })
     .min(1)
     .max(3)
     .sparse(false),
@@ -36,28 +34,24 @@ module.exports = is.object({
     .min(1)
     .max(3),
   addresses: is.array()
-    .items(
-      is.object({
-        type: [ 'Home', 'Work', 'Other' ],
-        address_1: is.string(),
-        address_2: [ is.string(), is.allow(null) ],
-        locality: is.string(),
-        region: is.string().uppercase().length(2),
-        postal_code: is.string().regex(/^[0-9]{5}(?:\-[0-9]{4})?$/).min(5).max(10),
-        country: is.string().uppercase().length(2),
-      })
-    )
+    .items({
+      type: [ 'Home', 'Work', 'Other' ],
+      address_1: is.string(),
+      address_2: [ is.string(), null ],
+      locality: is.string(),
+      region: is.string().uppercase().length(2),
+      postal_code: utils.postal_code,
+      country: is.string().uppercase().length(2),
+    })
     .min(1)
     .max(2)
     .sparse(false),
   children: is.array()
-    .items(
-      is.object({
-        first_name: is.string(),
-        gender: [ 'M', 'F', is.allow(null) ],
-        age: is.number().min(1).max(17),
-      })
-    )
+    .items({
+      first_name: is.string(),
+      gender: [ 'M', 'F', null ],
+      age: is.number().min(1).max(17),
+    })
     .min(1)
     .max(8)
     .sparse(false),

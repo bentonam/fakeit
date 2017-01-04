@@ -1,77 +1,57 @@
-var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
   name: 'Users',
-  type: utils.types.object,
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
   key: 'id',
-  data: is.object({
+  data: {
     min: is.number().min(50).max(50),
     max: is.number().min(100).max(100),
     count: is.number().min(50).max(100),
     dependencies: is.array().length(0),
     inputs: is.object().length(0),
-  }),
-  properties: is.object({
-    id: is.object({
+  },
+  properties: {
+    id: {
       type: 'null',
-      data: is.object({
-        post_build: is.func(),
-      }),
-    }),
-    type: is.object({
+      data: { post_build: is.func(), },
+    },
+    type: {
       type: 'null',
-      data: is.object({
-        value: is.string(),
-      }),
-    }),
-    user_id: is.object({
+      data: { value: is.string(), },
+    },
+    user_id: {
       type: 'null',
-      data: is.object({
-        build: is.func(),
-      }),
-    }),
-    first_name: is.object({
+      data: { build: is.func(), },
+    },
+    first_name: {
       type: 'null',
-      data: is.object({
-        fake: is.string(),
-      }),
-    }),
-    last_name: is.object({
+      data: { fake: is.string(), },
+    },
+    last_name: {
       type: 'null',
       description: 'The users last name',
-      data: is.object({
-        fake: is.string(),
-      }),
-    }),
-    email_address: is.object({
+      data: { fake: is.string(), },
+    },
+    email_address: {
       type: 'null',
-      data: is.object({
-        fake: is.string(),
-      }),
-    }),
-    phone: is.object({
+      data: { fake: is.string(), },
+    },
+    phone: {
       type: 'null',
-      data: is.object({
-        build: is.func(),
-      }),
-    }),
-    active: is.object({
+      data: { build: is.func(), },
+    },
+    active: {
       type: 'null',
-      data: is.object({
-        build: is.func(),
-      }),
-    }),
-    created_on: is.object({
+      data: { build: is.func(), },
+    },
+    created_on: {
       type: 'null',
-      data: is.object({
-        fake: is.string(),
-        post_build: is.func(),
-      }),
-    }),
-  }),
+      data: { fake: is.string(), post_build: is.func(), },
+    },
+  },
 });
 

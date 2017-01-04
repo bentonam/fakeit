@@ -3,20 +3,20 @@ var is = require('joi');
 
 module.exports = is.object({
   name: 'Addresses',
-  type: utils.types.object,
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
   key: '_id',
-  data: is.object({
+  data: {
     min: is.number().min(0).max(0),
     max: is.number().min(1).max(1),
     count: is.number().min(1).max(1),
     dependencies: is.array().items(is.string()).length(1),
     inputs: is.object().length(0),
     pre_run: is.func(),
-  }),
-  properties: is.object({
+  },
+  properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),
     doc_type: utils.check('string', 'The document type', { value: is.string(), }),
     address_id: utils.check('string', 'The address id as a GUID', { build: is.func(), }),
@@ -28,5 +28,5 @@ module.exports = is.object({
     region: utils.check('string', 'The region / state / province', { build: is.func(), }),
     postal_code: utils.check('string', 'The zip code / postal code', { build: is.func(), }),
     country: utils.check('string', 'The country code', { build: is.func(), })
-  }),
+  },
 });

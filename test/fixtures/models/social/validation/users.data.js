@@ -5,17 +5,17 @@ module.exports = is.object({
   doc_type: 'user',
   user_id: is.number().min(0).max(6),
   first_name: is.string(),
-  middle_name: [ is.string(), is.allow(null) ],
+  middle_name: [ is.string(), null ],
   last_name: is.string(),
-  company: [ is.string(), is.allow(null) ],
-  job_title: [ is.string(), is.allow(null) ],
-  gender: [ 'M', 'F', is.allow(null) ],
-  dob: [ is.date(), is.allow(null) ],
+  company: [ is.string(), null ],
+  job_title: [ is.string(), null ],
+  gender: [ 'M', 'F', null ],
+  dob: [ is.date(), null ],
   created_on: is.date(),
   children: is.array()
     .items({
       first_name: is.string(),
-      gender: [ 'M', 'F', is.allow(null) ],
+      gender: [ 'M', 'F', null ],
       age: is.number().min(1).max(17),
     })
     .min(0)

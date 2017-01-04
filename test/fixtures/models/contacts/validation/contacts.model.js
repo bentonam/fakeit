@@ -6,7 +6,7 @@ module.exports = is.object({
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  type: utils.types.object,
+  type: 'object',
   key: '_id',
   data: {
     min: is.number().min(200).max(200),
@@ -23,7 +23,7 @@ module.exports = is.object({
     created_on: utils.check('integer', 'An epoch time of when the contact was created', { build: is.func() }),
     modified_on: utils.check('integer', 'An epoch time of when the contact was last modified', { build: is.func() }),
     details: {
-      type: utils.types.object,
+      type: 'object',
       schema: {
         $ref: '#/definitions/Details',
       },
@@ -41,7 +41,7 @@ module.exports = is.object({
       data: is.object(),
     },
     phones: {
-      type: utils.types.array,
+      type: 'array',
       description: 'An array of phone numbers',
       items: {
         $ref: '#/definitions/Phone',
@@ -50,7 +50,7 @@ module.exports = is.object({
           max: is.number().min(3).max(3),
           count: is.number().min(1).max(3),
         },
-        type: utils.types.object,
+        type: 'object',
         properties: {
           type: utils.check('string', 'The phone type', { build: is.func() }),
           phone_number: utils.check('string', 'The phone number', { build: is.func() }),
@@ -59,11 +59,11 @@ module.exports = is.object({
       },
     },
     emails: {
-      type: utils.types.array,
+      type: 'array',
       description: 'An array of emails',
       items: {
         $ref: '#/definitions/Email',
-        type: utils.types.string,
+        type: 'string',
         data: {
           min: is.number().min(1).max(1),
           max: is.number().min(2).max(2),
@@ -73,11 +73,11 @@ module.exports = is.object({
       },
     },
     addresses: {
-      type: utils.types.array,
+      type: 'array',
       description: 'An array of addresses',
       items: {
         $ref: '#/definitions/Address',
-        type: utils.types.object,
+        type: 'object',
         data: {
           min: is.number().min(1).max(1),
           max: is.number().min(2).max(2),
@@ -95,11 +95,11 @@ module.exports = is.object({
       },
     },
     children: {
-      type: utils.types.array,
+      type: 'array',
       description: 'An array of children',
       items: {
         $ref: '#/definitions/Children',
-        type: utils.types.object,
+        type: 'object',
         data: {
           min: is.number().min(1).max(1),
           max: is.number().min(8).max(8),
@@ -114,7 +114,7 @@ module.exports = is.object({
     },
     notes: utils.check('string', 'Notes about the contact', { fake: '{{lorem.sentence}}' }),
     tags: {
-      type: utils.types.array,
+      type: 'array',
       items: utils.check('string', {
         min: is.number().min(1).max(1),
         max: is.number().min(6).max(6),
@@ -123,19 +123,19 @@ module.exports = is.object({
       }),
     },
   },
-  definitions: is.object({
+  definitions: {
     Email: utils.check('string', { build: is.func() }),
-    Phone: is.object({
-      type: utils.types.object,
-      properties: is.object({
+    Phone: {
+      type: 'object',
+      properties: {
         type: utils.check('string', 'The phone type', { build: is.func() }),
         phone_number: utils.check('string', 'The phone number', { build: is.func() }),
         extension: utils.check('string', 'The phone extension', { build: is.func() }),
-      }),
-    }),
-    Address: is.object({
-      type: utils.types.object,
-      properties: is.object({
+      },
+    },
+    Address: {
+      type: 'object',
+      properties: {
         type: utils.check('string', 'The address type', { build: is.func() }),
         address_1: utils.check('string', 'The address 1', { build: is.func() }),
         address_2: utils.check('string', 'The address 2', { build: is.func() }),
@@ -143,19 +143,19 @@ module.exports = is.object({
         region: utils.check('string', 'The region / state / province', { build: is.func() }),
         postal_code: utils.check('string', 'The zip code / postal code', { build: is.func() }),
         country: utils.check('string', 'The country code', { build: is.func() }),
-      }),
-    }),
-    Children: is.object({
-      type: utils.types.object,
-      properties: is.object({
+      },
+    },
+    Children: {
+      type: 'object',
+      properties: {
         first_name: utils.check('string', 'The childs first_name', { fake: '{{name.firstName}}' }),
         gender: utils.check('string', 'The childs gender', { build: is.func() }),
         age: utils.check('integer', 'The childs age', { build: is.func() }),
-      }),
-    }),
-    Details: is.object({
-      type: utils.types.object,
-      properties: is.object({
+      },
+    },
+    Details: {
+      type: 'object',
+      properties: {
         prefix: utils.check('string', 'The contacts prefix', { build: is.func() }),
         first_name: utils.check('string', 'The contacts first_name', { fake: '{{name.firstName}}' }),
         middle_name: utils.check('string', 'The contacts middle_name', { build: is.func() }),
@@ -164,7 +164,7 @@ module.exports = is.object({
         job_title: utils.check('string', 'The contacts job_title', { build: is.func() }),
         dob: utils.check('string', 'The contacts dob', { build: is.func() }),
         nickname: utils.check('string', 'The contacts nickname', { build: is.func() }),
-      }),
-    }),
-  }),
+      },
+    },
+  },
 });

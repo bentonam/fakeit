@@ -1,3 +1,4 @@
+var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
@@ -7,7 +8,7 @@ module.exports = is.object({
   first_name: is.string(),
   last_name: is.string(),
   email_address: is.string().email(),
-  phone: is.string().regex(/[0-9\(\)\-\s\.]+/),
+  phone: utils.phone,
   active: is.boolean(),
   created_on: is.date(),
 });

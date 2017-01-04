@@ -1,3 +1,4 @@
+var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
@@ -15,13 +16,13 @@ module.exports = is.object({
     city: is.string(),
     country_code: is.string().regex(/^[A-Z]{2}$/),
     street: is.string(),
-    postal_code: is.string().regex(/^[0-9]{5}(?:\-[0-9]{4})?$/).min(5).max(10),
+    postal_code: utils.postal_code,
   },
   phones: is.array()
     .items({
       type: [ 'home', 'work', 'mobile', 'other', 'main' ],
       verified: is.date(),
-      number: is.string().regex(/^[0-9\(\)\-\s.]+$/),
+      number: utils.phone,
     })
     .min(0)
     .max(4),

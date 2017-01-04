@@ -263,25 +263,19 @@ module.exports.checkDiff = function checkDiff(actual, expected) {
   return diff;
 };
 
+/* istanbul ignore next: testing util */
+module.exports.phone = joi.string().regex(/[0-9\(\)\-\s\.]+/);
 
 /* istanbul ignore next: testing util */
-var types = {
-  string: joi.string().regex(/string/),
-  array: joi.string().regex(/array/),
-  object: joi.string().regex(/object/),
-  boolean: joi.string().regex(/boolean/),
-  integer: joi.string().regex(/integer/),
-  double: joi.string().regex(/double/),
-  float: joi.string().regex(/float/),
-};
+module.exports.postal_code = joi.string().regex(/^[0-9]{5}(?:\-[0-9]{4})?$/).min(5).max(10);
 
 /* istanbul ignore next: testing util */
-module.exports.types = types;
+module.exports.slug = joi.string().regex(/^[a-z][a-z-]+[a-z]$/);
 
 /* istanbul ignore next: testing util */
 module.exports.check = function check(type, description, data) {
   var result = {
-    type: types[type]
+    type: type
   };
   if (typeof description !== 'string') {
     data = description;

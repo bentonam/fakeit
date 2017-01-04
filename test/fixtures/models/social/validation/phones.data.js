@@ -1,3 +1,4 @@
+var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
@@ -6,6 +7,6 @@ module.exports = is.object({
   phone_id: is.string().uuid(),
   user_id: is.number().min(0).max(6),
   phone_type: [ 'Home', 'Work', 'Mobile', 'Main', 'Other' ],
-  phone_number: is.string().regex(/[0-9\(\)\-\s\.]+/),
-  extension: [ is.string().regex(/[0-9\(\)\-\s\.]+/), is.allow(null) ]
+  phone_number: utils.phone,
+  extension: [ utils.phone, null ]
 });
