@@ -67,7 +67,7 @@ export default class Models extends Base {
     let file = await globby(this.resolvePaths(babel_config, dir), { dot: true });
     file = file[0];
     let config = await fs.readJson(file);
-    if (file.includes('package')) {
+    if (file.includes('package.json')) {
       config = config.babelConfig || {};
     }
     this.options.babel_config = config;
@@ -377,27 +377,27 @@ export function parseModelDefaults(model) {
 /// @arg {undefined, null, number} count - The count to override the model settings
 export function parseModelCount(model, count) {
   for (let data_path of utils.objectSearch(model, /^(?:.*\.items\.data|data)$/)) {
+    let value = to.number(count);
     let property = get(model, data_path);
 
-    if (data_path !== 'data' || !count) {
-      count = null;
+    if (data_path !== 'data' || value == null || value === 0) {
       if (property.count > 0) {
-        count = property.count;
+        value = property.count;
       } else if (property.min != null && property.max != null) {
-        count = to.random(property.min, property.max);
+        value = to.random(property.min, property.max);
       }
     }
 
     // if count is null or 0 then set it to 1
-    if (!count) {
-      count = 1;
+    if (!value) {
+      value = 1;
     }
 
     if (!property.max) {
-      set(model, `${data_path}.max`, to.number(count));
+      set(model, `${data_path}.max`, value);
     }
 
-    set(model, `${data_path}.count`, to.number(count));
+    set(model, `${data_path}.count`, value);
   }
 }
 

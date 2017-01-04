@@ -510,8 +510,9 @@ test.group('parseModelCount', (test) => {
     const obj = getContext();
     t.falsy(obj.data.count);
     parseModelCount(obj, '0');
-    t.truthy(obj.data.count);
-    t.is(obj.data.count, 1);
+    const actual = obj.data.count;
+    t.truthy(actual);
+    t.truthy(actual >= obj.data.min && actual <= obj.data.max);
   });
 
   test('chooses random number', (t) => {
