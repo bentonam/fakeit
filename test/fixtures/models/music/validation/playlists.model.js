@@ -2,12 +2,12 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Playlists'),
+  name: 'Playlists',
   type: utils.types.object,
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
+  key: '_id',
   data: is.object({
     min: is.number().min(500).max(500),
     max: is.number().min(1000).max(1000),
@@ -25,7 +25,7 @@ module.exports = is.object({
     owner: utils.check('object', 'The user that the playlist belongs to', { build: is.func(), }),
     tracks: is.object({
       type: utils.types.array,
-      description: utils.string('An array of track id\'s'),
+      description: 'An array of track id\'s',
       items: is.object({
         type: utils.types.string,
         data: is.object({

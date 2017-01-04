@@ -2,12 +2,12 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Runways'),
+  name: 'Runways',
   type: utils.types.object,
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
+  key: '_id',
   data: is.object({
     min: is.number().min(0).max(0),
     max: is.number().min(1).max(1),
@@ -31,7 +31,7 @@ module.exports = is.object({
       data: is.object().length(0),
       type: utils.types.object,
       properties: is.object({
-        ident: utils.check('string', 'The low bearing runway identifer .1 - 18.', { build: is.func(), }),
+        ident: utils.check('string', 'The low bearing runway identifer (1 - 18)', { build: is.func(), }),
         latitude: utils.check('float', 'The low bearing runway latitude', { build: is.func(), }),
         longitude: utils.check('float', 'The low bearing runway longitude', { build: is.func(), }),
         elevation: utils.check('integer', 'The low bearing runway elevation', { build: is.func(), }),
@@ -43,7 +43,7 @@ module.exports = is.object({
       data: is.object().length(0),
       type: utils.types.object,
       properties: is.object({
-        ident: utils.check('string', 'The high bearing runway identifer .19 - 36.', { build: is.func(), }),
+        ident: utils.check('string', 'The high bearing runway identifer (19 - 36)', { build: is.func(), }),
         latitude: utils.check('float', 'The high bearing runway latitude', { build: is.func(), }),
         longitude: utils.check('float', 'The high bearing runway longitude', { build: is.func(), }),
         elevation: utils.check('integer', 'The high bearing runway elevation', { build: is.func(), }),

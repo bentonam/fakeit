@@ -2,12 +2,12 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Users'),
+  name: 'Users',
   type: utils.types.object,
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
+  key: '_id',
   data: is.object({
     min: is.number().min(0).max(0),
     max: is.number().min(1000).max(1000),
@@ -30,7 +30,7 @@ module.exports = is.object({
     created_on: utils.check('integer', 'An epoch time of when the user was created', { fake: is.string(), post_build: is.func(), }),
     children: is.object({
       type: utils.types.array,
-      description: utils.string('An array of children'),
+      description: 'An array of children',
       items: is.object({
         type: utils.types.object,
         data: is.object({

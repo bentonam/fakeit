@@ -2,12 +2,12 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Reviews'),
+  name: 'Reviews',
   type: utils.types.object,
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
+  key: '_id',
   data: is.object({
     min: is.number().min(500).max(500),
     max: is.number().min(1000).max(1000),

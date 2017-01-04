@@ -2,12 +2,12 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Products'),
+  name: 'Products',
   type: utils.types.object,
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
+  key: '_id',
   data: is.object({
     min: is.number().min(100).max(100),
     max: is.number().min(500).max(500),
@@ -26,7 +26,7 @@ module.exports = is.object({
     long_description: utils.check('string', 'Description of product.', { fake: is.string(), }),
     keywords: is.object({
       type: utils.types.array,
-      description: utils.string('An array of keywords'),
+      description: 'An array of keywords',
       items: is.object({
         type: utils.types.string,
         data: is.object({

@@ -2,12 +2,12 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Orders'),
+  name: 'Orders',
   type: utils.types.object,
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
+  key: '_id',
   data: is.object({
     min: is.number().min(300).max(300),
     max: is.number().min(600).max(600),
@@ -36,7 +36,7 @@ module.exports = is.object({
     shipping_address_2: utils.check('string', 'The shipping address 2', { build: is.func(), }),
     shipping_locality: utils.check('string', 'The shipping city', { fake: is.string(), }),
     shipping_region: utils.check('string', 'The shipping region, city, province', { fake: is.string(), }),
-    shipping_postal_code: utils.check('string', 'The shipping zip code \\/ postal code', { fake: is.string(), }),
+    shipping_postal_code: utils.check('string', 'The shipping zip code / postal code', { fake: is.string(), }),
     shipping_country: utils.check('string', 'The shipping region, city, province', { value: is.string(), }),
     shipping_method: utils.check('string', 'The shipping method', { build: is.func(), }),
     shipping_total: utils.check('double', 'The shipping total', { build: is.func(), }),

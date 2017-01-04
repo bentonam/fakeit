@@ -2,12 +2,12 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Users'),
+  name: 'Users',
   type: utils.types.object,
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
+  key: '_id',
   data: is.object({
     min: is.number().min(100).max(100),
     max: is.number().min(500).max(500),
@@ -49,14 +49,14 @@ module.exports = is.object({
     password: utils.check('string', 'The users password', { fake: is.string(), }),
     emails: is.object({
       type: utils.types.array,
-      description: utils.string('An array of emails'),
+      description: 'An array of emails',
       items: is.object({
         data: is.object({
           min: is.number().min(1).max(1),
           max: is.number().min(3).max(3),
           count: is.number().min(1).max(3),
         }),
-        $ref: utils.string('#/definitions/Email'),
+        $ref: '#/definitions/Email',
         type: utils.types.object,
         properties: is.object({
           type: utils.check('string', 'The email type', { build: is.func(), }),
@@ -66,14 +66,14 @@ module.exports = is.object({
     }),
     phones: is.object({
       type: utils.types.array,
-      description: utils.string('An array of phone numbers'),
+      description: 'An array of phone numbers',
       items: is.object({
         data: is.object({
           min: is.number().min(1).max(1),
           max: is.number().min(3).max(3),
           count: is.number().min(1).max(3),
         }),
-        $ref: utils.string('#/definitions/Phone'),
+        $ref: '#/definitions/Phone',
         type: utils.types.object,
         properties: is.object({
           type: utils.check('string', 'The phone type', { build: is.func(), }),
@@ -84,14 +84,14 @@ module.exports = is.object({
     }),
     addresses: is.object({
       type: utils.types.array,
-      description: utils.string('An array of addresses'),
+      description: 'An array of addresses',
       items: is.object({
         data: is.object({
           min: is.number().min(1).max(1),
           max: is.number().min(3).max(3),
           count: is.number().min(1).max(3),
         }),
-        $ref: utils.string('#/definitions/Address'),
+        $ref: '#/definitions/Address',
         type: utils.types.object,
         properties: is.object({
           type: utils.check('string', 'The address type', { build: is.func(), }),

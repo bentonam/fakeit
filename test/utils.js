@@ -279,13 +279,6 @@ var types = {
 module.exports.types = types;
 
 /* istanbul ignore next: testing util */
-function string(str) {
-  return joi.string().regex(new RegExp('^' + str.replace(/([\$\[\]\(\)])/, '\\$1') + '$'));
-}
-/* istanbul ignore next: testing util */
-module.exports.string = string;
-
-/* istanbul ignore next: testing util */
 module.exports.check = function check(type, description, data) {
   var result = {
     type: types[type]
@@ -295,7 +288,7 @@ module.exports.check = function check(type, description, data) {
     description = null;
   }
   if (description) {
-    result.description = string(description);
+    result.description = description;
   }
 
   result.data = joi.object(data);

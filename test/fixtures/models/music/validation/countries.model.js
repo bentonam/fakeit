@@ -2,12 +2,12 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Countries'),
+  name: 'Countries',
   type: utils.types.object,
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
+  key: '_id',
   data: is.object({
     min: is.number().min(0).max(0),
     max: is.number().min(1).max(1),
@@ -33,7 +33,7 @@ module.exports = is.object({
     country_code: utils.check('string', 'The 2 letter ISO country code', { pre_build: is.func() }),
     'region-number': utils.check('string', 'The countries region number', { build: is.func() }),
     name: utils.check('string', 'The name of the country', { build: is.func() }),
-    updated: utils.check('string', 'The date the country was last updated', { fake: utils.string('{{date.past}}'), post_build: is.func() }),
+    updated: utils.check('string', 'The date the country was last updated', { fake: '{{date.past}}', post_build: is.func() }),
     population: utils.check('integer', 'The countries population', { build: is.func() }),
   }),
 });
