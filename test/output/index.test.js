@@ -204,9 +204,29 @@ test.group('validation', (test) => {
       t.throws(validateArchive);
       t.throws(t.context.validateOutputOptions);
     });
+
+    test.serial('failing output because `archive` isn\'t a `.zip` file', (t) => {
+      t.context.output_options.archive = 'somefile.woohoo';
+      t.context.output_options.output = 'somefolder';
+      const validateArchive = () => validate.archive(t.context.output_options.archive, t.context.output_options);
+      const validateOutputOptions = () => t.context.validateOutputOptions();
+      const inspect = stdout.inspect();
+      t.throws(validateArchive);
+      t.throws(validateOutputOptions);
+      inspect.restore();
+    });
+
     test('failing output is console', (t) => {
       t.context.output_options.output = 'console';
       t.context.output_options.archive = 'somefile.zip';
+      const validateArchive = () => validate.archive(t.context.output_options.archive, t.context.output_options);
+      t.throws(validateArchive);
+      t.throws(t.context.validateOutputOptions);
+    });
+
+    test('failing output a string wasn\'t passed as the option', (t) => {
+      t.context.output_options.output = 'test-folder';
+      t.context.output_options.archive = [];
       const validateArchive = () => validate.archive(t.context.output_options.archive, t.context.output_options);
       t.throws(validateArchive);
       t.throws(t.context.validateOutputOptions);
@@ -249,6 +269,7 @@ test.group('validation', (test) => {
       t.context.output_options.output = 'couchbase';
       t.context.output_options.archive = true;
       t.context.output_options.server = '127.0.0.1';
+
       const validateServer = () => validate.server(t.context.output_options.server, t.context.output_options);
       t.throws(validateServer);
       t.throws(t.context.validateOutputOptions);
@@ -582,20 +603,17 @@ test.group('output', (test) => {
     });
   }));
 
-
-  test.group('couchbase', (test) => {
-    test.todo();
-  });
-
-  test.group('sync-gateway', (test) => {
-    test.todo();
-  });
+  // These are too difficult to unit test but they are tested else where
+  // test.group('couchbase', (test) => {
+  //   test.todo();
+  // });
+  //
+  // test.group('sync-gateway', (test) => {
+  //   test.todo();
+  // });
 
   test.after.always(() => fs.remove(root));
 });
-
-
-test.todo('finalize');
 
 // This will loop through each of the languages to run tests for each one.
 // It makes it easier to test each language for each type of output rather
