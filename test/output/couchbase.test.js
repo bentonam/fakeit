@@ -22,6 +22,7 @@ test('without args', (t) => {
   t.is(t.context.prepared, false);
   t.is(typeof t.context.prepare, 'function');
   t.is(typeof t.context.output, 'function');
+  t.is(t.context.cluster.constructor.name, 'MockCluster');
 });
 
 test('prepare', async (t) => {
@@ -36,16 +37,18 @@ test('prepare', async (t) => {
   t.is(t.context.bucket.connected, true);
 });
 
-test('setup', async (t) => {
-  t.is(t.context.prepared, false);
-  t.is(t.context.preparing, undefined);
-  const preparing = t.context.setup();
-  t.is(typeof t.context.preparing.then, 'function');
-  t.is(t.context.prepared, false);
-  await preparing;
-  t.is(t.context.prepared, true);
-  t.is(to.type(t.context.bucket), 'object');
-  t.is(t.context.bucket.connected, true);
+test.group('setup', (test) => {
+  test(async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    t.falsy(await preparing);
+    t.is(t.context.prepared, true);
+    t.is(to.type(t.context.bucket), 'object');
+    t.is(t.context.bucket.connected, true);
+  });
 });
 
 test.group('output', (test) => {
@@ -130,6 +133,19 @@ test.group('output', (test) => {
       t.deepEqual(document.value, data);
     });
   }
+
+  test('prepare has started but isn\'t complete', async (t) => {
+    const language = 'json';
+    const data = languages[language];
+    t.context.output_options.bucket = `output-${language}`;
+    const id = `1234567890-${language}`;
+    t.context.output_options.format = language;
+    t.context.prepare();
+    await t.context.output(id, data);
+    const document = await t.context.bucket.getAsync(id);
+    t.not(document, null);
+    t.deepEqual(document.value, data);
+  });
 });
 
 test.group('finalize', (test) => {

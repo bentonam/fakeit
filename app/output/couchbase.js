@@ -45,6 +45,7 @@ export default class Couchbase extends Base {
     const { server, bucket, password, timeout } = this.output_options;
     return new Promise((resolve, reject) => {
       this.bucket = this.cluster.openBucket(bucket, password, (err) => {
+        /* istanbul ignore if : to hard to test since this is a third party function */
         if (err) return reject(err);
 
         this.log('verbose', `Connection to '${bucket}' bucket at '${server}' was successful`);

@@ -28,6 +28,7 @@ export default class SyncGateway extends Base {
   ///# wait for it to be done before it starts saving data.
   ///# @returns {promise} - The setup function that was called
   ///# @async
+  /* istanbul ignore next */
   prepare() {
     this.preparing = true;
     this.preparing = this.setup();
@@ -38,6 +39,7 @@ export default class SyncGateway extends Base {
   ///# @description
   ///# This is used to setup the saving function that will be used.
   ///# @async
+  /* istanbul ignore next */
   setup() {
     // if this.prepare hasn't been called then run it first.
     if (this.preparing == null) {
@@ -141,8 +143,8 @@ export default class SyncGateway extends Base {
 export function request(options = {}) {
   return new Promise((resolve, reject) => {
     req(options, (err, res, body) => {
+      /* istanbul ignore next : to hard to mock test */
       if (err) return reject(err);
-
       resolve([ res, body ]);
     });
   });

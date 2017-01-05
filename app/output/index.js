@@ -142,15 +142,13 @@ export default class Output extends Base {
   ///# @description This is used to validate the output options
   ///# @throws {error} - If an option that was passed is invalid.
   validateOutputOptions() {
-    for (let option in this.output_options) {
-      if (this.output_options.hasOwnProperty(option)) {
-        try {
-          validate[option](this.output_options[option], this.output_options);
-        } catch (e) {
-          this.log('error', e);
-        }
+    to.each(this.output_options, ({ key, value }) => {
+      try {
+        validate[key](value, this.output_options);
+      } catch (e) {
+        this.log('error', e);
       }
-    }
+    });
   }
 }
 
@@ -206,10 +204,9 @@ export const validate = {
   ///# @arg {number} option - The option to validate against
   ///# @throws {error} - If the limit option that was pass was invalid
   limit(option) {
-    if (is.number(option)) {
-      return;
+    if (!is.number(option)) {
+      throw new Error('The limit option must be a number');
     }
-    throw new Error('The limit option must be a number');
   },
 
   ///# @name archive
@@ -245,7 +242,6 @@ export const validate = {
 
     if (archive === true) {
       throw new Error(`The archive option can't be used with ${option}`);
-      return;
     }
 
     isString(option, 'server');
@@ -292,10 +288,9 @@ export const validate = {
   ///# @arg {number} option - The option to validate against
   ///# @throws {error} - If the limit option that was pass was invalid
   timeout(option) {
-    if (is.number(option)) {
-      return;
+    if (!is.number(option)) {
+      throw new Error('The timeout option must be a number');
     }
-    throw new Error('The timeout option must be a number');
   },
 };
 
@@ -321,13 +316,11 @@ export function isString(option, name = '') {
   }
   if (!is.string(option)) {
     throw new Error(`The${name}option must be a string`);
-    return false;
   } else if (
     is.string(option) &&
     !option.length
   ) {
     throw new Error(`The${name}option must have a length`);
-    return false;
   }
   return true;
 }

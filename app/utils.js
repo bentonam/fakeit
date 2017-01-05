@@ -29,10 +29,10 @@ export function objectSearch(data, pattern, current_path, paths = []) {
   }
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
-      let test_path = appendPath(current_path, i);
+      const test_path = appendPath(current_path, i);
       if (
         test_path.match(pattern) &&
-        paths.indexOf(test_path) === -1
+        !paths.includes(test_path)
       ) {
         paths.push(test_path);
       }
@@ -44,10 +44,10 @@ export function objectSearch(data, pattern, current_path, paths = []) {
   ) {
     for (let key in data) {
       if (data.hasOwnProperty(key)) {
-        let test_path = appendPath(current_path, key);
+        const test_path = appendPath(current_path, key);
         if (
           test_path.match(pattern) &&
-          paths.indexOf(test_path) === -1
+          !paths.includes(test_path)
         ) {
           paths.push(test_path);
         }
@@ -242,6 +242,7 @@ parsers.cson = {
   parse: (obj) => {
     return new Promise((resolve, reject) => {
       cson.parse(obj, {}, (err, result) => {
+        /* istanbul ignore next */
         if (err) {
           return reject(err);
         }
@@ -272,12 +273,14 @@ parsers.csv = {
     // `"{\"latitude\":-6.081689835,\"longitude\":145.3919983,\"level-2\":{\"level-3\":\"woohoo\"}}"`
     // it also doesn't handle numbers correctly so this fixes those instances as well
     function fix(a, b) {
+      /* istanbul ignore if : too hard to create a test case for it */
       if (!a || !b) {
         return a;
       }
 
       for (let k in b) { // eslint-disable-line
         if (b.hasOwnProperty(k)) {
+          /* istanbul ignore if : too hard to create a test case for it */
           if (is.plainObject(b[k])) {
             a[k] = is.plainObject(a[k]) ? fix(a[k], b[k]) : b[k];
           } else if (is.string(b[k]) && /^[0-9]+$/.test(b[k])) {
@@ -377,6 +380,7 @@ export class Logger {
         args.unshift(type);
         type = 'log';
       }
+      args = args.join('\n');
 
       if (type === 'verbose') {
         if (!this.options.verbose) return;
@@ -390,10 +394,10 @@ export class Logger {
         process.stdout.write(stamp);
       }
 
-      console[type](...args);
+      console.log(args);
 
       if (type === 'error') {
-        throw new Error(args.join('\n'));
+        throw new Error(args);
       }
     }
     return this;
@@ -411,47 +415,11 @@ export class Logger {
     if (symbols[type]) {
       stamp += `${symbols[type]} `;
     }
-    if ([ 'error', 'warning', 'warn', 'info' ].includes(type)) {
+    if ([ 'error', 'warning', 'info' ].includes(type)) {
       stamp += `${chalk[color](type)}: `;
     }
 
     return stamp;
-  }
-
-  ///# @name error
-  ///# @description This is an alias for `this.log('error', 'message.....')
-  ///# @arg {*} ...args - The message that should be passed
-  ///# @chainable
-  error(...args) {
-    this.log('error', ...args);
-    return this;
-  }
-
-  ///# @name warn
-  ///# @description This is an alias for `this.log('warn', 'message.....')
-  ///# @arg {*} ...args - The message that should be passed
-  ///# @chainable
-  warn(...args) {
-    this.log('warning', ...args);
-    return this;
-  }
-
-  ///# @name info
-  ///# @description This is an alias for `this.log('info', 'message.....')
-  ///# @arg {*} ...args - The message that should be passed
-  ///# @chainable
-  info(...args) {
-    this.log('info', ...args);
-    return this;
-  }
-
-  ///# @name verbose
-  ///# @description This is an alias for `this.log('verbose', 'message.....')
-  ///# @arg {*} ...args - The message that should be passed
-  ///# @chainable
-  verbose(...args) {
-    this.log('info', ...args);
-    return this;
   }
 
   ///# @name time
@@ -461,7 +429,7 @@ export class Logger {
   ///# @chainable
   time(label) {
     if (!label) {
-      return this.error('You must pass in a label for `Logger.prototype.time`', (new Error()).trace);
+      return this.log('error', 'You must pass in a label for `Logger.prototype.time`');
     }
     perfy.start(label);
     return this;
@@ -474,15 +442,19 @@ export class Logger {
   ///# @returns {string} - The total time it took to run the process
   timeEnd(label) {
     if (!label) {
-      return this.error('You must pass in a label for `Logger.prototype.timeEnd`', (new Error()).trace);
+      return this.log('error', 'You must pass in a label for `Logger.prototype.timeEnd`');
     }
-    let time = perfy.end(label).time;
+    const result = perfy.end(label);
     let suffix = 's';
+    let time;
     // convert to milliseconds
-    if (time < 1) {
-      time *= Math.pow(10, 1);
+    if (result.time < 1) {
+      time = result.milliseconds;
       suffix = 'ms';
+    } else {
+      time = result.time;
     }
+
     time = `+${time.toFixed(2)}${suffix}`;
     return `${chalk.cyan(time)}`;
   }

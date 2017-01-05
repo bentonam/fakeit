@@ -15,6 +15,8 @@ import { map } from 'async-array-methods';
 import to from 'to-js';
 import AdmZip from 'adm-zip';
 import { stdout } from 'test-console';
+import { stripColor } from 'chalk';
+import _ from 'lodash';
 
 async function touch(...files) {
   return map(to.flatten(files), (file) => {
@@ -54,7 +56,26 @@ test.group('objectSearch', (test) => {
     t.is(actual.length, 1);
     t.deepEqual(actual, [ 'one.two' ]);
   });
+
+  test('match first instance of `two`', (t) => {
+    const arr = [ obj, obj ];
+    const actual = objectSearch(arr, /^.*two$/);
+    t.is(actual.length, 2);
+    t.deepEqual(actual, [ '0.one.two', '1.one.two' ]);
+    // ensure it works with lodash get method
+    t.deepEqual(_.get(arr, actual[0]), { three: 'woohoo' });
+  });
+
+  test('match first instance of `two`', (t) => {
+    const arr = [ obj, obj ];
+    const actual = objectSearch(arr, /^[0-9]$/);
+    t.is(actual.length, 2);
+    t.deepEqual(actual, [ '0', '1' ]);
+    // ensure it works with lodash get method
+    t.deepEqual(_.get(arr, actual[0]), obj);
+  });
 });
+
 
 test.group('findFiles', (test) => {
   const root = p(utils_root, 'find-files');
@@ -83,9 +104,14 @@ test.group('findFiles', (test) => {
     t.deepEqual(actual, files.slice(0, 1));
   });
 
+  test('pass a file', async (t) => {
+    const actual = await findFiles(p(root, 'file-1.js'));
+    t.is(actual.length, 1);
+    t.deepEqual(actual, files.slice(0, 1));
+  });
+
   test.after.always(() => fs.remove(root));
 });
-
 
 
 test.group('readFiles', (test) => {
@@ -243,6 +269,7 @@ test.serial.group('pool', async (test) => {
     ]);
   });
 });
+
 
 test.serial.group('parsers', (test) => {
   const expected = {
@@ -411,23 +438,155 @@ test.serial.group('parsers', (test) => {
   }
 });
 
+
 test.group('Logger', (test) => {
+  const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
+
   test.group('options', (test) => {
     test('none', (t) => {
-      let logger = new Logger();
+      const logger = new Logger();
       t.deepEqual(logger.options, { log: true, verbose: false, timestamp: true });
     });
 
     test('log is false', (t) => {
-      let logger = new Logger({ log: false });
+      const logger = new Logger({ log: false });
       t.deepEqual(logger.options, { log: false, verbose: false, timestamp: true });
+    });
+  });
+
+  test.serial.group('log', (test) => {
+    test('returns this', (t) => {
+      const logger = new Logger();
+      const inspect = stdout.inspect();
+      const actual = logger.log();
+      inspect.restore();
+      t.is(actual.constructor.name, 'Logger');
+    });
+
+    const log_types = [ 'warning', 'success', 'info', 'verbose', 'log' ];
+
+    log_types.forEach((type) => {
+      test(type, (t) => {
+        const logger = new Logger({ verbose: true });
+        const inspect = stdout.inspect();
+        logger.log(type, `${type} test`);
+        inspect.restore();
+        t.is(inspect.output.length, 2);
+        t.is(inspect.output[1].trim(), `${type} test`);
+        if (![ 'warning', 'info' ].includes(type)) {
+          type = '';
+        }
+        t.truthy(new RegExp(`^\\[[0-9]+:[0-9]+:[0-9]+\\]\\s(?:.+)?\\s*${type}:?\\s*$`).test(stripColor(inspect.output[0])));
+      });
+    });
+
+    test.group('throws error', (test) => {
+      const regex = /^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/;
+      test('when string is passed as the type', (t) => {
+        const logger = new Logger();
+        const tester = () => logger.log('error', 'woohoo');
+        const inspect = stdout.inspect();
+        t.throws(tester);
+        inspect.restore();
+        t.is(inspect.output.length, 2);
+        t.is(inspect.output[1].trim(), 'woohoo');
+        t.truthy(regex.test(stripColor(inspect.output[0])));
+      });
+
+      test('when error constructor is passed as the first argument', (t) => {
+        const logger = new Logger();
+        const tester = () => logger.log(new Error('woohoo'));
+        const inspect = stdout.inspect();
+        t.throws(tester);
+        inspect.restore();
+        t.is(inspect.output.length, 2);
+        t.is(inspect.output[1].trim(), 'Error: woohoo');
+        t.truthy(regex.test(stripColor(inspect.output[0])));
+      });
+    });
+
+    test('time and timeEnd', async (t) => {
+      const logger = new Logger();
+      const time = logger.log('time', 'woohoo');
+      t.is(time.constructor.name, 'Logger');
+      await delay(200);
+      const end = logger.log('timeEnd', 'woohoo');
+      const woohoo = parseFloat(end.match(/\+([0-9\.]+)/)[1]);
+      t.truthy(woohoo > 190);
+    });
+  });
+
+  test.serial.group('time', (test) => {
+    test('throws when no label is passed (time)', (t) => {
+      const logger = new Logger();
+      const tester = () => logger.time();
+      const inspect = stdout.inspect();
+      t.throws(tester);
+      inspect.restore();
+      t.not(stripColor(inspect.output[0]), inspect.output[0]);
+      t.truthy(/^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/.test(stripColor(inspect.output[0])));
+      t.is(inspect.output.length, 2);
+      t.is(inspect.output[1].split('\n')[0], 'You must pass in a label for `Logger.prototype.time`');
+    });
+
+    test('throws when no label is passed (timeEnd)', (t) => {
+      const logger = new Logger();
+      const tester = () => logger.timeEnd();
+      const inspect = stdout.inspect();
+      t.throws(tester);
+      inspect.restore();
+      t.not(stripColor(inspect.output[0]), inspect.output[0]);
+      t.truthy(/^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/.test(stripColor(inspect.output[0])));
+      t.is(inspect.output.length, 2);
+      t.is(inspect.output[1].split('\n')[0], 'You must pass in a label for `Logger.prototype.timeEnd`');
+    });
+
+    test('returns this', (t) => {
+      const logger = new Logger();
+      const actual = logger.time('returns');
+      t.is(actual.constructor.name, 'Logger');
+    });
+
+    test.group((test) => {
+      const tests = [
+        { time: 1, expected: 1 },
+        { time: 100, expected: 100 },
+        { time: 500, expected: 500 },
+        { time: 1500, expected: 1.5 },
+        { time: 2500, expected: 2.5 },
+      ];
+
+      tests.forEach(({ time, expected }) => {
+        test(expected.toString(), async (t) => {
+          let min = expected;
+          let max = expected;
+          const logger = new Logger();
+          logger.time(expected);
+          await delay(time);
+          let actual = logger.timeEnd(expected);
+          t.truthy(actual);
+          t.is(typeof actual, 'string');
+          let [ number, unit ] = stripColor(actual).match(/\+?([0-9\.]+)([ms]+)/).slice(1);
+          number = parseFloat(number);
+          if (unit === 'ms') {
+            min -= 8;
+            max += 8;
+          } else {
+            min -= 0.2;
+            max += 0.2;
+          }
+
+          t.is(unit, time < 1000 ? 'ms' : 's');
+          t.truthy(number >= min && number <= max);
+        });
+      });
     });
   });
 
   test('functions', (t) => {
     t.deepEqual(
       to.keys(Logger.prototype).sort(),
-      [ 'constructor', 'log', 'stamp', 'error', 'warn', 'info', 'verbose', 'time', 'timeEnd' ].sort()
+      [ 'constructor', 'log', 'stamp', 'time', 'timeEnd' ].sort()
     );
   });
 });
