@@ -377,6 +377,7 @@ export class Logger {
         args.unshift(type);
         type = 'log';
       }
+      args = args.join('\n');
 
       if (type === 'verbose') {
         if (!this.options.verbose) return;
@@ -390,10 +391,10 @@ export class Logger {
         process.stdout.write(stamp);
       }
 
-      console[type](...args);
+      console.log(args);
 
       if (type === 'error') {
-        throw new Error(args.join('\n'));
+        throw new Error(args);
       }
     }
     return this;
@@ -461,7 +462,7 @@ export class Logger {
   ///# @chainable
   time(label) {
     if (!label) {
-      return this.error('You must pass in a label for `Logger.prototype.time`', (new Error()).trace);
+      return this.log('error', 'You must pass in a label for `Logger.prototype.time`');
     }
     perfy.start(label);
     return this;
@@ -474,15 +475,19 @@ export class Logger {
   ///# @returns {string} - The total time it took to run the process
   timeEnd(label) {
     if (!label) {
-      return this.error('You must pass in a label for `Logger.prototype.timeEnd`', (new Error()).trace);
+      return this.log('error', 'You must pass in a label for `Logger.prototype.timeEnd`');
     }
-    let time = perfy.end(label).time;
+    const result = perfy.end(label);
     let suffix = 's';
+    let time;
     // convert to milliseconds
-    if (time < 1) {
-      time *= Math.pow(10, 1);
+    if (result.time < 1) {
+      time = result.milliseconds;
       suffix = 'ms';
+    } else {
+      time = result.time;
     }
+
     time = `+${time.toFixed(2)}${suffix}`;
     return `${chalk.cyan(time)}`;
   }
