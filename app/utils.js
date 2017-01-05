@@ -29,10 +29,10 @@ export function objectSearch(data, pattern, current_path, paths = []) {
   }
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
-      let test_path = appendPath(current_path, i);
+      const test_path = appendPath(current_path, i);
       if (
         test_path.match(pattern) &&
-        paths.indexOf(test_path) === -1
+        !paths.includes(test_path)
       ) {
         paths.push(test_path);
       }
@@ -44,10 +44,10 @@ export function objectSearch(data, pattern, current_path, paths = []) {
   ) {
     for (let key in data) {
       if (data.hasOwnProperty(key)) {
-        let test_path = appendPath(current_path, key);
+        const test_path = appendPath(current_path, key);
         if (
           test_path.match(pattern) &&
-          paths.indexOf(test_path) === -1
+          !paths.includes(test_path)
         ) {
           paths.push(test_path);
         }

@@ -16,6 +16,7 @@ import to from 'to-js';
 import AdmZip from 'adm-zip';
 import { stdout } from 'test-console';
 import { stripColor } from 'chalk';
+import _ from 'lodash';
 
 async function touch(...files) {
   return map(to.flatten(files), (file) => {
@@ -54,6 +55,24 @@ test.group('objectSearch', (test) => {
     const actual = objectSearch(obj, /^.*two$/);
     t.is(actual.length, 1);
     t.deepEqual(actual, [ 'one.two' ]);
+  });
+
+  test('match first instance of `two`', (t) => {
+    const arr = [ obj, obj ];
+    const actual = objectSearch(arr, /^.*two$/);
+    t.is(actual.length, 2);
+    t.deepEqual(actual, [ '0.one.two', '1.one.two' ]);
+    // ensure it works with lodash get method
+    t.deepEqual(_.get(arr, actual[0]), { three: 'woohoo' });
+  });
+
+  test('match first instance of `two`', (t) => {
+    const arr = [ obj, obj ];
+    const actual = objectSearch(arr, /^[0-9]$/);
+    t.is(actual.length, 2);
+    t.deepEqual(actual, [ '0', '1' ]);
+    // ensure it works with lodash get method
+    t.deepEqual(_.get(arr, actual[0]), obj);
   });
 });
 
