@@ -412,7 +412,7 @@ export class Logger {
     if (symbols[type]) {
       stamp += `${symbols[type]} `;
     }
-    if ([ 'error', 'warning', 'warn', 'info' ].includes(type)) {
+    if ([ 'error', 'warning', 'info' ].includes(type)) {
       stamp += `${chalk[color](type)}: `;
     }
 

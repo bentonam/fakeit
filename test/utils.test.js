@@ -415,6 +415,8 @@ test.serial.group('parsers', (test) => {
 
 
 test.group('Logger', (test) => {
+  const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
+
   test.group('options', (test) => {
     test('none', (t) => {
       const logger = new Logger();
@@ -427,8 +429,69 @@ test.group('Logger', (test) => {
     });
   });
 
+  test.serial.group('log', (test) => {
+    test('returns this', (t) => {
+      const logger = new Logger();
+      const inspect = stdout.inspect();
+      const actual = logger.log();
+      inspect.restore();
+      t.is(actual.constructor.name, 'Logger');
+    });
+
+    const log_types = [ 'warning', 'success', 'info', 'verbose', 'log' ];
+
+    log_types.forEach((type) => {
+      test(type, (t) => {
+        const logger = new Logger({ verbose: true });
+        const inspect = stdout.inspect();
+        logger.log(type, `${type} test`);
+        inspect.restore();
+        t.is(inspect.output.length, 2);
+        t.is(inspect.output[1].trim(), `${type} test`);
+        if (![ 'warning', 'info' ].includes(type)) {
+          type = '';
+        }
+        t.truthy(new RegExp(`^\\[[0-9]+:[0-9]+:[0-9]+\\]\\s(?:.+)?\\s*${type}:?\\s*$`).test(stripColor(inspect.output[0])));
+      });
+    });
+
+    test.group('throws error', (test) => {
+      const regex = /^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/;
+      test('when string is passed as the type', (t) => {
+        const logger = new Logger();
+        const tester = () => logger.log('error', 'woohoo');
+        const inspect = stdout.inspect();
+        t.throws(tester);
+        inspect.restore();
+        t.is(inspect.output.length, 2);
+        t.is(inspect.output[1].trim(), 'woohoo');
+        t.truthy(regex.test(stripColor(inspect.output[0])));
+      });
+
+      test('when error constructor is passed as the first argument', (t) => {
+        const logger = new Logger();
+        const tester = () => logger.log(new Error('woohoo'));
+        const inspect = stdout.inspect();
+        t.throws(tester);
+        inspect.restore();
+        t.is(inspect.output.length, 2);
+        t.is(inspect.output[1].trim(), 'Error: woohoo');
+        t.truthy(regex.test(stripColor(inspect.output[0])));
+      });
+    });
+
+    test('time and timeEnd', async (t) => {
+      const logger = new Logger();
+      const time = logger.log('time', 'woohoo');
+      t.is(time.constructor.name, 'Logger');
+      await delay(200);
+      const end = logger.log('timeEnd', 'woohoo');
+      const woohoo = parseFloat(end.match(/\+([0-9\.]+)/)[1]);
+      t.truthy(woohoo > 190);
+    });
+  });
+
   test.serial.group('time', (test) => {
-    const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
     test('throws when no label is passed (time)', (t) => {
       const logger = new Logger();
       const tester = () => logger.time();
