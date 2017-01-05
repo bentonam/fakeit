@@ -242,6 +242,7 @@ parsers.cson = {
   parse: (obj) => {
     return new Promise((resolve, reject) => {
       cson.parse(obj, {}, (err, result) => {
+        /* istanbul ignore next */
         if (err) {
           return reject(err);
         }
@@ -272,12 +273,14 @@ parsers.csv = {
     // `"{\"latitude\":-6.081689835,\"longitude\":145.3919983,\"level-2\":{\"level-3\":\"woohoo\"}}"`
     // it also doesn't handle numbers correctly so this fixes those instances as well
     function fix(a, b) {
+      /* istanbul ignore if : too hard to create a test case for it */
       if (!a || !b) {
         return a;
       }
 
       for (let k in b) { // eslint-disable-line
         if (b.hasOwnProperty(k)) {
+          /* istanbul ignore if : too hard to create a test case for it */
           if (is.plainObject(b[k])) {
             a[k] = is.plainObject(a[k]) ? fix(a[k], b[k]) : b[k];
           } else if (is.string(b[k]) && /^[0-9]+$/.test(b[k])) {
