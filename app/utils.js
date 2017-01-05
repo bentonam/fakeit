@@ -419,42 +419,6 @@ export class Logger {
     return stamp;
   }
 
-  ///# @name error
-  ///# @description This is an alias for `this.log('error', 'message.....')
-  ///# @arg {*} ...args - The message that should be passed
-  ///# @chainable
-  error(...args) {
-    this.log('error', ...args);
-    return this;
-  }
-
-  ///# @name warn
-  ///# @description This is an alias for `this.log('warn', 'message.....')
-  ///# @arg {*} ...args - The message that should be passed
-  ///# @chainable
-  warn(...args) {
-    this.log('warning', ...args);
-    return this;
-  }
-
-  ///# @name info
-  ///# @description This is an alias for `this.log('info', 'message.....')
-  ///# @arg {*} ...args - The message that should be passed
-  ///# @chainable
-  info(...args) {
-    this.log('info', ...args);
-    return this;
-  }
-
-  ///# @name verbose
-  ///# @description This is an alias for `this.log('verbose', 'message.....')
-  ///# @arg {*} ...args - The message that should be passed
-  ///# @chainable
-  verbose(...args) {
-    this.log('info', ...args);
-    return this;
-  }
-
   ///# @name time
   ///# @description
   ///# This does the same thing as `console.time`.

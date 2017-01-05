@@ -498,7 +498,7 @@ test.group('Logger', (test) => {
   test('functions', (t) => {
     t.deepEqual(
       to.keys(Logger.prototype).sort(),
-      [ 'constructor', 'log', 'stamp', 'error', 'warn', 'info', 'verbose', 'time', 'timeEnd' ].sort()
+      [ 'constructor', 'log', 'stamp', 'time', 'timeEnd' ].sort()
     );
   });
 });
