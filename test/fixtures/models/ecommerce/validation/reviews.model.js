@@ -2,20 +2,20 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Reviews'),
-  type: utils.types.object,
+  name: 'Reviews',
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
-  data: is.object({
+  key: '_id',
+  data: {
     min: is.number().min(500).max(500),
     max: is.number().min(1000).max(1000),
     count: is.number().min(500).max(1000),
     dependencies: is.array().items(is.string()).length(2),
     inputs: is.object().length(0),
-  }),
-  properties: is.object({
+  },
+  properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),
     doc_type: utils.check('string', 'The document type', { value: is.string(), }),
     review_id: utils.check('string', 'Unique identifier representing a specific review', { build: is.func(), }),
@@ -27,5 +27,5 @@ module.exports = is.object({
     review_title: utils.check('string', 'The review title', { fake: is.string(), }),
     review_body: utils.check('string', 'The review content', { fake: is.string(), }),
     review_date: utils.check('integer', 'The review content', { fake: is.string(), post_build: is.func(), }),
-  }),
+  },
 });

@@ -140,8 +140,13 @@ module.exports.models = function(settings) {
             // assume that the callback will return a promise
             return result
               .then(function(actual) {
+                if (!actual) {
+                  return;
+                }
+
                 // find the keys that still need to be validated
-                var omitted = _.difference(to.keys(actual), schema_keys);
+                var omitted = _.difference(to.keys(actual), schema_keys)
+                  .filter((key) => ![ '__key', '__name' ].includes(key));
                 // test the keys that exsit
                 var picked = _.pick(actual, schema_keys);
 
@@ -226,17 +231,20 @@ module.exports.models = function(settings) {
 // this works the same as objectSearch
 /* istanbul ignore next: testing util */
 module.exports.getPaths = function getPaths(model, regex) {
-  return to.keys(to.flatten(model))
+  return to.keys(model).concat(to.keys(to.flatten(model)))
     .reduce((result, next) => {
       let current = '';
       for (let key of next.split('.')) {
         current = current.split('.').concat(key).filter(Boolean).join('.');
-        if (regex.test(current) && !result.includes(current)) {
-          result.push(current);
+        if (regex == null || regex.test(current)) {
+          if (!result.includes(current)) {
+            result.push(current);
+          }
         }
       }
       return result;
-    }, []);
+    }, [])
+    .map((str) => str.replace(/\.([0-9]+)(\.?)/, '[$1]$2'));
 };
 
 /// @name checkDiff
@@ -255,39 +263,26 @@ module.exports.checkDiff = function checkDiff(actual, expected) {
   return diff;
 };
 
+/* istanbul ignore next: testing util */
+module.exports.phone = joi.string().regex(/[0-9\(\)\-\s\.]+/);
 
 /* istanbul ignore next: testing util */
-var types = {
-  string: joi.string().regex(/string/),
-  array: joi.string().regex(/array/),
-  object: joi.string().regex(/object/),
-  boolean: joi.string().regex(/boolean/),
-  integer: joi.string().regex(/integer/),
-  double: joi.string().regex(/double/),
-  float: joi.string().regex(/float/),
-};
+module.exports.postal_code = joi.string().regex(/^[0-9]{5}(?:\-[0-9]{4})?$/).min(5).max(10);
 
 /* istanbul ignore next: testing util */
-module.exports.types = types;
-
-/* istanbul ignore next: testing util */
-function string(str) {
-  return joi.string().regex(new RegExp('^' + str.replace(/([\$\[\]\(\)])/, '\\$1') + '$'));
-}
-/* istanbul ignore next: testing util */
-module.exports.string = string;
+module.exports.slug = joi.string().regex(/^[a-z][a-z-]+[a-z]$/);
 
 /* istanbul ignore next: testing util */
 module.exports.check = function check(type, description, data) {
   var result = {
-    type: types[type]
+    type: type
   };
   if (typeof description !== 'string') {
     data = description;
     description = null;
   }
   if (description) {
-    result.description = string(description);
+    result.description = description;
   }
 
   result.data = joi.object(data);

@@ -9,7 +9,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'product_' + this.product_id;"
+      post_build: "`product_${this.product_id}`"
   doc_type:
     type: string
     description: The document type
@@ -19,19 +19,22 @@ properties:
     type: string
     description: Unique identifier representing a specific product
     data:
-      # this had to be done because faker.fake("{{random.uuid}}") errors
       build: "faker.random.uuid();"
   price:
     type: double
     description: The product price
     data:
-      build: "parseFloat(faker.commerce.price()) + '.' + faker.random.number({ min: 0, max: 99 });"
+      build: "chance.dollar().slice(1)"
   sale_price:
     type: double
     description: The product price
     data:
-      build: "parseFloat(faker.commerce.price()) + '.' + faker.random.number({ min: 0, max: 99 });"
-      post_build: "this.sale_price > this.price ? 0 : this.sale_price;"
+      build: "chance.bool({ likelihood: 60 }) ? 0 : null"
+      post_build: |
+        if (this.sale_price != null) {
+          let sale_price = this.price - (this.price * chance.floating({ min: 0.10, max: 0.65, fixed: 2 }))
+          return chance.dollar({ min: sale_price, max: sale_price }).slice(1)
+        }
   display_name:
     type: string
     description: Display name of product.
@@ -48,15 +51,14 @@ properties:
     data:
       fake: "{{lorem.paragraphs(5)}}"
   keywords:
-    type: string
+    type: array
     description: An array of keywords
-    data:
-      build: |
-        var keywords = [];
-        for (var i = 0, rand = chance.integer({ min: 2, max: 8 }); i < rand; i++) {
-          keywords.push(faker.random.word());
-        }
-        return keywords;
+    items:
+      type: string
+      data:
+        min: 2
+        max: 8
+        build: "faker.random.word()"
   availability:
     type: string
     description: The availability status of the product

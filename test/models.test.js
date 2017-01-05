@@ -224,10 +224,10 @@ test.group('parseModelDependencies', models(async (t, file) => {
 
   await t.context.parseModelDependencies(model);
   if (model.data.dependencies.length === 0) {
-    t.plan(1);
+    t.plan(0);
   } else {
     const length = t.context.models.length;
-    t.plan(length * 2 + 2);
+    t.plan(length * 2 + 1);
     t.is(length, to.unique(t.context.registered_models).length);
   }
 
@@ -510,8 +510,9 @@ test.group('parseModelCount', (test) => {
     const obj = getContext();
     t.falsy(obj.data.count);
     parseModelCount(obj, '0');
-    t.truthy(obj.data.count);
-    t.is(obj.data.count, 1);
+    const actual = obj.data.count;
+    t.truthy(actual);
+    t.truthy(actual >= obj.data.min && actual <= obj.data.max);
   });
 
   test('chooses random number', (t) => {

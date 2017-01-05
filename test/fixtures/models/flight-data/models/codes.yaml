@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "this.designation + '_code_' + this.code"
+      post_build: "`${this.designation}_code_${this.code}`"
   id:
     type: integer
     description: The id of the airline, airport, or navaid the code is for

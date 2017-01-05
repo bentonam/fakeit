@@ -11,7 +11,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'user_' + this.user_id;"
+      post_build: "`user_${this.user_id}`"
   doc_type:
     type: string
     description: The document type
@@ -21,7 +21,7 @@ properties:
     type: integer
     description: The users id
     data:
-      build: "++globals.user_counter;"
+      build: "++globals.user_counter"
   first_name:
     type: string
     description: The users first name
@@ -64,12 +64,12 @@ properties:
     description: An array of addresses
     data:
       build: |
-        var addresses = [];
-        for (var i = 0, rand = Math.floor(Math.random() * 3) + 1; i < rand; i++) {
+        const addresses = [];
+        for (let i = 0, rand = chance.integer({ min: 1, max: 3 }); i < rand; i++) {
           addresses.push({
             type: faker.random.arrayElement([ 'Home', 'Work', 'Other' ]),
-            address_1: faker.address.streetAddress() + ' ' + faker.address.streetSuffix(),
-            address_2: faker.random.boolean() ? faker.address.secondaryAddress() : '',
+            address_1: `${faker.address.streetAddress()} ${faker.address.streetSuffix()}`,
+            address_2: faker.random.boolean() ? faker.address.secondaryAddress() : null,
             locality: faker.address.city(),
             region: faker.address.stateAbbr(),
             postal_code: faker.address.zipCode(),

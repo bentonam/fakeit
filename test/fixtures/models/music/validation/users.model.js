@@ -2,20 +2,20 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Users'),
-  type: utils.types.object,
+  name: 'Users',
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
-  data: is.object({
+  key: '_id',
+  data: {
     min: is.number().min(400).max(400),
     max: is.number().min(600).max(600),
     count: is.number().min(400).max(600),
     dependencies: is.array().length(0),
     inputs: is.object().length(0),
-  }),
-  properties: is.object({
+  },
+  properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),
     type: utils.check('string', 'The document type', { value: is.string(), }),
     username: utils.check('string', 'The username', { fake: is.string(), }),
@@ -33,5 +33,5 @@ module.exports = is.object({
     created: utils.check('string', 'The date the user was created', { fake: is.string(), post_build: is.func(), }),
     updated: utils.check('string', 'The date the user document was last updated', { fake: is.string(), post_build: is.func(), }),
     picture: utils.check('object', 'User thumbnails / pictures', { build: is.func(), }),
-  }),
+  },
 });

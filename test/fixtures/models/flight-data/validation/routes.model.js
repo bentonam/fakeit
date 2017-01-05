@@ -2,21 +2,21 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Routes'),
-  type: utils.types.object,
+  name: 'Routes',
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
-  data: is.object({
+  key: '_id',
+  data: {
     min: is.number().min(0).max(0),
-    max: is.number().min(0).max(0),
+    max: is.number().min(1).max(1),
     count: is.number().min(1).max(1),
     dependencies: is.array().items(is.string()).length(0),
     inputs: is.object().length(1),
     pre_run: is.func(),
-  }),
-  properties: is.object({
+  },
+  properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),
     route_id: utils.check('string', 'The route id', { build: is.func(), }),
     doc_type: utils.check('string', 'The document type', { value: is.string(), }),
@@ -27,5 +27,5 @@ module.exports = is.object({
     stops: utils.check('integer', 'The number of stops on the route', { build: is.func(), }),
     equipment: utils.check('string', 'The equipment used for the route if available, otherwise null', { build: is.func(), }),
     active: utils.check('boolean', 'Whether or not the route is active', { post_build: is.func(), }),
-  }),
+  },
 });

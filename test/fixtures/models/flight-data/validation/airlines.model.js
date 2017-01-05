@@ -2,22 +2,22 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Airlines'),
-  type: utils.types.object,
+  name: 'Airlines',
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
-  data: is.object({
+  key: '_id',
+  data: {
     min: is.number().min(0).max(0),
-    max: is.number().min(0).max(0),
+    max: is.number().min(1).max(1),
     count: is.number().min(1).max(1),
     dependencies: is.array().items(is.string()).length(1),
     inputs: is.object().length(1),
     pre_run: is.func(),
     post_build: is.func(),
-  }),
-  properties: is.object({
+  },
+  properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),
     doc_type: utils.check('string', 'The document type', { value: is.string(), }),
     airline_id: utils.check('integer', 'The airlines id', { pre_build: is.func(), }),
@@ -27,5 +27,5 @@ module.exports = is.object({
     callsign: utils.check('string', 'The airlines callsign if available', { build: is.func(), }),
     iso_country: utils.check('string', 'The ISO country code the airline is based in', { build: is.func(), }),
     active: utils.check('boolean', 'Whether or not the airline is active', { pre_build: is.func(), post_build: is.func(), }),
-  }),
+  },
 });

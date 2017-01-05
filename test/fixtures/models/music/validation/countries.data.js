@@ -8,5 +8,4 @@ module.exports = is.object({
   updated: is.date(),
   'region-number': is.string(),
   population: is.number(),
-})
-  .pattern(/_id|[a-z][_a-z]+/, is.string().min(3));
+});

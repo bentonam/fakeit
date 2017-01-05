@@ -14,7 +14,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'message_' + this.message_id;"
+      post_build: "`message_${this.message_id}`"
   doc_type:
     type: string
     description: The document type
@@ -34,7 +34,7 @@ properties:
     type: integer
     description: The user_id that sent the message
     data:
-      build: "documents.Users[chance.integer({ min:0, max: documents.Users.length - 1 })].user_id"
+      build: "faker.random.arrayElement(documents.Users).user_id"
   message_date:
     type: integer
     description: The date of the post

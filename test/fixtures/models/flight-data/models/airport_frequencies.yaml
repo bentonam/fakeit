@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'airport_' + this.airport_id + '_frequencies'"
+      post_build: "`airport_${this.airport_id}_frequencies`"
   airport_id:
     type: integer
     description: The airport id
@@ -33,9 +33,9 @@ properties:
     description: An array of frequency_ids used by the airport
     data:
       build: |
-        var frequencies = [];
-        for (var i = 0; i < documents.Frequencies.length; i++) {
-          if (documents.Frequencies[i].airport_ident == documents.Airports[document_index].airport_ident) {
+        const frequencies = [];
+        for (let i = 0; i < documents.Frequencies.length; i++) {
+          if (documents.Frequencies[i].airport_ident === documents.Airports[document_index].airport_ident) {
             frequencies.push(documents.Frequencies[i].frequency_id);
           }
         }

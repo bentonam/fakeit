@@ -2,20 +2,20 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  name: utils.string('Tracks'),
-  type: utils.types.object,
+  name: 'Tracks',
+  type: 'object',
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
-  key: utils.string('_id'),
-  data: is.object({
+  key: '_id',
+  data: {
     min: is.number().min(500).max(500),
     max: is.number().min(800).max(800),
     count: is.number().min(500).max(800),
     dependencies: is.array().items(is.string()).length(1),
     inputs: is.object().length(0),
-  }),
-  properties: is.object({
+  },
+  properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),
     type: utils.check('string', 'The document type', { value: is.string(), }),
     id: utils.check('string', 'Unique identifier representing a specific track', { build: is.func(), }),
@@ -26,5 +26,5 @@ module.exports = is.object({
     mp3: utils.check('string', 'The track mp3 url', { post_build: is.func(), }),
     genre: utils.check('string', 'The track genre', { build: is.func(), }),
     ratings: utils.check('array', 'An array of ratings', { build: is.func(), }),
-  }),
+  },
 });

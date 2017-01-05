@@ -8,7 +8,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'user_' + this.user_id;"
+      post_build: "`user_${this.user_id}`"
   doc_type:
     type: string
     description: The document type

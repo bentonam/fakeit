@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'user_' + this.user_id + '_phones'"
+      post_build: "`user_${this.user_id}_phones`"
   doc_type:
     type: string
     description: The document type
@@ -28,8 +28,8 @@ properties:
     description: An array of phone_ids
     data:
       build: |
-        var phones = [];
-        for (var i = 0; i < documents.Phones.length; i++) {
+        const phones = [];
+        for (let i = 0; i < documents.Phones.length; i++) {
           if (documents.Phones[i].user_id === documents.Users[document_index].user_id) {
             phones.push(documents.Phones[i].phone_id);
           }

@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'order_' + this.order_id;"
+      post_build: "`order_${this.order_id}`"
   doc_type:
     type: string
     description: The document type
@@ -23,7 +23,7 @@ properties:
     description: The order_id
     data:
       build: |
-        var current_order_id = globals.orders_counter || 0;
+        let current_order_id = globals.orders_counter || 0;
         current_order_id += 1;
         globals.orders_counter = current_order_id;
         return current_order_id;
@@ -32,8 +32,7 @@ properties:
     description: The user_id that placed the order
     data:
       build: |
-        var rand = Math.floor(Math.random() * (documents.Users.length - 1)) + 0;
-        return documents.Users[rand].user_id;
+        return faker.random.arrayElement(documents.Users).user_id;
   order_date:
     type: integer
     description: An epoch time of when the order was placed
@@ -44,12 +43,13 @@ properties:
     type: string
     description: The status of the order
     data:
-      build: "faker.random.arrayElement([ 'Pending', 'Processing', 'Cancelled', 'Shipped' ]);"
+      build: |
+        faker.random.arrayElement([ 'Pending', 'Processing', 'Cancelled', 'Shipped' ]);
   billing_name:
     type: string
     description: The name of the person the order is to be billed to
     data:
-      build: "faker.name.firstName() + ' ' + faker.name.lastName();"
+      build: "`${faker.name.firstName()} ${faker.name.lastName()}`"
   billing_phone:
     type: string
     description: The billing phone
@@ -65,12 +65,12 @@ properties:
     type: string
     description: The billing address 1
     data:
-      build: "faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+      build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`"
   billing_address_2:
     type: string
     description: The billing address 2
     data:
-      build: "faker.random.boolean() ? faker.address.secondaryAddress() : '';"
+      build: "chance.bool({ likelihood: 50 }) ? faker.address.secondaryAddress() : null;"
   billing_locality:
     type: string
     description: The billing city
@@ -95,17 +95,17 @@ properties:
     type: string
     description: The name of the person the order is to be billed to
     data:
-      build: "faker.name.firstName() + ' ' + faker.name.lastName();"
+      build: "`${faker.name.firstName()} ${faker.name.lastName()}`"
   shipping_address_1:
     type: string
     description: The shipping address 1
     data:
-      build: "faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+      build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`"
   shipping_address_2:
     type: string
     description: The shipping address 2
     data:
-      build: "faker.random.boolean() ? faker.address.secondaryAddress() : '';"
+      build: "chance.bool({ likelihood: 50 }) ? faker.address.secondaryAddress() : null"
   shipping_locality:
     type: string
     description: The shipping city
@@ -135,43 +135,41 @@ properties:
     type: double
     description: The shipping total
     data:
-      build: "faker.random.number({ min: 10, max: 50 }) + '.' + faker.random.number({ min: 0, max: 99 });"
+      build: "chance.dollar({ min: 10, max: 50 }).slice(1)"
   tax:
     type: double
     description: The tax total
     data:
-      build: "faker.random.number({ min: 2, max: 50 }) + '.' + faker.random.number({ min: 0, max: 99 });"
+      build: "chance.dollar({ min: 2, max: 10 }).slice(1)"
   line_items:
     type: array
     description: The products that were ordered
     data:
       build: |
-        var items = [];
-        var rand = 0;
-        for (var i = 0, count = chance.integer({ min: 1, max: 5 }); i < count; i++) {
-          rand = Math.floor(Math.random() * (documents.Products.length - 1)) + 0;
-          var product = {
-            product_id: documents.Products[rand].product_id,
-            display_name: documents.Products[rand].display_name,
-            short_description: documents.Products[rand].short_description,
-            image: documents.Products[rand].image,
-            price: documents.Products[rand].sale_price ? documents.Products[rand].sale_price  : documents.Products[rand].price,
+        const items = [];
+        for (let i = 0, count = chance.integer({ min: 1, max: 5 }); i < count; i++) {
+          const random = faker.random.arrayElement(documents.Products);
+          const product = {
+            product_id: random.product_id,
+            display_name: random.display_name,
+            short_description: random.short_description,
+            image: random.image,
+            price: random.sale_price || random.price,
             qty: faker.random.number({ min: 1, max: 5 }),
-            sub_total: 0
           };
           product.sub_total = product.qty * product.price;
           items.push(product);
         }
         return items;
   grand_total:
-    type: float
+    type: double
     description: The grand total of the order
     data:
       post_build: |
-        var total = 0;
+        let total = 0;
         total += this.tax;
         total += this.shipping_total;
-        for (var i = 0; i < this.line_items.length; i++) {
+        for (let i = 0; i < this.line_items.length; i++) {
           total += this.line_items[i].sub_total;
         }
-        return total;
+        return chance.dollar({ min: total, max: total }).slice(1);

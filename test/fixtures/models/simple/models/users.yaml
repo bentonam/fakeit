@@ -7,7 +7,7 @@ data:
 properties:
   id:
     data:
-      post_build: "'user_' + this.user_id"
+      post_build: "`user_${this.user_id}`"
   type:
     data:
       value: "user"

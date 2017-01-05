@@ -13,7 +13,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'continent_' + this.continent_code"
+      post_build: "`continent_${this.continent_code}`"
   continent_code:
     type: string
     description: The ISO continent code

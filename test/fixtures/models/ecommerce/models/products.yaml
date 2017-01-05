@@ -9,7 +9,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'product_' + this.product_id;"
+      post_build: "`product_${this.product_id}`"
   doc_type:
     type: string
     description: The document type
@@ -29,8 +29,7 @@ properties:
     type: double
     description: The product price
     data:
-      build: "chance.floating({ min: 0, max: 150, fixed: 2 });"
-      post_build: "this.sale_price > this.price ? 0 : this.sale_price;"
+      post_build: "chance.floating({ min: 0, max: this.price * chance.floating({ min: 0, max: 0.99, fixed: 2 }), fixed: 2 });"
   display_name:
     type: string
     description: Display name of product.
@@ -49,13 +48,12 @@ properties:
   keywords:
     type: array
     description: An array of keywords
-    data:
-      build: |
-        var keywords = [];
-        for (var i = 0, rand = Math.floor(Math.random() * 10) + 1; i < rand; i++) {
-          keywords.push(faker.random.word());
-        }
-        return keywords;
+    items:
+      type: string
+      data:
+        min: 0
+        max: 10
+        build: "faker.random.word();"
   availability:
     type: string
     description: The availability status of the product
@@ -90,13 +88,12 @@ properties:
   alternate_images:
     type: array
     description: An array of alternate images for the product
-    data:
-      build: |
-        var images = [];
-        for (var i = 0, rand = Math.floor(Math.random() * 4) + 1; i < rand; i++) {
-          images.push(faker.image.image());
-        }
-        return images;
+    items:
+      type: string
+      data:
+        min: 0
+        max: 4
+        build: "faker.image.image()"
   created_on:
     type: integer
     description: An epoch time of when the document was first created

@@ -12,7 +12,7 @@ properties:
     type: string
     description: The document id
     data:
-      post_build: "'airport_' + this.airport_id + '_runways'"
+      post_build: "`airport_${this.airport_id}_runways`"
   airport_id:
     type: integer
     description: The airport id
@@ -33,8 +33,8 @@ properties:
     description: An array of runway ids that belong to the airport
     data:
       build: |
-        var runways = [];
-        for (var i = 0; i < documents.Runways.length; i++) {
+        const runways = [];
+        for (let i = 0; i < documents.Runways.length; i++) {
           if (documents.Runways[i].airport_ident == documents.Airports[document_index].airport_ident) {
             runways.push(documents.Runways[i].runway_id);
           }
