@@ -104,6 +104,12 @@ test.group('findFiles', (test) => {
     t.deepEqual(actual, files.slice(0, 1));
   });
 
+  test('pass a file', async (t) => {
+    const actual = await findFiles(p(root, 'file-1.js'));
+    t.is(actual.length, 1);
+    t.deepEqual(actual, files.slice(0, 1));
+  });
+
   test.after.always(() => fs.remove(root));
 });
 
