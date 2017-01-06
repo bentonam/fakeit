@@ -103,7 +103,7 @@ module.exports.models = function(settings) {
       // loop over all the globs
       settings.modules.forEach(function(model) {
         // check if there's a matching test
-        const should_test = options.match === null ? true : !!to.flatten([ options.match ]).map(function(item) { // eslint-disable-line
+        var should_test = options.match === null ? true : !!to.flatten([ options.match ]).map(function(item) { // eslint-disable-line
           if (typeof item === 'number') {
             item = settings.modules[item];
           }
@@ -124,7 +124,7 @@ module.exports.models = function(settings) {
           }
 
           // eslint-disable-next-line no-underscore-dangle
-          const schema_keys = schema.isJoi ? _.map(schema._inner.children, 'key') : to.keys(schema);
+          var schema_keys = schema.isJoi ? _.map(schema._inner.children, 'key') : to.keys(schema);
           test(model, function(t) { // eslint-disable-line
             // run the call back with the `t` assertion object and the current model
             var result = cb(t, model);
@@ -254,9 +254,9 @@ module.exports.getPaths = function getPaths(model, regex) {
 /// @returns {string} If the string is empty then there was no diff, else it returns the formatted difference between the objects.
 /* istanbul ignore next: testing util */
 module.exports.checkDiff = function checkDiff(actual, expected) {
-  const delta = json.diff(actual, expected);
-  const spaces = '  ';
-  const diff = json.formatters.console.format(delta).split('\n').map((line) => spaces + spaces + line).join('\n');
+  var delta = json.diff(actual, expected);
+  var spaces = '  ';
+  var diff = json.formatters.console.format(delta).split('\n').map((line) => spaces + spaces + line).join('\n');
   if (!diff.trim()) {
     return '';
   }

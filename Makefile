@@ -66,6 +66,9 @@ coverage test-coverage code-coverage:
 report-coverage report-code-coverage:
 	@[ -d ./.nyc_output ] && NODE_ENV="test" nyc report || make test-coverage
 
+# run benchmark tests
+bench benchmark speed:
+	ava $(args) 'bench/**/*.bench.js'
 
 # The command the ci server runs
 ci:
