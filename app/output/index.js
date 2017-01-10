@@ -199,6 +199,16 @@ export const validate = {
     throw new Error(`The output option must be ${output_types.join(', ')}, or a folder path`);
   },
 
+  ///# @name highlight
+  ///# @description Used to validate the highlight option
+  ///# @arg {boolean} option - The option to validate against
+  ///# @throws {error} - If the highlight option that was pass was invalid
+  highlight(option) {
+    if (!is.boolean(option)) {
+      throw new Error('The highlight option must be a boolean');
+    }
+  },
+
   ///# @name limit
   ///# @description Used to validate the limit option
   ///# @arg {number} option - The option to validate against

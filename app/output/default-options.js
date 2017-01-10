@@ -18,6 +18,9 @@ module.exports = {
   // limit how many files are output at a time
   limit: 100,
 
+  // this is used in the console output and if true it will format and colorize the output
+  highlight: true,
+
   // avaiable formats `zip`
   // the file name of the zip file
   // This can be used inconjuction with any other type
