@@ -40,7 +40,7 @@ export default class Document extends Base {
     // if there is a pre_run function call it
     this.runData(model.data.pre_run, model);
 
-    this.log('info', `Generating ${model.count} documents for ${model.name} model`);
+    this.log('info', `Generating ${this.options.count || model.count} document(s) for ${model.name} model`);
 
     for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
       const doc = this.buildDocument(model, i);
