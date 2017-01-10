@@ -4,7 +4,7 @@ import path from 'path';
 import DependencyResolver from 'dependency-resolver';
 import * as utils from './utils';
 import Base from './base';
-import { set, get } from 'lodash';
+import { set, get, find } from 'lodash';
 import to, { is } from 'to-js';
 import { transform } from 'babel-core';
 import globby from 'globby';
@@ -112,6 +112,10 @@ export default class Models extends Base {
     await forEach(files, async (file) => {
       // if the model aready exists then return
       if (this.registered_models.includes(file)) {
+        if (!dependency) {
+          const model = find(this.models, [ 'file', file ]);
+          model.is_dependency = dependency;
+        }
         return;
       }
 
@@ -127,7 +131,9 @@ export default class Models extends Base {
       model.root = path.resolve(this.options.root, path.dirname(model.file));
 
       // used to determin if something is a dependency or not.
-      model.is_dependency = dependency;
+      if (model.is_dependency == null) {
+        model.is_dependency = dependency;
+      }
 
       /* istanbul ignore if : currently hard to test */
       if (!model.name) {
