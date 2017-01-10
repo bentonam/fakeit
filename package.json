@@ -85,6 +85,7 @@
     "joi": "~10.0.5",
     "jsondiffpatch": "~0.2.4",
     "lint-rules": "github:ma-shop/lint-rules",
+    "nixt": "~0.5.0",
     "nyc": "~9.0.1",
     "proxyquire": "~1.7.10",
     "test-console": "~1.0.0"
@@ -108,7 +109,8 @@
       "test/fixtures/models/*/+(models|validation)/*",
       "test/utils.js"
     ],
-    "failFast": true
+    "failFast": true,
+    "concurrency": 5
   },
   "nyc": {
     "exclude": [
