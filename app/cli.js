@@ -40,7 +40,7 @@ export default async function() {
     .version(pkg.version)
     .usage('[command] [<file|directory|glob> ...]')
     .option('--root <directory>', 'defines the root directory from which paths are resolve from', process.cwd())
-    .option('--babel <glob>', 'the location to the babel config')
+    .option('--babel <glob>', 'the location to the babel config', '+(.babelrc|package.json)')
     .option('-c, --count <n>', 'Overrides the number of documents to generate specified by the model.', parseInt)
     .option('-v, --verbose', 'enables verbose logging mode')
     .option('-L, --no-log', 'disables all logging except for errors', false)
@@ -128,6 +128,8 @@ export default async function() {
     const models = commander.args.filter((str) => typeof str === 'string');
 
     opts = pick(extend(pick(commander, base_options), opts), base_options);
+    opts.babel_config = opts.babel;
+    delete opts.babel;
 
     output = extend(pick(commander, output_options), pick(output, output_options));
 
