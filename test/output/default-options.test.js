@@ -11,6 +11,7 @@ test((t) => {
     spacing: 2,
     output: 'return',
     limit: 100,
+    highlight: true,
     archive: '',
     server: '127.0.0.1',
     bucket: 'default',

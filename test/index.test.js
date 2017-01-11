@@ -112,6 +112,30 @@ generate.group('return', models(async (t, model) => {
   return actual[0];
 }));
 
+generate.group('supports globs', (test) => {
+  test('ecommerce/**/*.yaml', async (t) => {
+    t.context.defaults.output = 'return';
+    const actual = await t.context.fakeit.generate('ecommerce/**/*.yaml', t.context.defaults);
+
+    t.is(actual.length, 4);
+
+    const doc_types = actual.map((item) => to.object(item)[0].doc_type);
+    const documents = [ 'Products', 'Users', 'Reviews', 'Orders' ];
+    t.deepEqual(to.keys(t.context.fakeit.documents), documents);
+    t.deepEqual(doc_types, documents.map((doc) => doc.toLowerCase().slice(0, -1)));
+  });
+
+  test('ecommerce/**/@(o|p)*.yaml', async (t) => {
+    t.context.defaults.output = 'return';
+    const actual = await t.context.fakeit.generate('ecommerce/**/@(orders|products).yaml', t.context.defaults);
+    // expect 3 documents because orders requires `products.yaml`, and `users.yaml`
+    t.deepEqual(to.keys(t.context.fakeit.documents), [ 'Products', 'Users', 'Orders' ]);
+    // only the files that were passed should be returned which should be `products`, and `orders`
+    const doc_types = actual.map((item) => to.object(item)[0].doc_type);
+    t.deepEqual(doc_types, [ 'product', 'order' ]);
+  });
+});
+
 generate.group('folder', models(async (t, model) => {
   const root = p(folder_root, model.replace(new RegExp(path.sep, 'g'), '-').replace('.yaml', ''));
   t.context.defaults.output = root;

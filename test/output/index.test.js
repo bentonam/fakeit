@@ -32,6 +32,7 @@ test('without args', async (t) => {
     archive: '',
     output: 'return',
     limit: 100,
+    highlight: true,
     server: '127.0.0.1',
     bucket: 'default',
     password: '',
@@ -144,6 +145,31 @@ test.group('validation', (test) => {
         t.context.output_options.limit = limit;
         const validateLimit = () => validate.limit(limit);
         t.throws(validateLimit);
+        t.throws(t.context.validateOutputOptions);
+      });
+    });
+  });
+
+  test.group('highlight', (test) => {
+    const passing = [ true, false ];
+    passing.forEach((highlight) => {
+      test(`passing ${highlight}`, (t) => {
+        t.context.output_options.highlight = highlight;
+        try {
+          validate.highlight(highlight);
+          t.context.validateOutputOptions();
+          t.pass();
+        } catch (e) {
+          t.fail(e);
+        }
+      });
+    });
+    const failing = [ 2, '', [], {} ];
+    failing.forEach((highlight) => {
+      test(`failing ${highlight}`, (t) => {
+        t.context.output_options.highlight = highlight;
+        const validateHighlight = () => validate.highlight(highlight);
+        t.throws(validateHighlight);
         t.throws(t.context.validateOutputOptions);
       });
     });
@@ -546,7 +572,9 @@ test.group('output', (test) => {
       t.is(t.context.prepared, true);
       inspect.restore();
       t.not(inspect.output[0].trim(), node);
-      t.is(stripColor(inspect.output[0]).trim(), node);
+      if (language !== 'csv') {
+        t.is(stripColor(inspect.output[0]).trim(), node);
+      }
     });
   }));
 
