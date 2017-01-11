@@ -531,7 +531,13 @@ test.group('buildValue', (test) => {
     function items(obj) {
       return {
         type: 'array',
-        items: obj,
+        items: to.extend({
+          data: {
+            min: 0,
+            max: 0,
+            count: 0,
+          }
+        }, obj),
       };
     }
 
@@ -608,6 +614,25 @@ test.group('buildValue', (test) => {
       t.is(to.type(actual), 'array');
       t.is(actual.length, 5);
       actual.forEach((item) => t.truthy(/[A-Z]/.test(item)));
+    });
+
+    test('called multiple times returns different array lengths between min and max', (t) => {
+      let actual = [];
+      for (let i = 0; i < 10; i++) {
+        const value = t.context.document.buildValue(items({
+          type: 'string',
+          data: {
+            min: 1,
+            max: 10,
+            fake: '{{name.firstName}}',
+          }
+        }), []);
+        actual.push(value);
+      }
+
+      actual.forEach((item) => t.truthy(/[A-Z]/.test(item)));
+      actual = actual.map((item) => item.length);
+      t.truthy(_.uniq(actual).length > 1);
     });
 
     test('complex array', (t) => {
