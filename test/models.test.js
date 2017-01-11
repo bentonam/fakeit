@@ -7,6 +7,7 @@ import Models, {
   parseModelTypes,
   parseModelDefaults,
   parseModelCount,
+  parseModelSeed,
   resolveDependenciesOrder,
 } from '../dist/models.js';
 import path, { join as p } from 'path';
@@ -30,16 +31,6 @@ const models = utils.models({
   }
 });
 
-const done = [
-  p('contacts', 'models', 'contacts.yaml'),
-  p('music', 'models', 'countries.yaml')
-];
-
-function filterDone() { // eslint-disable-line
-  return _.without(models.files, ...done);
-}
-
-
 let babel_config, contents;
 
 test.before(async () => {
@@ -59,7 +50,8 @@ test('without args', async (t) => {
   t.context.options.log = true;
   const { error } = is.object({
     options: is.object({
-      babel_config: is.string().regex(/\+\(\.babelrc\|package\.json\)/),
+      seed: 0,
+      babel_config: '+(.babelrc|package.json)',
     })
       .unknown()
       .required(),
@@ -560,6 +552,56 @@ test.group('parseModelCount', (test) => {
     }
   }));
 });
+
+
+test.group('parseModelSeed', (test) => {
+  function toNumber(str) {
+    let result = '';
+    for (let char of str) {
+      result += char.charCodeAt(0);
+    }
+    return parseInt(result);
+  }
+
+  test('uses passed seed abc', (t) => {
+    const model = {};
+    const seed = 'abc';
+    parseModelSeed(model, seed);
+    t.is(typeof model.seed, 'number');
+    t.is(model.seed, toNumber(seed));
+  });
+
+  test('uses passed seed def when model has a seed set', (t) => {
+    const original_seed = 'abc';
+    const model = { seed: original_seed };
+    const seed = 'def';
+    parseModelSeed(model, seed);
+    t.is(typeof model.seed, 'number');
+    t.not(model.seed, toNumber(original_seed));
+    t.is(model.seed, toNumber(seed));
+  });
+
+  test('set seed ghi', (t) => {
+    const seed = 'ghi';
+    const model = { seed };
+    parseModelSeed(model);
+    t.is(typeof model.seed, 'number');
+    t.is(model.seed, toNumber(seed));
+  });
+
+  test('seed us set to null when it\'s not defined or passed', (t) => {
+    const model = {};
+    parseModelSeed(model);
+    t.truthy(model.seed == null);
+  });
+
+  test('seed uses set number 123456789', (t) => {
+    const model = { seed: 123456789 };
+    parseModelSeed(model);
+    t.is(model.seed, 123456789);
+  });
+});
+
 
 test.group('resolveDependenciesOrder', (test) => {
   const tests = [];
