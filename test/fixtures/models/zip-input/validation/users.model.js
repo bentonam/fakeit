@@ -54,7 +54,7 @@ module.exports = is.object({
         data: {
           min: 1,
           max: 3,
-          count: is.number().min(1).max(3),
+          count: 0,
         },
         $ref: '#/definitions/Email',
         type: 'object',
@@ -71,7 +71,7 @@ module.exports = is.object({
         data: {
           min: 1,
           max: 3,
-          count: is.number().min(1).max(3),
+          count: 0,
         },
         $ref: '#/definitions/Phone',
         type: 'object',
@@ -89,7 +89,7 @@ module.exports = is.object({
         data: {
           min: 1,
           max: 3,
-          count: is.number().min(1).max(3),
+          count: 0,
         },
         $ref: '#/definitions/Address',
         type: 'object',

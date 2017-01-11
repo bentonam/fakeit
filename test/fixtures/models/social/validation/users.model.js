@@ -36,7 +36,7 @@ module.exports = is.object({
         data: {
           min: 0,
           max: 5,
-          count: is.number().min(0).max(5),
+          count: 0,
         },
         $ref: '#/definitions/Children',
         properties: {

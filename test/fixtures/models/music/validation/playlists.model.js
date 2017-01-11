@@ -31,7 +31,7 @@ module.exports = is.object({
         data: {
           min: 3,
           max: 25,
-          count: is.number().min(3).max(25),
+          count: 0,
           build: is.func(),
         },
       },

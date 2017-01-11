@@ -48,7 +48,7 @@ module.exports = is.object({
         data: {
           min: 1,
           max: 3,
-          count: is.number().min(1).max(3),
+          count: 0,
         },
         type: 'object',
         properties: {
@@ -67,7 +67,7 @@ module.exports = is.object({
         data: {
           min: 1,
           max: 2,
-          count: is.number().min(1).max(2),
+          count: 0,
           build: is.func(),
         },
       },
@@ -81,7 +81,7 @@ module.exports = is.object({
         data: {
           min: 1,
           max: 2,
-          count: is.number().min(1).max(2),
+          count: 0,
         },
         properties: {
           type: utils.check('string', 'The address type', { build: is.func() }),
@@ -103,7 +103,7 @@ module.exports = is.object({
         data: {
           min: 1,
           max: 8,
-          count: is.number().min(1).max(8),
+          count: 0,
         },
         properties: {
           first_name: utils.check('string', 'The childs first_name', { fake: '{{name.firstName}}' }),
@@ -118,7 +118,7 @@ module.exports = is.object({
       items: utils.check('string', {
         min: 1,
         max: 6,
-        count: is.number().min(1).max(6),
+        count: 0,
         build: is.func(),
       }),
     },

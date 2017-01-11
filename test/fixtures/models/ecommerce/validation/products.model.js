@@ -32,7 +32,7 @@ module.exports = is.object({
         data: {
           min: 0,
           max: 10,
-          count: is.number().min(0).max(10),
+          count: 0,
           build: is.func(),
         },
       },
@@ -51,7 +51,7 @@ module.exports = is.object({
         data: {
           min: 0,
           max: 4,
-          count: is.number().min(0).max(4),
+          count: 0,
           build: is.func(),
         },
       },

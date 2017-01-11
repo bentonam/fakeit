@@ -382,25 +382,22 @@ export function parseModelDefaults(model) {
 /// @arg {object} model - The model to update
 /// @arg {undefined, null, number} count - The count to override the model settings
 export function parseModelCount(model, count) {
-  for (let data_path of utils.objectSearch(model, /^(?:.*\.items\.data|data)$/)) {
-    let value = to.number(count);
-    let property = get(model, data_path);
+  let value = to.number(count);
+  const { data } = model;
 
-    if (data_path !== 'data' || value == null || value === 0) {
-      if (property.count > 0) {
-        value = property.count;
-      } else if (property.min != null && property.max != null) {
-        value = to.random(property.min, property.max);
-      }
+  if (!value) {
+    if (data.count > 0) {
+      value = data.count;
+    } else if (!!data.min && !!data.max) {
+      value = to.random(data.min, data.max);
     }
-
-    // if count is null or 0 then set it to 1
-    if (!value) {
-      value = 1;
-    }
-
-    set(model, `${data_path}.count`, value);
   }
+
+  // if count is null or 0 then set it to 1
+  if (!value) {
+    value = 1;
+  }
+  model.data.count = value;
 }
 
 
