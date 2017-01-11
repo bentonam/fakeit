@@ -194,7 +194,10 @@ export default class Document extends Base {
       property.type === 'array' &&
       property.items
     ) {
-      const count = property.items.data.count;
+      let { count, min, max } = property.items.data;
+      if (count <= 0 && !!max) {
+        count = chance.integer({ min, max });
+      }
 
       // builds a complex array
       if (property.items.type === 'object') {

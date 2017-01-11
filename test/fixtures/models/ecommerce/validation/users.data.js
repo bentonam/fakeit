@@ -4,7 +4,7 @@ var is = require('joi');
 module.exports = is.object({
   _id: is.string().regex(/^user_[a-z0-9\-]+$/),
   doc_type: 'user',
-  user_id: is.number().min(1).max(1),
+  user_id: 1,
   first_name: is.string(),
   last_name: is.string(),
   username: is.string(),

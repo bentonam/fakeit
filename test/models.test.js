@@ -540,12 +540,6 @@ test.group('parseModelCount', (test) => {
     t.is(obj.data.count, 1);
   });
 
-  test('doesn\'t do anything if no data keys exist', async (t) => {
-    const obj = {};
-    parseModelCount(obj);
-    t.deepEqual(obj, {});
-  });
-
   test('returns 1 when data is 0', async (t) => {
     const obj = {
       data: { min: 0, max: 0, count: 0 },
@@ -557,14 +551,14 @@ test.group('parseModelCount', (test) => {
 
   test.group(models((t, file) => {
     const model = to.clone(contents[file]);
-    // const original_model = to.clone(contents[file]);
     parseModelDefaults(model);
     parseModelCount(model);
-    for (let str of utils.getPaths(model, /^(?:.*\.items\.data|data)$/)) {
-      let property = _.get(model, str);
-      t.truthy(property.count > 0);
+    t.truthy(model.data.count > 0);
+    if (!!model.data.max) {
+      t.truthy(model.data.count <= model.data.max);
+      t.truthy(model.data.count >= model.data.min);
     }
-  }, 0));
+  }));
 });
 
 test.group('resolveDependenciesOrder', (test) => {
