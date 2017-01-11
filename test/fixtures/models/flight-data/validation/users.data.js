@@ -4,7 +4,7 @@ var is = require('joi');
 module.exports = is.object({
   _id: 'user_1',
   doc_type: 'user',
-  user_id: is.number().min(1).max(1),
+  user_id: 1,
   account: {
     username: is.string(),
     password: is.string(),

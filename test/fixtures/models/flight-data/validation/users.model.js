@@ -9,9 +9,9 @@ module.exports = is.object({
   is_dependency: is.boolean(),
   key: '_id',
   data: {
-    min: is.number().min(0).max(0),
-    max: is.number().min(10000).max(10000),
-    count: is.number().min(10000).max(10000),
+    min: 0,
+    max: 0,
+    count: 10000,
     dependencies: is.array().items(is.string()).length(1),
     inputs: is.object().length(0),
     pre_run: is.func(),
@@ -57,8 +57,8 @@ module.exports = is.object({
       description: 'An array of phone numbers for the user',
       items: {
         data: {
-          min: is.number().min(1).max(1),
-          max: is.number().min(3).max(3),
+          min: 1,
+          max: 3,
           count: is.number().min(1).max(3),
         },
         $ref: '#/definitions/Phone',
@@ -76,8 +76,8 @@ module.exports = is.object({
       description: 'An array of emails for the user',
       items: {
         data: {
-          min: is.number().min(1).max(1),
-          max: is.number().min(3).max(3),
+          min: 1,
+          max: 3,
           count: is.number().min(1).max(3),
         },
         $ref: '#/definitions/Email',
@@ -94,8 +94,8 @@ module.exports = is.object({
       description: 'An array of addresses',
       items: {
         data: {
-          min: is.number().min(1).max(1),
-          max: is.number().min(2).max(2),
+          min: 1,
+          max: 2,
           count: is.number().min(1).max(2),
         },
         $ref: '#/definitions/Address',

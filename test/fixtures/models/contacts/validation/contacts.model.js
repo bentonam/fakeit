@@ -9,8 +9,8 @@ module.exports = is.object({
   type: 'object',
   key: '_id',
   data: {
-    min: is.number().min(200).max(200),
-    max: is.number().min(400).max(400),
+    min: 200,
+    max: 400,
     count: is.number().min(200).max(400),
     inputs: is.object().length(0),
     dependencies: is.array().length(0),
@@ -46,8 +46,8 @@ module.exports = is.object({
       items: {
         $ref: '#/definitions/Phone',
         data: {
-          min: is.number().min(1).max(1),
-          max: is.number().min(3).max(3),
+          min: 1,
+          max: 3,
           count: is.number().min(1).max(3),
         },
         type: 'object',
@@ -65,8 +65,8 @@ module.exports = is.object({
         $ref: '#/definitions/Email',
         type: 'string',
         data: {
-          min: is.number().min(1).max(1),
-          max: is.number().min(2).max(2),
+          min: 1,
+          max: 2,
           count: is.number().min(1).max(2),
           build: is.func(),
         },
@@ -79,8 +79,8 @@ module.exports = is.object({
         $ref: '#/definitions/Address',
         type: 'object',
         data: {
-          min: is.number().min(1).max(1),
-          max: is.number().min(2).max(2),
+          min: 1,
+          max: 2,
           count: is.number().min(1).max(2),
         },
         properties: {
@@ -101,8 +101,8 @@ module.exports = is.object({
         $ref: '#/definitions/Children',
         type: 'object',
         data: {
-          min: is.number().min(1).max(1),
-          max: is.number().min(8).max(8),
+          min: 1,
+          max: 8,
           count: is.number().min(1).max(8),
         },
         properties: {
@@ -116,8 +116,8 @@ module.exports = is.object({
     tags: {
       type: 'array',
       items: utils.check('string', {
-        min: is.number().min(1).max(1),
-        max: is.number().min(6).max(6),
+        min: 1,
+        max: 6,
         count: is.number().min(1).max(6),
         build: is.func(),
       }),

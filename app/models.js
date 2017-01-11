@@ -399,10 +399,6 @@ export function parseModelCount(model, count) {
       value = 1;
     }
 
-    if (!property.max) {
-      set(model, `${data_path}.max`, value);
-    }
-
     set(model, `${data_path}.count`, value);
   }
 }

@@ -2,7 +2,7 @@ var utils = require('../../../../utils.js');
 var is = require('joi');
 
 module.exports = is.object({
-  user_id: is.number().min(1).max(1),
+  user_id: 1,
   first_name: is.string(),
   last_name: is.string(),
   email_address: is.string().email(),

@@ -9,9 +9,9 @@ module.exports = is.object({
   is_dependency: is.boolean(),
   key: '_id',
   data: {
-    min: is.number().min(0).max(0),
-    max: is.number().min(1).max(1),
-    count: is.number().min(1).max(1),
+    min: 0,
+    max: 0,
+    count: 1,
     inputs: {
       countries: is.array()
         .items({

@@ -9,8 +9,8 @@ module.exports = is.object({
   is_dependency: is.boolean(),
   key: '_id',
   data: {
-    min: is.number().min(100).max(100),
-    max: is.number().min(500).max(500),
+    min: 100,
+    max: 500,
     count: is.number().min(100).max(500),
     dependencies: is.array().length(0),
     inputs: is.object().length(0),
@@ -30,8 +30,8 @@ module.exports = is.object({
       items: {
         type: 'string',
         data: {
-          min: is.number().min(2).max(2),
-          max: is.number().min(8).max(8),
+          min: 2,
+          max: 8,
           count: is.number().min(2).max(8),
           build: is.func(),
         },
