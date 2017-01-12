@@ -132,16 +132,16 @@ properties:
       post_build: "`user_${this.user_id}`" # if your project uses babel then so can your functions :)
   type:
     type: string
-      data:
-        value: "user"
+    data:
+      value: "user"
   user_id:
     type: integer
-      data:
-        build: "++globals.counter"
+    data:
+      build: "++globals.counter"
   first_name:
     type: string
-      data:
-        fake: "{{name.firstName}}"
+    data:
+      fake: "{{name.firstName}}"
   last_name:
     type: string
     description: The users last name
@@ -472,6 +472,7 @@ import Fakeit from 'fakeit'
 const fakeit = new Fakeit({
   root: process.cwd(), // The root directory to operate from
   babel_config: '+(.babelrc|package.json)', // glob to search for the babel config. This search starts from the closest instance of `node_modules`
+  seed: 0, // the seed to use. If it's 0 then a random seed is used each time. A string or a number can be passed in as an seed
   log: true, // if then logging to the console is enable
   verbose: false, // if true then verbose logging is enable
   timestamp: true, // if true the logging output to console has timestamps
@@ -537,3 +538,4 @@ To see more examples of some of the things you can do take a look at the [test c
   - Babel +6 support now exists. We don't install any presets or plugins for you but if `.babelrc` or `babelConfig` exists in the `package.json` of your project then all the functions are transpiled.
   - Better error handling has been added so you know what went wrong and where it happened.
   - JS support has also been added so you are no longer required to use the command line to create fake data.
+  - Added support for seeds to allow repeatable data.
