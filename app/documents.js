@@ -1,6 +1,5 @@
 import faker from 'faker';
 import Chance from 'chance';
-const chance = new Chance();
 import Base from './base';
 import { objectSearch } from './utils';
 import { set, get } from 'lodash';
@@ -20,6 +19,11 @@ export default class Document extends Base {
     this.documents = documents;
     this.globals = globals;
     this.inputs = inputs;
+    // set chance and faker without a seed by default
+    // so it can still be used
+    this.chance = new Chance();
+    this.faker = faker;
+    this.updateFakers(this.options.seed);
   }
 
   ///# @name build
@@ -31,6 +35,8 @@ export default class Document extends Base {
     if (!this.documents[model.name]) {
       this.documents[model.name] = [];
     }
+
+    this.updateFakers(model.seed);
 
     if (!model.data) {
       model.data = { count: 1 };
@@ -64,6 +70,20 @@ export default class Document extends Base {
     return this.documents[model.name];
   }
 
+  ///# @name updateFakers
+  ///# @description
+  ///# If a usable seed is passed then this updates the instances of chance and faker to use a seed version
+  ///# @arg {number, null} seed - The seed to use for this instance
+  ///# @arg {number} modifier
+  updateFakers(seed) {
+    // if the seed is a number then update
+    // the instance of chance and faker
+    if (seed && seed !== this.options.seed) {
+      this.chance = new Chance(seed);
+      this.faker.seed(seed);
+    }
+  }
+
   ///# @name runData
   ///# @description used to run the different functions that the users can pass in into the data object
   ///# @arg {function} fn - The function to run
@@ -73,7 +93,7 @@ export default class Document extends Base {
   runData(fn, context, index = 0) {
     if (to.type(fn) === 'function') {
       try {
-        return fn.call(context, this.documents, this.globals, this.inputs, faker, chance, index);
+        return fn.call(context, this.documents, this.globals, this.inputs, this.faker, this.chance, index);
       } catch (e) {
         this.log('error', `${fn.name} failed\n`, e);
       }
@@ -188,7 +208,7 @@ export default class Document extends Base {
       } else if (property.data.build) {
         return this.runData(property.data.build, doc, index);
       } else if (property.data.fake) {
-        return faker.fake(property.data.fake);
+        return this.faker.fake(property.data.fake);
       }
     } else if (
       property.type === 'array' &&
@@ -196,7 +216,7 @@ export default class Document extends Base {
     ) {
       let { count, min, max } = property.items.data;
       if (count <= 0 && !!max) {
-        count = chance.integer({ min, max });
+        count = this.chance.integer({ min, max });
       }
 
       // builds a complex array
