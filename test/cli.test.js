@@ -107,9 +107,9 @@ test.group('console', (test) => {
       .end(t.end);
   });
 
-  test.cb('contacts/models/contacts.yaml --count 1 --seed def', (t) => {
+  test.cb('contacts/models/contacts.yaml --count 1 --seed 123456789', (t) => {
     bin.clone()
-      .run('console contacts/models/contacts.yaml --count 1 --seed def')
+      .run('console contacts/models/contacts.yaml --count 1 --seed 123456789')
       .expect(({ stdout }) => {
         stdout = stdout.split('\n');
         const first_line = stdout.shift();
