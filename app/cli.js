@@ -15,7 +15,8 @@ export default async function() {
     'count',
     'verbose',
     'log',
-    'timestamp'
+    'timestamp',
+    'seed',
   ];
 
   const output_options = [
@@ -48,7 +49,15 @@ export default async function() {
     // global output options
     .option('-f, --format <type>', `this determins the output format to use. Supported formats: ${code('json', 'csv', 'yaml', 'yml', 'cson')}. (${dim('json')})`, 'json') // eslint-disable-line
     .option('-n, --spacing', 'the number of spaces to use for indention', 2)
-    .option('-l, --limit', 'limit how many files are output at a time', 100);
+    .option('-l, --limit', 'limit how many files are output at a time', 100)
+    .option('-x, --seed [seed]', 'The global seed to use for repeatable data', (seed) => {
+      const number = parseInt(seed);
+
+      if (number > 0) {
+        return number;
+      }
+      return seed;
+    });
 
 
   commander
