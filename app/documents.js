@@ -78,7 +78,7 @@ export default class Document extends Base {
   updateFakers(seed) {
     // if the seed is a number then update
     // the instance of chance and faker
-    if (seed && seed !== this.options.seed) {
+    if (typeof seed === 'number') {
       this.chance = new Chance(seed);
       this.faker.seed(seed);
     }
