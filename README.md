@@ -73,6 +73,8 @@ If a seed is defined it will ensure that the documents created repeatable result
 
 This only works if you use `faker` and `chance` to generate your random fake data. It can be produced with other fake data generation libraries if they support seeds.
 
+`faker.date` functions will not produce the same fake data each time.
+
 
 #### `data`
 This is the main data object that is uses the same properties in several different situations.
