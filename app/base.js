@@ -1,12 +1,12 @@
 import path from 'path';
 import to from 'to-js';
-import * as utils from './utils';
+import Logger from './logger';
 
 /// @name Base
 /// @page api
 /// @description
 /// This holds the base functions that each of the classes in the application will exten
-export default class Base extends utils.Logger {
+export default class Base extends Logger {
   /// @name constructor
   /// @arg {object} options - Global options for the different classes
   /// @raw-code
