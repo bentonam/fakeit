@@ -28,6 +28,11 @@ test.group('options', (test) => {
     const logger = new Logger({ log: false });
     t.deepEqual(logger.options, { log: false, verbose: false, timestamp: true });
   });
+
+  test('log is false and verbose is true', (t) => {
+    const logger = new Logger({ log: false, verbose: true });
+    t.deepEqual(logger.options, { log: true, verbose: true, timestamp: true });
+  });
 });
 
 
