@@ -64,6 +64,18 @@ The main key for the document.  This is a reference to a generated property and 
 If the key is an object it can use the same keys as the `data` option defined below. If the key is a string then it use the string value to find the value of the document that was just built.
 
 
+#### `seed`
+
+If a seed is defined it will ensure that the documents created repeatable results. If you have a model with a data range of 2-10 a random number between 2 and 10 documents will be created no matter what the seed is. Let's say that 4 documents are generated the first time you run the model, each of those documents will be completely different than the next (as expected). Later you come back and you generate the data again this time it might generate 6 documents. The first 4 documents generated the second time will be exactly the same as the first time you generated the data. The seed can be number or string.
+
+
+###### Note:
+
+This only works if you use `faker` and `chance` to generate your random fake data. It can be produced with other fake data generation libraries if they support seeds.
+
+`faker.date` functions will not produce the same fake data each time.
+
+
 #### `data`
 This is the main data object that is uses the same properties in several different situations.
 

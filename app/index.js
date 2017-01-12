@@ -19,6 +19,8 @@ import Document from './documents';
 ///   count: null,
 ///   // Base options
 ///   root: process.cwd(),
+///   seed: 0,
+///   babel_config: '+(.babelrc|package.json)',
 ///   log: true,
 ///   verbose: false,
 ///   timestamp: true,

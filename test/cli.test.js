@@ -6,7 +6,7 @@ import nixt from 'nixt';
 import { stripColor } from 'chalk';
 const bin = nixt().cwd(p(__dirname, 'fixtures', 'models')).base('../../../bin/fakeit ');
 import cli, { code, dim } from '../dist/cli.js';
-
+import _ from 'lodash';
 const test = ava.group('cli:');
 
 test('cli is the default function', (t) => {
@@ -25,6 +25,23 @@ test.group('console', (test) => {
     'active',
     'created_on'
   ];
+
+  /* eslint-disable max-len */
+  const expected_abc_seed = {
+    _id: 'contact_1d54ed12-b65a-5085-a895-5c8c626f0efb',
+    doc_type: 'contact',
+    channels: [ 'ufp-555555555' ],
+    contact_id: '1d54ed12-b65a-5085-a895-5c8c626f0efb',
+    details: { prefix: 'Dr.', first_name: 'Daphnee', middle_name: 'Dale', last_name: 'O\'Hara', company: 'Hackett - Effertz', job_title: null, dob: '2016-08-21', nickname: null },
+    phones: [ { type: 'Mobile', phone_number: '076-099-8620', extension: null }, { type: 'Other', phone_number: '965-618-1647', extension: null } ],
+    emails: [ 'Abigale.Bashirian@gmail.com', 'Demetris12@gmail.com' ],
+    addresses: [ { type: 'Work', address_1: '96735 Caroline Fields Springs', address_2: null, locality: 'Montanastad', region: 'SD', postal_code: '11307-4822', country: 'LA' } ],
+    children: [ { first_name: 'Cielo', gender: null, age: 13 }, { first_name: 'Francesca', gender: null, age: 10 } ],
+    notes: 'Ea debitis possimus non inventore inventore dignissimos id.',
+    tags: [ 'Soap', 'Buckinghamshire', 'Chief', 'hacking', 'Generic' ]
+  };
+  /* eslint-enable max-len */
+
   /* eslint-disable quotes */
   test.cb("--count 1 'simple/models/*'", (t) => {
     bin.clone()
@@ -67,6 +84,57 @@ test.group('console', (test) => {
         t.truthy(/^\[[0-9:]+\].+info: Generating 1 document\(s\) for Users model$/.test(first_line));
         t.is(stdout[0], '"id","type","user_id","first_name","last_name","email_address","phone","active","created_on"');
         t.deepEqual(stdout[0].replace(/"/g, '').split(','), expected_keys);
+      })
+      .end(t.end);
+  });
+
+
+  test.cb('contacts/models/contacts.yaml --count 1 --seed abc', (t) => {
+    bin.clone()
+      .run('console contacts/models/contacts.yaml --count 1 --seed abc')
+      .expect(({ stdout }) => {
+        stdout = stdout.split('\n');
+        const first_line = stdout.shift();
+        stdout = to.object(stdout.join('\n'));
+        t.truthy(/^\[[0-9:]+\].+info: Generating 1 document\(s\) for Contacts model$/.test(first_line));
+        t.is(to.type(stdout), 'array');
+        t.is(stdout.length, 1);
+
+        // remove the dates because they can't be correct
+        stdout = _.omit(stdout[0], [ 'created_on', 'modified_on' ]);
+        t.deepEqual(stdout, expected_abc_seed);
+      })
+      .end(t.end);
+  });
+
+  test.cb('contacts/models/contacts.yaml --count 1 --seed def', (t) => {
+    bin.clone()
+      .run('console contacts/models/contacts.yaml --count 1 --seed def')
+      .expect(({ stdout }) => {
+        stdout = stdout.split('\n');
+        const first_line = stdout.shift();
+        stdout = to.object(stdout.join('\n'));
+        t.truthy(/^\[[0-9:]+\].+info: Generating 1 document\(s\) for Contacts model$/.test(first_line));
+        t.is(to.type(stdout), 'array');
+        t.is(stdout.length, 1);
+
+        stdout = _.omit(stdout[0], [
+          // remove the dates because they can't be correct
+          'created_on',
+          'modified_on',
+          // These values are hard coded and never change so they should be the same
+          'doc_type',
+          'channels',
+        ]);
+
+        for (let key in stdout) {
+          if (stdout.hasOwnProperty(key)) {
+            const value = stdout[key];
+            const not_expected = expected_abc_seed[key];
+            // it's a different key so it should be different
+            t.notDeepEqual(value, not_expected);
+          }
+        }
       })
       .end(t.end);
   });

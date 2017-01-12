@@ -17,6 +17,7 @@ import globby from 'globby';
 export default class Models extends Base {
   constructor(options = {}) {
     super(to.extend({
+      seed: 0,
       babel_config: '+(.babelrc|package.json)',
     }, options));
     // holds all the inputs that are registerd
@@ -178,6 +179,7 @@ export default class Models extends Base {
     parseModelTypes(model);
     parseModelDefaults(model);
     parseModelCount(model, this.options.count);
+    parseModelSeed(model, this.options.seed);
 
     // add this models inputs to the main inputs object
     this.inputs = to.extend(this.inputs || {}, await inputs);
@@ -398,6 +400,24 @@ export function parseModelCount(model, count) {
     value = 1;
   }
   model.data.count = value;
+}
+
+
+/// @name parseModelSeed
+/// @description Resolves the seed that was passed in
+/// @arg {object} model - The model to update
+/// @arg {undefined, null, number, string} seed - The seed to override the model settings
+/// @note {2} - The resolved seed will either be null or a number since faker requires the seed to be a number
+export function parseModelSeed(model, seed) {
+  model.seed = !!seed ? seed : model.seed;
+
+  if (typeof model.seed === 'string') {
+    seed = '';
+    for (let char of model.seed) {
+      seed += char.charCodeAt(0);
+    }
+    model.seed = parseInt(seed);
+  }
 }
 
 

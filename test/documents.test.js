@@ -65,6 +65,8 @@ test('without args', (t) => {
   t.deepEqual(doc.documents, {});
   t.deepEqual(doc.globals, {});
   t.deepEqual(doc.inputs, {});
+  t.is(to.type(doc.faker), 'object');
+  t.is(to.type(doc.chance), 'object');
 });
 
 test.group('build', (test) => {
@@ -210,6 +212,121 @@ test.group('build', (test) => {
     actual = actual[0];
     return actual;
   }));
+
+  test.group('seed', (test) => {
+    const min = 2;
+    const max = 10;
+    const expected_phone_lengths = [ 2, 1, 3, 3, 3, 3, 3, 1, 1, 1 ];
+    // used to generate a new model
+    function getModel(is_expected) {
+      if (typeof is_expected !== 'boolean') {
+        is_expected = false;
+      }
+      return {
+        name: 'test',
+        type: 'object',
+        seed: 123456789,
+        data: { min, max, count: is_expected ? max : to.random(2, 10), inputs: {}, dependencies: [], },
+        properties: {
+          phones: {
+            type: 'array',
+            description: 'An array of phone numbers',
+            items: {
+              type: 'object',
+              data: { min: 1, max: 3, count: 0, },
+              properties: {
+                type: {
+                  type: 'string',
+                  data: {
+                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                      return faker.random.arrayElement([ 'Home', 'Work', 'Mobile', 'Main', 'Other' ]);
+                    },
+                  },
+                },
+                phone_number: {
+                  type: 'string',
+                  data: {
+                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                      return faker.phone.phoneNumber().replace(/\s*x[0-9]+$/, '');
+                    },
+                  },
+                },
+                extension: {
+                  type: 'string',
+                  data: {
+                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                      return chance.bool({ likelihood: 20 }) ? chance.integer({ min: 1000, max: 9999 }).toString() : null;
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+    }
+
+    test('phones array lengths are the same', (t) => {
+      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      t.plan(count * 2);
+      for (var i = 0; i < count; i++) {
+        const model = getModel();
+        // reset the documents for each iteration
+        t.context.document.documents = {};
+        const actual = t.context.document.build(model);
+        t.is(actual.length, model.data.count);
+        const lengths = actual.map((obj) => obj.phones.length);
+        t.deepEqual(lengths, expected_phone_lengths.slice(0, lengths.length));
+      }
+    });
+
+
+    test('none of the items in phones array are the same', (t) => {
+      const model = getModel();
+      const actual = t.context.document.build(model);
+      const phones = actual.map((obj) => obj.phones);
+      phones.reduce((prev, next) => {
+        // none of the items in the current array are the same as the other items
+        for (var i = 0; i < next.length - 1; i++) {
+          t.notDeepEqual(next[i], next[i + 1]);
+        }
+        // none of the items are equal
+        t.notDeepEqual(prev, next);
+        return prev;
+      }, phones.pop());
+    });
+
+    test('the content is exactly the same everytime', (t) => {
+      const model = getModel();
+      const actual = [];
+      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      t.plan(count - 1);
+      for (var i = 0; i < count; i++) {
+        t.context.document.documents = {};
+        actual.push(t.context.document.build(model));
+      }
+
+      actual.reduce((expected, next) => {
+        t.deepEqual(next, expected);
+        return expected;
+      }, actual.pop());
+    });
+
+    test('the two items returned are always the same', (t) => {
+      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      const model = getModel();
+      model.data.count = 1;
+      t.plan(count);
+      for (var i = 0; i < count; i++) {
+        t.context.document.documents = {};
+        const actual = t.context.document.build(model)[0].phones;
+        t.deepEqual(actual, [
+          { type: 'Mobile', phone_number: '505.771.2870', extension: null },
+          { type: 'Mobile', phone_number: '275-728-6040', extension: null }
+        ]);
+      }
+    });
+  });
 });
 
 test.group('runData', (test) => {

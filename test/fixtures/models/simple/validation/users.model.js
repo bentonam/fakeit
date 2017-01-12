@@ -7,6 +7,7 @@ module.exports = is.object({
   root: is.string(),
   is_dependency: is.boolean(),
   key: 'id',
+  seed: 0,
   data: {
     min: 50,
     max: 100,
