@@ -59,8 +59,8 @@ test:
 # run coverage for the tests
 coverage test-coverage code-coverage:
 	# if there's no instance source maps files then build the files with source maps
-	@[ -f ./dist/index.js.map ] || echo "building files with source maps" && make build-source-maps
-	NODE_ENV="test" nyc make test -- $(args)
+	@[ -f ./dist/index.js.map ] || (echo "building files with source maps" && make build-source-maps)
+	NODE_ENV="test" nyc make test -- --verbose
 
 # These commands only run the report of the code coverage
 report-coverage report-code-coverage:
