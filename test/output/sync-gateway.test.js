@@ -36,7 +36,7 @@ test.group('prepare', (test) => {
   });
 });
 
-test.group('setup', (test) => {
+test.serial.group('setup', (test) => {
   test('no username and password', async (t) => {
     t.context.output_options.bucket = 'setup';
     t.is(t.context.prepared, false);

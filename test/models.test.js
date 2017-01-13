@@ -82,7 +82,7 @@ test('prepare', async (t) => {
   t.deepEqual(t.context.options.babel_config, babel_config);
 });
 
-test.group('setup', (test) => {
+test.serial.group('setup', (test) => {
   test('babel_config as a string', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
@@ -113,6 +113,21 @@ test.group('setup', (test) => {
   test('babel_config in the package.json', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
+    t.context.options.babel_config = 'package.json';
+    t.is(typeof t.context.options.babel_config, 'string');
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.prepared, true);
+    t.is(to.type(t.context.options.babel_config), 'object');
+    t.deepEqual(t.context.options.babel_config, babel_config);
+  });
+
+  test('babel_config process.cwd failed to find a babel config', async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    t.context.options.root = t.context.options.root.split('fakeit')[0].slice(0, -1);
     t.context.options.babel_config = 'package.json';
     t.is(typeof t.context.options.babel_config, 'string');
     const preparing = t.context.setup();
@@ -292,7 +307,7 @@ test.group('parseModelFunctions', (test) => {
     const model = to.clone(contents[file]);
     const paths = utils.getPaths(model, /((pre|post)_run)|(pre_|post_)?build$/);
     const obj = _.pick(model, paths);
-    parseModelFunctions(obj);
+    parseModelFunctions(obj, babel_config);
 
     for (let str of paths) {
       let fn = _.get(obj, str);

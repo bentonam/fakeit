@@ -8,6 +8,7 @@ import { set, get, find } from 'lodash';
 import to, { is } from 'to-js';
 import { transform } from 'babel-core';
 import globby from 'globby';
+import findRoot from 'find-root';
 
 ////
 /// @name Models
@@ -64,14 +65,27 @@ export default class Models extends Base {
       return;
     }
 
-    const dir = path.join(__dirname.split('node_modules')[0], '..');
-    let file = await globby(this.resolvePaths(babel_config, dir), { dot: true });
+    let file = [ process.cwd(), this.options.root ]
+      .reduce((prev, next) => {
+        try {
+          return prev.concat(path.join(findRoot(next), babel_config));
+        } catch (e) {
+          return prev;
+        }
+      }, []);
+
+    file = await globby(to.unique(file), { dot: true });
     file = file[0];
-    let config = await fs.readJson(file);
-    if (file.includes('package.json')) {
-      config = config.babelConfig || {};
+
+    if (file) {
+      let config = await fs.readJson(file);
+      if (file.includes('package.json')) {
+        config = config.babelConfig || {};
+      }
+
+      this.options.babel_config = config;
     }
-    this.options.babel_config = config;
+
     this.prepared = true;
   }
 
