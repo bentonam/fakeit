@@ -123,6 +123,21 @@ test.group('setup', (test) => {
     t.is(to.type(t.context.options.babel_config), 'object');
     t.deepEqual(t.context.options.babel_config, babel_config);
   });
+
+  test('babel_config process.cwd failed to find a babel config', async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    t.context.options.root = t.context.options.root.split('fakeit')[0].slice(0, -1);
+    t.context.options.babel_config = 'package.json';
+    t.is(typeof t.context.options.babel_config, 'string');
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.prepared, true);
+    t.is(to.type(t.context.options.babel_config), 'object');
+    t.deepEqual(t.context.options.babel_config, babel_config);
+  });
 });
 
 

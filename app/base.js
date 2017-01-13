@@ -12,13 +12,16 @@ export default class Base extends Logger {
   /// @raw-code
   constructor(options = {}) {
     super(options);
+    const root = process.cwd();
     this.options = to.extend({
-      root: process.cwd(),
+      root,
       log: true,
       verbose: false,
       timestamp: true,
     }, this.options || {});
     this.options = to.extend(this.options, options);
+
+    this.options.root = path.resolve(root, this.options.root);
 
     if (this.options.verbose) {
       this.options.log = true;
