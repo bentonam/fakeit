@@ -80,6 +80,7 @@
     "babel-cli": "^6.18.0",
     "babel-plugin-array-includes": "~2.0.3",
     "babel-plugin-external-helpers": "~6.18.0",
+    "babel-plugin-transform-runtime": "~6.15.0",
     "babel-preset-latest": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
     "coveralls": "^2.11.15",
