@@ -32,7 +32,7 @@ test.group('console', (test) => {
     doc_type: 'contact',
     channels: [ 'ufp-555555555' ],
     contact_id: '1d54ed12-b65a-5085-a895-5c8c626f0efb',
-    details: { prefix: 'Dr.', first_name: 'Daphnee', middle_name: 'Dale', last_name: 'O\'Hara', company: 'Hackett - Effertz', job_title: null, dob: '2016-08-21', nickname: null },
+    details: { prefix: 'Dr.', first_name: 'Daphnee', middle_name: 'Dale', last_name: 'O\'Hara', company: 'Hackett - Effertz', job_title: null, nickname: null },
     phones: [ { type: 'Mobile', phone_number: '076-099-8620', extension: null }, { type: 'Other', phone_number: '965-618-1647', extension: null } ],
     emails: [ 'Abigale.Bashirian@gmail.com', 'Demetris12@gmail.com' ],
     addresses: [ { type: 'Work', address_1: '96735 Caroline Fields Springs', address_2: null, locality: 'Montanastad', region: 'SD', postal_code: '11307-4822', country: 'LA' } ],
@@ -102,6 +102,7 @@ test.group('console', (test) => {
 
         // remove the dates because they can't be correct
         stdout = _.omit(stdout[0], [ 'created_on', 'modified_on' ]);
+        stdout.details = _.omit(stdout.details, [ 'dob' ]);
         t.deepEqual(stdout, expected_abc_seed);
       })
       .end(t.end);
@@ -126,6 +127,8 @@ test.group('console', (test) => {
           'doc_type',
           'channels',
         ]);
+        // removed the dob because it's a date
+        stdout.details = _.omit(stdout.details, [ 'dob' ]);
 
         for (let key in stdout) {
           if (stdout.hasOwnProperty(key)) {
