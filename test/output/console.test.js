@@ -30,7 +30,7 @@ test('prepare', async (t) => {
   t.is(t.context.prepared, true);
 });
 
-test('setup', async (t) => {
+test.serial('setup', async (t) => {
   t.is(t.context.prepared, false);
   t.is(t.context.preparing, undefined); // eslint-disable-line
   const preparing = t.context.setup();

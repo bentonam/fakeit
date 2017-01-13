@@ -101,7 +101,8 @@
     ],
     "plugins": [
       "transform-runtime",
-      "external-helpers"
+      "external-helpers",
+      "array-includes"
     ]
   },
   "ava": {
@@ -114,7 +115,8 @@
       "test/utils.js"
     ],
     "failFast": true,
-    "concurrency": 5
+    "concurrency": 5,
+    "babel": "inherit"
   },
   "nyc": {
     "exclude": [

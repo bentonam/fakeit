@@ -82,7 +82,7 @@ test('prepare', async (t) => {
   t.deepEqual(t.context.options.babel_config, babel_config);
 });
 
-test.group('setup', (test) => {
+test.serial.group('setup', (test) => {
   test('babel_config as a string', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
@@ -307,7 +307,7 @@ test.group('parseModelFunctions', (test) => {
     const model = to.clone(contents[file]);
     const paths = utils.getPaths(model, /((pre|post)_run)|(pre_|post_)?build$/);
     const obj = _.pick(model, paths);
-    parseModelFunctions(obj);
+    parseModelFunctions(obj, babel_config);
 
     for (let str of paths) {
       let fn = _.get(obj, str);

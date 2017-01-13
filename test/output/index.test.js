@@ -451,7 +451,7 @@ test.group('validation', (test) => {
 });
 
 
-test.group('prepare', (test) => {
+test.serial.group('prepare', (test) => {
   const root = p(output_root, 'prepare');
 
   test('without options', async (t) => {
@@ -513,7 +513,7 @@ test.group('prepare', (test) => {
 });
 
 
-test.group('setup', (test) => {
+test.serial.group('setup', (test) => {
   test('without options', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
@@ -547,7 +547,7 @@ test.group('output', (test) => {
     data = await getData();
   });
 
-  test.group('return', languages((test, language) => {
+  test.serial.group('return', languages((test, language) => {
     test(language, async (t) => {
       const { raw, node } = data[language];
       t.context.output_options.output = 'return';

@@ -198,7 +198,7 @@ test.cb('throws error when something goes wrong', (t) => {
   /* eslint-disable quotes */
   bin.clone()
     .run(`folder 'error-test' 'simple/models/*' --count 1 --archive 'woohoo'`)
-    .stderr(/The archive file must have a file extention of \`\.zip\`/)
+    .stdout(/The archive file must have a file extention of \`\.zip\`/)
     .end(t.end);
   /* eslint-enable quotes */
 });

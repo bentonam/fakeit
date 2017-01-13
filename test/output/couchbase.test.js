@@ -161,12 +161,12 @@ test.group('finalize', (test) => {
     await t.context.prepare();
     t.is(to.type(t.context.bucket), 'object');
     t.is(t.context.prepared, true);
-    t.is(t.context.preparing.toString(), '[object Promise]');
+    t.is(typeof t.context.preparing.then, 'function');
     t.is(t.context.bucket.connected, true);
     await t.context.finalize();
     t.is(to.type(t.context.bucket), 'object');
     t.is(t.context.prepared, true);
-    t.is(t.context.preparing.toString(), '[object Promise]');
+    t.is(typeof t.context.preparing.then, 'function');
     t.is(t.context.bucket.connected, false);
   });
 });
