@@ -56,11 +56,13 @@ test.beforeEach(async (t) => {
 test('without args', (t) => {
   const doc = t.context.document;
   // rest the log option to what it is by default.
-  doc.options.log = true;
+  doc.options.log = doc.options.spinners = true;
   t.deepEqual(doc.options, {
     root: documents_root,
     log: true,
     verbose: false,
+    spinners: true,
+    count: 0,
     timestamp: true,
   });
   t.is(to.type(doc.log_types), 'object');

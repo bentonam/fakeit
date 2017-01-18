@@ -13,9 +13,9 @@ import to from 'to-js';
 /// @name Document
 /// @description This is used to generate documents based off a model
 export default class Document extends Base {
-  constructor(options, documents = {}, globals = {}, inputs = {}) {
+  constructor(options = {}, documents = {}, globals = {}, inputs = {}) {
     super(options);
-    this.options = this.options || {};
+    this.options = to.extend({ count: 0 }, this.options);
     this.documents = documents;
     this.globals = globals;
     this.inputs = inputs;
@@ -43,16 +43,23 @@ export default class Document extends Base {
     }
     const key_type = to.type(model.key);
 
+    const spinner = this.spinner(`Documents ${model.name}`);
+    spinner.text = `${model.name}`;
+    const update = () => {
+      spinner.text = `${model.name} documents (${this.documents[model.name].length}/${model.data.count})`;
+    };
+
     // if there is a pre_run function call it
     this.runData(model.data.pre_run, model);
 
-    this.log('info', `Generating ${this.options.count || model.count} document(s) for ${model.name} model`);
     // if the count is set then overwrite the model.data.count
     if (this.options.count) {
       model.data.count = this.options.count;
     }
 
+    spinner.start();
     for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
+      update();
       const doc = this.buildDocument(model, i);
       // build the key for the document
       let key;
@@ -71,6 +78,9 @@ export default class Document extends Base {
     }
 
     this.runData(model.data.post_run, model);
+
+    update();
+    spinner.stop();
     return this.documents[model.name];
   }
 
