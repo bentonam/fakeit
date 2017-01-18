@@ -3,6 +3,9 @@ import Logger from '../dist/logger';
 import to from 'to-js';
 import { stdout } from 'test-console';
 import { stripColor } from 'chalk';
+import { PassThrough as PassThroughStream } from 'stream';
+import _ from 'lodash';
+import getStream from 'get-stream';
 const test = ava.group('logger:');
 const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
 
@@ -14,24 +17,24 @@ test.beforeEach((t) => {
 test('functions', (t) => {
   t.deepEqual(
     to.keys(Logger.prototype).sort(),
-    [ 'constructor', 'log', 'stamp', 'time', 'timeEnd' ].sort()
+    [ 'constructor', 'log', 'spinner', 'stamp', 'time', 'timeEnd' ].sort()
   );
 });
 
 
 test.group('options', (test) => {
   test('none', (t) => {
-    t.deepEqual(t.context.options, { log: true, verbose: false, timestamp: true });
+    t.deepEqual(t.context.options, { log: true, verbose: false, spinners: true, timestamp: true });
   });
 
   test('log is false', (t) => {
     const logger = new Logger({ log: false });
-    t.deepEqual(logger.options, { log: false, verbose: false, timestamp: true });
+    t.deepEqual(logger.options, { log: false, verbose: false, spinners: false, timestamp: true });
   });
 
   test('log is false and verbose is true', (t) => {
     const logger = new Logger({ log: false, verbose: true });
-    t.deepEqual(logger.options, { log: true, verbose: true, timestamp: true });
+    t.deepEqual(logger.options, { log: true, verbose: true, spinners: true, timestamp: true });
   });
 });
 
@@ -79,7 +82,14 @@ test.serial.group('log', (test) => {
       t.throws(tester);
       inspect.restore();
       t.is(inspect.output.length, 2);
-      t.is(inspect.output[1].trim(), 'Error: woohoo');
+      let [ message, ...err_lines ] = inspect.output[1].split('\n');
+      t.is(message.trim(), 'Error: woohoo');
+      err_lines.forEach((line) => {
+        line = line.trim();
+        if (line) {
+          t.is(line.slice(0, 2), 'at');
+        }
+      });
       t.truthy(regex.test(stripColor(inspect.output[0])));
     });
   });
@@ -155,5 +165,117 @@ test.serial.group('time', (test) => {
         t.truthy(number >= min && number <= max);
       });
     });
+  });
+});
+
+
+test.serial.group('spinner', (test) => {
+  function getPassThroughStream() {
+    const stream = new PassThroughStream();
+    stream.clearLine = _.noop;
+    stream.cursorTo = _.noop;
+    return stream;
+  }
+
+  test('returns a modified instance of Ora', (t) => {
+    const actual = t.context.spinner('instance');
+    t.is(actual.constructor.name, 'Ora');
+    t.is(actual.title, 'instance');
+    t.is(actual.text, 'instance');
+    t.is(typeof actual.originalStart, 'function');
+    t.is(typeof actual.originalStop, 'function');
+    t.truthy(/this\.originalStop\(\);/.test(actual.stopAndPersist.toString()));
+  });
+
+  test.serial('start/stop/stopAndPersist do nothing in TTY env', async (t) => {
+    const actual = t.context.spinner('woohoo');
+    const inspect = stdout.inspect();
+    const start_result = actual.start();
+    await delay(200);
+    const stop_result = actual.stop();
+    actual.start();
+    const stop_and_persist_result = actual.stopAndPersist('✔');
+    inspect.restore();
+    t.is(start_result.constructor.name, 'Ora');
+    t.is(stop_result.constructor.name, 'Ora');
+    t.is(stop_and_persist_result.constructor.name, 'Ora');
+    t.deepEqual(inspect.output, []);
+  });
+
+  test('start/stop custom stream', async (t) => {
+    const stream = getPassThroughStream();
+    const actual = t.context.spinner({ stream, text: 'stop__', color: false, enabled: true });
+    actual.start();
+    await delay(200);
+    actual.stop();
+    stream.end();
+    const output = await getStream(stream);
+    output.trim().split('__').filter(Boolean).forEach((state) => {
+      const [ frame, text ] = state.split(/\s+/);
+      t.truthy(actual.spinner.frames.includes(frame));
+      t.is(text, 'stop');
+    });
+  });
+
+  test('start/stop custom stream with verbose option', async (t) => {
+    const stream = getPassThroughStream();
+    t.context.options.verbose = true;
+    const actual = t.context.spinner({ stream, text: 'stop__', color: false, enabled: true });
+    actual.start();
+    await delay(200);
+    actual.stop();
+    stream.end();
+    const states = stripColor(await getStream(stream)).trim().split('__').filter(Boolean);
+    const last_state = states.splice(-2, 2).join('');
+    states.filter(Boolean).forEach((state) => {
+      const [ frame, text ] = state.split(/\s+/);
+      t.truthy(actual.spinner.frames.includes(frame));
+      t.is(text, 'stop');
+    });
+    {
+      const [ check, text, time ] = last_state.split(/\s+/);
+      t.is(check, '✔');
+      t.is(text, 'stop');
+      t.truthy(/^\+2[0-9]{2}\.[0-9]{2}ms$/.test(time));
+    }
+  });
+
+  test.serial('fail custom stream', async (t) => {
+    const stream = getPassThroughStream();
+    const [ one, two, three ] = [ 'one', 'two', 'three' ].map((str) => t.context.spinner({ stream, text: `${str}__`, color: false, enabled: true }));
+    const inspect = stdout.inspect();
+    one.start();
+    two.start();
+    three.start();
+    t.truthy(one.id);
+    t.truthy(two.id);
+    t.truthy(three.id);
+    const tester = () => three.fail('failed');
+    t.throws(tester);
+    inspect.restore();
+    t.is(one.id, null);
+    t.is(two.id, null);
+    t.is(three.id, null);
+    t.truthy(/error: failed/.test(stripColor(inspect.output.join(''))));
+    stream.end();
+    const states = stripColor(await getStream(stream)).trim().split('__').filter(Boolean);
+    const last_state = states.pop();
+    states.forEach((state) => {
+      const [ frame, text ] = state.split(/\s+/);
+      t.truthy(one.spinner.frames.includes(frame));
+      t.truthy([ 'one', 'two', 'three' ].includes(text));
+    });
+
+    {
+      const [ check, text ] = last_state.split(/\s+/);
+      t.is(check, '✖');
+      t.is(text, 'three');
+    }
+  });
+
+  test('spinner already exists so return it', (t) => {
+    t.deepEqual(t.context.spinners, {});
+    _.times(2, () => t.context.spinner('exists'));
+    t.deepEqual(_.keys(t.context.spinners), [ 'exists' ]);
   });
 });
