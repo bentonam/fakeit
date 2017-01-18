@@ -15,7 +15,7 @@ export default async function() {
     'count',
     'verbose',
     'log',
-    'spinner',
+    'spinners',
     'timestamp',
     'seed',
   ];
@@ -45,7 +45,7 @@ export default async function() {
     .option('--babel <glob>', 'the location to the babel config', '+(.babelrc|package.json)')
     .option('-c, --count <n>', 'Overrides the number of documents to generate specified by the model.', parseInt)
     .option('-v, --verbose', 'enables verbose logging mode')
-    .option('-S, --no-spinner', 'disables progress spinners', false)
+    .option('-S, --no-spinners', 'disables progress spinners', false)
     .option('-L, --no-log', 'disables all logging except for errors', false)
     .option('-T, --no-timestamp', 'disables timestamps from logging output', false)
     // global output options
