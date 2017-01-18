@@ -19,6 +19,8 @@ import fs from 'fs-extra-promisify';
 import AdmZip from 'adm-zip';
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
+import { stdout } from 'test-console';
+import { stripColor } from 'chalk';
 /* istanbul ignore next */
 const utils = require('./utils');
 const models = utils.models({
@@ -46,28 +48,36 @@ test.beforeEach((t) => {
   });
 });
 
+
 test('without args', async (t) => {
   t.context.options.log = true;
-  const { error } = is.object({
-    options: is.object({
+  const expected = {
+    options: {
+      root: models_root,
+      log: true,
+      verbose: false,
+      spinners: false,
+      timestamp: true,
+      count: 0,
       seed: 0,
-      babel_config: '+(.babelrc|package.json)',
-    })
-      .unknown()
-      .required(),
+      babel_config: '+(.babelrc|package.json)'
+    },
     log_types: is.object().required(),
     inputs: is.object().length(0),
     models: is.array().length(0),
     prepared: is.boolean(),
     registered_models: is.array().length(0),
-  })
-    .validate(t.context);
+    spinners: is.object().required(),
+    progress: is.object().required(),
+  };
+  const { error } = is.validate(t.context, expected);
   if (error) {
     t.fail(error);
   } else {
     t.pass();
   }
 });
+
 
 test('prepare', async (t) => {
   t.is(t.context.prepared, false);
@@ -81,6 +91,7 @@ test('prepare', async (t) => {
   t.is(typeof t.context.options.babel_config, 'object');
   t.deepEqual(t.context.options.babel_config, babel_config);
 });
+
 
 test.serial.group('setup', (test) => {
   test('babel_config as a string', async (t) => {
@@ -204,11 +215,23 @@ test.group('registerModels', (test) => {
 
     return actual;
   }));
+
+  test.serial('fails when filepath that was passed doesn\'t exist', async (t) => {
+    const inspect = stdout.inspect();
+    await t.context.registerModels('lol/i/do/not/exist.yaml')
+      .then(() => t.fail())
+      .catch(() => t.pass());
+    inspect.restore();
+    t.truthy(/^\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\]\s+.\s+error:$/.test(stripColor(inspect.output[0]).trim()));
+    t.truthy(/ENOENT: no such file or directory/.test(inspect.output[1]));
+  });
 });
+
 
 test('parseModel', (t) => {
   t.is(typeof t.context.parseModel, 'function');
 });
+
 
 test.group('filterModelFiles', (test) => {
   test('filter none', (t) => {
@@ -223,6 +246,7 @@ test.group('filterModelFiles', (test) => {
     t.deepEqual(t.context.filterModelFiles([ 'foo.yaml', 'bar.yaml', 'baz.zip', 'qux.json', 'quxx.cson' ]), [ 'bar.yaml' ]);
   });
 });
+
 
 test.group('parseModelDependencies', models(async (t, file) => {
   const model = to.clone(contents[file]);
@@ -267,6 +291,7 @@ test.group('parseModelDependencies', models(async (t, file) => {
   check(model.data.dependencies);
 }));
 
+
 test.group('parseModelInputs', models(async (t, file) => {
   t.deepEqual(to.keys(t.context.inputs).length, 0);
   const model = to.clone(contents[file]);
@@ -301,6 +326,7 @@ test.group('parseModelInputs', models(async (t, file) => {
     }
   }
 }));
+
 
 test.group('parseModelFunctions', (test) => {
   test.group('ensure all `pre` and `post` instances are functions', models((t, file) => {
@@ -399,6 +425,7 @@ test.group('parseModelFunctions', (test) => {
   });
 });
 
+
 test.group('parseModelReferences', models((t, file) => {
   const model = to.clone(contents[file]);
   const original_model = to.clone(contents[file]);
@@ -425,6 +452,7 @@ test.group('parseModelReferences', models((t, file) => {
   }
 }));
 
+
 test.group('parseModelTypes', models((t, file) => {
   const model = to.clone(contents[file]);
   const pattern = /.*properties\.[^.]+(\.items)?$/;
@@ -442,6 +470,7 @@ test.group('parseModelTypes', models((t, file) => {
     t.is(_.get(model, str).type, 'null');
   }
 }, models.files));
+
 
 test.group('parseModelDefaults', models((t, file) => {
   const test_model = to.clone(contents[file]);
@@ -470,6 +499,7 @@ test.group('parseModelDefaults', models((t, file) => {
     }
   }
 }));
+
 
 test.group('parseModelCount', (test) => {
   function getContext() {
