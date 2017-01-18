@@ -13,6 +13,7 @@ test('without args', (t) => {
       root: process.cwd(),
       log: true,
       verbose: false,
+      spinners: true,
       timestamp: true,
     },
     log_types: {
@@ -23,6 +24,7 @@ test('without args', (t) => {
       verbose: 'magenta',
       log: 'gray',
     },
+    spinners: {},
   });
 });
 
@@ -34,6 +36,7 @@ test('with args', (t) => {
       root: process.cwd(),
       log: false,
       verbose: false,
+      spinners: false,
       timestamp: true,
     },
     log_types: {
@@ -44,6 +47,7 @@ test('with args', (t) => {
       verbose: 'magenta',
       log: 'gray',
     },
+    spinners: {},
   });
 });
 

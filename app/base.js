@@ -17,6 +17,7 @@ export default class Base extends Logger {
       root,
       log: true,
       verbose: false,
+      spinners: true,
       timestamp: true,
     }, this.options || {});
     this.options = to.extend(this.options, options);
