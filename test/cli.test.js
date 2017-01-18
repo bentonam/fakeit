@@ -9,9 +9,11 @@ import cli, { code, dim } from '../dist/cli.js';
 import _ from 'lodash';
 const test = ava.group('cli:');
 
+
 test('cli is the default function', (t) => {
   t.is(typeof cli, 'function');
 });
+
 
 test.group('console', (test) => {
   const expected_keys = [
@@ -47,11 +49,7 @@ test.group('console', (test) => {
     bin.clone()
       .run("console --count 1 'simple/models/*'")
       .expect(({ stdout }) => {
-        stdout = stdout.split('\n');
-        const first_line = stdout.shift();
-        t.truthy(/^\[[0-9:]+\].+info: Generating 1 document\(s\) for Users model$/.test(first_line));
-        const data = to.object(stdout.join('\n'));
-
+        const data = to.object(stdout);
         t.is(to.type(data), 'array');
         t.is(data.length, 1);
         t.deepEqual(to.keys(data[0]), expected_keys);
@@ -64,8 +62,6 @@ test.group('console', (test) => {
       .run("console --count 1 'simple/models/*' --format 'csv'")
       .expect(({ stdout }) => {
         stdout = stdout.split('\n');
-        const first_line = stdout.shift();
-        t.truthy(/^\[[0-9:]+\].+info: Generating 1 document\(s\) for Users model$/.test(first_line));
         t.truthy(/^[┌─┬┐]+$/.test(stdout[0]));
         t.truthy(/^[├─┼┤]+$/.test(stdout[2]));
         t.truthy(/^[└─┴┘]+$/.test(stdout[4]));
@@ -80,8 +76,6 @@ test.group('console', (test) => {
       .run("console 'simple/models/*' --format 'csv' --count 1 --no-highlight")
       .expect(({ stdout }) => {
         stdout = stdout.split('\n');
-        const first_line = stdout.shift();
-        t.truthy(/^\[[0-9:]+\].+info: Generating 1 document\(s\) for Users model$/.test(first_line));
         t.is(stdout[0], '"id","type","user_id","first_name","last_name","email_address","phone","active","created_on"');
         t.deepEqual(stdout[0].replace(/"/g, '').split(','), expected_keys);
       })
@@ -93,10 +87,7 @@ test.group('console', (test) => {
     bin.clone()
       .run('console contacts/models/contacts.yaml --count 1 --seed abc')
       .expect(({ stdout }) => {
-        stdout = stdout.split('\n');
-        const first_line = stdout.shift();
-        stdout = to.object(stdout.join('\n'));
-        t.truthy(/^\[[0-9:]+\].+info: Generating 1 document\(s\) for Contacts model$/.test(first_line));
+        stdout = to.object(stdout);
         t.is(to.type(stdout), 'array');
         t.is(stdout.length, 1);
 
@@ -112,10 +103,7 @@ test.group('console', (test) => {
     bin.clone()
       .run('console contacts/models/contacts.yaml --count 1 --seed 123456789')
       .expect(({ stdout }) => {
-        stdout = stdout.split('\n');
-        const first_line = stdout.shift();
-        stdout = to.object(stdout.join('\n'));
-        t.truthy(/^\[[0-9:]+\].+info: Generating 1 document\(s\) for Contacts model$/.test(first_line));
+        stdout = to.object(stdout);
         t.is(to.type(stdout), 'array');
         t.is(stdout.length, 1);
 
@@ -199,6 +187,7 @@ test.cb('throws error when something goes wrong', (t) => {
   bin.clone()
     .run(`folder 'error-test' 'simple/models/*' --count 1 --archive 'woohoo'`)
     .stdout(/The archive file must have a file extention of \`\.zip\`/)
+    .code(1)
     .end(t.end);
   /* eslint-enable quotes */
 });

@@ -15,6 +15,7 @@ export default async function() {
     'count',
     'verbose',
     'log',
+    'spinner',
     'timestamp',
     'seed',
   ];
@@ -44,6 +45,7 @@ export default async function() {
     .option('--babel <glob>', 'the location to the babel config', '+(.babelrc|package.json)')
     .option('-c, --count <n>', 'Overrides the number of documents to generate specified by the model.', parseInt)
     .option('-v, --verbose', 'enables verbose logging mode')
+    .option('-S, --no-spinner', 'disables progress spinners', false)
     .option('-L, --no-log', 'disables all logging except for errors', false)
     .option('-T, --no-timestamp', 'disables timestamps from logging output', false)
     // global output options
@@ -153,8 +155,8 @@ export default async function() {
       await fakeit.generate(models, output);
       process.exit();
     } catch (err) {
+      process.exit(1);
       throw err;
-      process.exit(0);
     }
   }
 }
