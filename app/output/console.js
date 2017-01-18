@@ -82,6 +82,6 @@ export default class Console extends Base {
       data += '';
     }
 
-    console.log(data);
+    return data;
   }
 }
