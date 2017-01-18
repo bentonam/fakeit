@@ -7,7 +7,7 @@ import Document, {
 } from '../dist/documents.js';
 /* istanbul ignore next : needed to test models */
 const Model = require('../dist/models.js').default;
-import path, { join as p } from 'path';
+import { join as p } from 'path';
 import ava from 'ava-spec';
 import to from 'to-js';
 import is from 'joi';
@@ -34,6 +34,7 @@ test.before(async () => {
   babel_config = await fs.readJson(p(__dirname, '..', '.babelrc'));
 });
 
+
 test.beforeEach(async (t) => {
   t.context.model = new Model({
     root: documents_root,
@@ -50,6 +51,7 @@ test.beforeEach(async (t) => {
 
   await t.context.model.setup();
 });
+
 
 test('without args', (t) => {
   const doc = t.context.document;
@@ -68,6 +70,7 @@ test('without args', (t) => {
   t.is(to.type(doc.faker), 'object');
   t.is(to.type(doc.chance), 'object');
 });
+
 
 test.group('build', (test) => {
   test('model with no data', (t) => {
@@ -166,16 +169,9 @@ test.group('build', (test) => {
 
   test.group(models(async (t, file) => {
     const { document, model } = t.context;
+    // ensure that only 1 document gets created
+    document.options.count = model.options.count = 1;
     await model.registerModels(file);
-
-    // overwrite the inputs to only include 1 item in it's array because several models
-    // in flight-data overwrite the data.count to be what ever the model length is and that is
-    // brutal on testing performance.
-    if ([ 'flight-data', 'music' ].includes(file.split(path.sep)[0])) {
-      model.inputs = to.map(model.inputs, ({ key, value }) => {
-        return { [key]: [ 0, 0, 0, 0, 0, 0 ].map(() => to.random(value)) };
-      });
-    }
 
     // set the document inputs to be what the model inputs are
     document.inputs = model.inputs;
@@ -183,34 +179,19 @@ test.group('build', (test) => {
     let actual = [];
 
     for (let obj of model.models) {
-      t.truthy(obj.data.count >= obj.data.min);
-      if (obj.data.max !== 0) {
-        t.truthy(obj.data.count <= obj.data.max);
-      }
+      t.is(obj.data.count, 1);
 
-      // overwrite the count to be 1 so thousands of documents don't have to be created for the test
-      // this will happen in the `index.test.js` file
-      obj.data.count = !obj.is_dependency ? 1 : to.random(3, 6);
-
-      let fn = (obj.data.pre_run || {}).toString();
-      // if data.count is being set in the pre_run function then replace it with the overwritten count
-      if (/this\.data\.count/.test(fn)) {
-        fn = fn.replace(/this\.data\.count = [^\n]+/, `this.data.count = ${obj.data.count};`);
-        // eslint-disable-next-line
-        obj.data.pre_run = new Function(`return ${fn}`)();
-      }
-
-      const result = document.build(obj);
+      let result = document.build(obj);
+      // ensure data count is still set to 1
+      t.is(obj.data.count, 1);
+      t.is(result.length, 1);
       if (!obj.is_dependency) {
-        actual.push(result);
+        actual.push(result[0]);
       }
     }
-
+    // ensure there was only 1 item output
     t.is(actual.length, 1);
-    actual = actual[0];
-    t.is(actual.length, 1);
-    actual = actual[0];
-    return actual;
+    return actual[0];
   }));
 
   test.group('seed', (test) => {
@@ -329,6 +310,7 @@ test.group('build', (test) => {
   });
 });
 
+
 test.group('runData', (test) => {
   test('function wasn\'t passed', (t) => {
     const tester = () => t.context.document.runData();
@@ -409,6 +391,7 @@ test.group('initializeDocument', (test) => {
     }
   }));
 });
+
 
 test.group('buildObject', (test) => {
   const model = {
@@ -1024,6 +1007,7 @@ test.group('transformValueToType', (test) => {
   });
 });
 
+
 test.group('getPaths', models(async (t, file) => {
   await t.context.model.registerModels(file);
   const model = _.find(t.context.model.models, (obj) => {
@@ -1037,6 +1021,7 @@ test.group('getPaths', models(async (t, file) => {
   t.falsy(paths.document.join(',').includes('properties.'), 'shouldn\'t have an instance of `properties`');
   t.is(paths.model.length, paths.document.length, 'They should have the same length');
 }));
+
 
 test.group('typeToValue', (test) => {
   const tests = [

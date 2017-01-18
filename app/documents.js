@@ -47,6 +47,10 @@ export default class Document extends Base {
     this.runData(model.data.pre_run, model);
 
     this.log('info', `Generating ${this.options.count || model.count} document(s) for ${model.name} model`);
+    // if the count is set then overwrite the model.data.count
+    if (this.options.count) {
+      model.data.count = this.options.count;
+    }
 
     for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
       const doc = this.buildDocument(model, i);
