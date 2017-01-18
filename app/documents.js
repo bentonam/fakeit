@@ -1,7 +1,7 @@
 import faker from 'faker';
 import Chance from 'chance';
 import Base from './base';
-import { objectSearch } from './utils';
+import { objectSearch, pool } from './utils';
 import { set, get } from 'lodash';
 import to from 'to-js';
 
@@ -31,7 +31,7 @@ export default class Document extends Base {
   ///# This builds the documents from the passed model
   ///# @arg {object} model - The model to generate data from
   ///# @returns {array} - The array of documents that were generated
-  build(model) {
+  async build(model) {
     if (!this.documents[model.name]) {
       this.documents[model.name] = [];
     }
@@ -58,9 +58,12 @@ export default class Document extends Base {
     }
 
     spinner.start();
-    for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
+    const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
+    await pool(model.data.count, async (i) => { // loop over each model and execute in order of dependency
+      // this allows the spinner to actually update the count and doesn't affect performance much
+      const doc = await this.buildDocument(model, i);
       update();
-      const doc = this.buildDocument(model, i);
+      await delay(0);
       // build the key for the document
       let key;
       if (key_type === 'object') {
@@ -75,7 +78,7 @@ export default class Document extends Base {
       Object.defineProperty(doc, '__key', { value: key });
       Object.defineProperty(doc, '__name', { value: model.name });
       this.documents[model.name].push(doc);
-    }
+    }, this.options.spinners ? 75 : 1000);
 
     this.runData(model.data.post_run, model);
 

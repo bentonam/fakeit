@@ -75,7 +75,7 @@ test('without args', (t) => {
 
 
 test.group('build', (test) => {
-  test('model with no data', (t) => {
+  test('model with no data', async (t) => {
     const model = {
       name: 'build_test',
       type: 'object',
@@ -95,7 +95,7 @@ test.group('build', (test) => {
     const doc = t.context.document;
     t.deepEqual(doc.globals, {});
     t.deepEqual(doc.documents, {});
-    const actual = doc.build(model);
+    const actual = await doc.build(model);
     const schema = is.array()
       .items(is.object({
         test: is.string().regex(/woohoo/),
@@ -153,13 +153,13 @@ test.group('build', (test) => {
       if (to.type(title) === 'object') {
         title = to.keys(title)[0];
       }
-      test(`is ${title}`, (t) => {
+      test(`is ${title}`, async (t) => {
         const doc = t.context.document;
         const obj = to.clone(model);
         if (actual != null) {
           obj.key = actual;
         }
-        const result = doc.build(obj);
+        const result = await doc.build(obj);
         if (to.type(expected) === 'regexp') {
           t.truthy(expected.test(result[0].__key)); // eslint-disable-line
         } else {
@@ -183,7 +183,7 @@ test.group('build', (test) => {
     for (let obj of model.models) {
       t.is(obj.data.count, 1);
 
-      let result = document.build(obj);
+      let result = await document.build(obj);
       // ensure data count is still set to 1
       t.is(obj.data.count, 1);
       t.is(result.length, 1);
@@ -249,14 +249,14 @@ test.group('build', (test) => {
       };
     }
 
-    test('phones array lengths are the same', (t) => {
+    test('phones array lengths are the same', async (t) => {
       const count = t.context.document.faker.random.number({ min: 10, max: 200 });
       t.plan(count * 2);
       for (var i = 0; i < count; i++) {
         const model = getModel();
         // reset the documents for each iteration
         t.context.document.documents = {};
-        const actual = t.context.document.build(model);
+        const actual = await t.context.document.build(model);
         t.is(actual.length, model.data.count);
         const lengths = actual.map((obj) => obj.phones.length);
         t.deepEqual(lengths, expected_phone_lengths.slice(0, lengths.length));
@@ -264,9 +264,9 @@ test.group('build', (test) => {
     });
 
 
-    test('none of the items in phones array are the same', (t) => {
+    test('none of the items in phones array are the same', async (t) => {
       const model = getModel();
-      const actual = t.context.document.build(model);
+      const actual = await t.context.document.build(model);
       const phones = actual.map((obj) => obj.phones);
       phones.reduce((prev, next) => {
         // none of the items in the current array are the same as the other items
@@ -279,15 +279,16 @@ test.group('build', (test) => {
       }, phones.pop());
     });
 
-    test('the content is exactly the same everytime', (t) => {
+    test('the content is exactly the same everytime', async (t) => {
       const model = getModel();
-      const actual = [];
+      let actual = [];
       const count = t.context.document.faker.random.number({ min: 10, max: 200 });
       t.plan(count - 1);
       for (var i = 0; i < count; i++) {
         t.context.document.documents = {};
         actual.push(t.context.document.build(model));
       }
+      actual = await Promise.all(actual);
 
       actual.reduce((expected, next) => {
         t.deepEqual(next, expected);
@@ -295,15 +296,15 @@ test.group('build', (test) => {
       }, actual.pop());
     });
 
-    test('the two items returned are always the same', (t) => {
+    test('the two items returned are always the same', async (t) => {
       const count = t.context.document.faker.random.number({ min: 10, max: 200 });
       const model = getModel();
       model.data.count = 1;
       t.plan(count);
       for (var i = 0; i < count; i++) {
         t.context.document.documents = {};
-        const actual = t.context.document.build(model)[0].phones;
-        t.deepEqual(actual, [
+        const actual = await t.context.document.build(model);
+        t.deepEqual(actual[0].phones, [
           { type: 'Mobile', phone_number: '505.771.2870', extension: null },
           { type: 'Mobile', phone_number: '275-728-6040', extension: null }
         ]);

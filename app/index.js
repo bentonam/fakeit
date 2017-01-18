@@ -56,12 +56,13 @@ export default class Fakeit extends Base {
     let result = [];
 
     for (let obj of to.flatten(model.models)) {
-      const value = document.build(obj);
+      const value = await document.build(obj);
       if (!obj.is_dependency) {
         result.push(value);
       }
     }
 
+    result = await Promise.all(result);
 
     result = await series(result, (data) => output.output(data));
 
