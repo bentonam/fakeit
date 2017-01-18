@@ -41,11 +41,13 @@ test.beforeEach((t) => {
 
 test('without args', async (t) => {
   delete t.context.fakeit.options.count;
-  t.context.fakeit.options.log = true;
+  t.context.fakeit.options.log = t.context.fakeit.options.spinners = true;
+
   t.deepEqual(t.context.fakeit.options, {
     root: fakeit_root,
     log: true,
     verbose: false,
+    spinners: true,
     timestamp: true,
   });
   t.is(to.type(t.context.fakeit.documents), 'object');
