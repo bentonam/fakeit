@@ -1,6 +1,8 @@
 # FakeIt Data Generator
 
-Command-line utility that generates fake data in `json`, `yaml`, `yml`, `cson`, or `csv` formats based on models which are defined in `yaml`.  Data can be generated using any combination of [FakerJS](http://marak.github.io/faker.js/), [ChanceJS](http://chancejs.com/), or Custom Functions.
+Utility that generates fake data in `json`, `yaml`, `yml`, `cson`, or `csv` formats based on models which are defined in `yaml`.  Data can be generated using any combination of [FakerJS](http://marak.github.io/faker.js), [ChanceJS](http://chancejs.com), or Custom Functions.
+
+![Example of how it works](https://github.com/bentonam/fakeit/blob/release/1.0.0/assets/example.gif)
 
 Generated data can be output in the following formats and destinations:
   - `json`
@@ -21,7 +23,7 @@ npm install fakeit
 ## CLI Usage
 
 ```bash
-Usage: fakeit [command] [<file|directory|glob>...]
+  Usage: fakeit [command] [<file|directory|glob> ...]
 
 
   Commands:
@@ -30,21 +32,23 @@ Usage: fakeit [command] [<file|directory|glob>...]
     couchbase [options]                                        This will output to couchbase
     sync-gateway [options]                                     no idea
     directory|folder [options] [<dir|file.zip>] [<models...>]  Output the file(s) into a directory
-    help                                                     
+    help
 
   Options:
 
     -h, --help           output usage information
     -V, --version        output the version number
-    --root <directory>   defines the root directory from which paths are resolve from
-    --babel <glob>       the location to the babel config
-    -c, --count <n>      Overrides the number of documents to generate specified by the model.
-    -v, --verbose        enables verbose logging mode
-    -L, --no-log         disables all logging except for errors
-    -T, --no-timestamp   disables timestamps from logging output
+    --root <directory>   Defines the root directory from which paths are resolve from (process.cwd())
+    --babel <glob>       The location to the babel config (+(.babelrc|package.json))
+    -c, --count <n>      Overrides the number of documents to generate specified by the model. Defaults to model defined count
+    -v, --verbose        Enables verbose logging mode (false)
+    -S, --no-spinners    Disables progress spinners
+    -L, --no-log         Disables all logging except for errors
+    -T, --no-timestamp   Disables timestamps from logging output
     -f, --format <type>  this determins the output format to use. Supported formats: json, csv, yaml, yml, cson. (json)
-    -n, --spacing        the number of spaces to use for indention
-    -l, --limit          limit how many files are output at a time
+    -n, --spacing <n>    the number of spaces to use for indention (2)
+    -l, --limit <n>      limit how many files are output at a time (100)
+    -x, --seed <seed>    The global seed to use for repeatable data
 ```
 
 ## Models
@@ -108,7 +112,8 @@ Each of these functions is passed the following variables that can be used at th
   - `inputs` - An object containing a key for each input file used whose value is the deserialized version of the files data
   - `faker` - A reference to [FakerJS](http://marak.github.io/faker.js/)
   - `chance` - A reference to [ChanceJS](http://chancejs.com/)
-  - `document_index` This is a number that represents the currently generated document's position in the run order
+  - `document_index` - This is a number that represents the currently generated document's position in the run order
+  - `require` - This is nodes require function, it allows you to require your own packages. Should require and set them in the pre_run functions for better performance.
 
 For the `pre_run`, and `post_run` the `this` context refers to the current model.
 For the `pre_build`, `build`, and `post_build` the `this` context refers to the object currently being generated.
@@ -539,3 +544,4 @@ To see more examples of some of the things you can do take a look at the [test c
   - Better error handling has been added so you know what went wrong and where it happened.
   - JS support has also been added so you are no longer required to use the command line to create fake data.
   - Added support for seeds to allow repeatable data.
+  - Added a progress indicator to show how many documents have been created
