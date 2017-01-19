@@ -349,17 +349,17 @@ test.group('parseModelFunctions', (test) => {
       {
         name: 'single line has a return',
         actual: '`contact_${this.contact_id}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index) {\n  function __result(documents, globals, inputs, faker, chance, document_index) {\n    return \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    return \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
       },
       {
         name: 'multi line doesn\'t have automatic return',
         actual: 'console.log("woohoo");\n`contact_${this.contact_id}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index) {\n  function __result(documents, globals, inputs, faker, chance, document_index) {\n    console.log(\"woohoo\");\n    \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    console.log(\"woohoo\");\n    \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
       },
       {
         name: 'object deconstruction',
         actual: 'const { countries } = inputs\nreturn `${this.contact_id}${countries[0]}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index) {\n  function __result(documents, globals, inputs, faker, chance, document_index) {\n    var countries = inputs.countries;\n  \n    return \"\" + this.contact_id + countries[0];\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    var countries = inputs.countries;\n  \n    return \"\" + this.contact_id + countries[0];\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
       },
     ];
     /* eslint-enable max-len, quotes */
@@ -410,7 +410,7 @@ test.group('parseModelFunctions', (test) => {
       const stub = tests.map((item) => null); // eslint-disable-line
       test(name, (t) => {
         stub[i] = name;
-        const expected = `function build(_documents, _globals, _inputs, _faker, _chance, _document_index) {\n  function __result(documents, globals, inputs, faker, chance, document_index) {\n    return ${name} + \"[${i}]\";\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}`; // eslint-disable-line max-len
+        const expected = `function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    return ${name} + \"[${i}]\";\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}`; // eslint-disable-line max-len
         let actual = {
           name,
           build: `\`\$\{${name}\}[${i}]\``

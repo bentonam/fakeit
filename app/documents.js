@@ -110,9 +110,10 @@ export default class Document extends Base {
   runData(fn, context, index = 0) {
     if (to.type(fn) === 'function') {
       try {
-        return fn.call(context, this.documents, this.globals, this.inputs, this.faker, this.chance, index);
+        return fn.call(context, this.documents, this.globals, this.inputs, this.faker, this.chance, index, require);
       } catch (e) {
-        this.log('error', `${fn.name} failed\n`, e);
+        e.message = `${fn.name} failed, ${e.message}`;
+        this.log('error', e);
       }
     }
   }

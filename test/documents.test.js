@@ -334,13 +334,13 @@ test.group('runData', (test) => {
       return bar.data.woohoo;
     }
     // highjack the log function
-    t.context.document.log = (type, message, err) => {
+    t.context.document.log = (type, err) => {
       if (type === 'error') {
-        throw new Error(message + err.message);
+        throw err;
       }
     };
     const tester = () => t.context.document.runData(Foo, 'context');
-    t.throws(tester, /Foo failed\nCannot read property 'woohoo' of undefined/);
+    t.throws(tester, /Foo failed, Cannot read property 'woohoo' of undefined/);
   });
 });
 

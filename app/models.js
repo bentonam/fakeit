@@ -314,7 +314,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     fn = fn.map((line) => `  ${line}`).filter(Boolean).join('\n');
 
     // wrap the users function in the function we're going to use to trigger their function
-    fn = `function __result(documents, globals, inputs, faker, chance, document_index) {\n${fn}\n}`;
+    fn = `function __result(documents, globals, inputs, faker, chance, document_index, require) {\n${fn}\n}`;
 
     // if a babel config exists then transform the function
     if (
@@ -334,7 +334,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     // create the main function that will be run.
     /* eslint-disable indent */
     fn = [
-      `function ${name}(_documents, _globals, _inputs, _faker, _chance, _document_index) {`,
+      `function ${name}(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {`,
         // indent each line and create a string
         fn.split('\n').map((line) => `  ${line}`).filter(Boolean).join('\n'),
         '  return __result.apply(this, [].slice.call(arguments));',
