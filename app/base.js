@@ -27,6 +27,10 @@ export default class Base extends Logger {
     if (this.options.verbose) {
       this.options.log = true;
     }
+
+    if (!this.options.log) {
+      this.options.spinners = false;
+    }
   }
 
   ///# @name resolvePaths
