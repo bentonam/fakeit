@@ -65,8 +65,11 @@ coverage test-coverage code-coverage:
 
 # These commands only run the report of the code coverage
 report-coverage report-code-coverage:
-	@[ -d ./.nyc_output ] && NODE_ENV="test" nyc report || make test-coverage
+	@[ -d ./.nyc_output ] && NODE_ENV="test" nyc report || make test-coverage report-coverage
 
+# posts code coverage to coveralls
+post-coverage:
+	@[ -d ./.nyc_output ] && nyc report --reporter=text-lcov | coveralls || make test-coverage post-coverage
 
 # The command the ci server runs
 ci:

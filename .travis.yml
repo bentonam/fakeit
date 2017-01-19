@@ -14,3 +14,4 @@ cache:
 
 install: make install
 script: make ci
+after_success: make post-coverage
