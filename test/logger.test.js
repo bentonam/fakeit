@@ -7,6 +7,7 @@ import { PassThrough as PassThroughStream } from 'stream';
 import _ from 'lodash';
 import getStream from 'get-stream';
 const test = ava.group('logger:');
+import formatSeconds from 'format-seconds';
 const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
 
 test.beforeEach((t) => {
@@ -133,36 +134,27 @@ test.serial.group('time', (test) => {
     t.is(actual.constructor.name, 'Logger');
   });
 
-  test.group((test) => {
-    const tests = [
-      { time: 1, expected: 1 },
-      { time: 100, expected: 100 },
-      { time: 500, expected: 500 },
-      { time: 1500, expected: 1.5 },
-      { time: 2500, expected: 2.5 },
-    ];
+  test.serial.group((test) => {
+    let number = 0.0000025;
+    const tests = _.times(9, () => {
+      number *= 10;
+      return number;
+    });
 
-    tests.forEach(({ time, expected }) => {
-      test(expected.toString(), async (t) => {
-        let min = expected;
-        let max = expected;
+    tests.forEach((time) => {
+      const expected = formatSeconds(time);
+      test(expected, async (t) => {
         t.context.time(expected);
         await delay(time);
-        let actual = t.context.timeEnd(expected);
+        const actual = t.context.timeEnd(expected);
         t.truthy(actual);
         t.is(typeof actual, 'string');
-        let [ number, unit ] = stripColor(actual).match(/\+?([0-9\.]+)([ms]+)/).slice(1);
-        number = parseFloat(number);
-        if (unit === 'ms') {
-          min -= 8;
-          max += 8;
-        } else {
-          min -= 0.2;
-          max += 0.2;
+        const [ number, unit ] = stripColor(actual).trim().match(/\+?([0-9\.]+)\s*([µmsn]+)?/).slice(1);
+        if (number !== '0') {
+          t.is(typeof unit, 'string');
+          t.truthy([ 'µs', 'ns', 'ms', 's', ].includes(unit));
         }
-
-        t.is(unit, time < 1000 ? 'ms' : 's');
-        t.truthy(number >= min && number <= max);
+        t.is(typeof parseFloat(number), 'number');
       });
     });
   });
@@ -233,10 +225,10 @@ test.serial.group('spinner', (test) => {
       t.is(text, 'stop');
     });
     {
-      const [ check, text, time ] = last_state.split(/\s+/);
+      const [ check, text, time, unit ] = last_state.split(/\s+/);
       t.is(check, '✔');
       t.is(text, 'stop');
-      t.truthy(/^\+2[0-9]{2}\.[0-9]{2}ms$/.test(time));
+      t.truthy(/^\+2[0-9]{2}\sms$/.test(`${time} ${unit}`));
     }
   });
 

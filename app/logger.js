@@ -5,6 +5,7 @@ import perfy from 'perfy';
 symbols.warn = symbols.warning;
 symbols.ok = symbols.okay = symbols.success;
 import ora from 'ora';
+import formatSeconds from 'format-seconds';
 
 /// @name Logger
 /// @description
@@ -135,18 +136,7 @@ export default class Logger {
     if (!label) {
       return this.log('error', 'You must pass in a label for `Logger.prototype.timeEnd`');
     }
-    const result = perfy.end(label);
-    let suffix = 's';
-    let time;
-    // convert to milliseconds
-    if (result.time < 1) {
-      time = result.milliseconds;
-      suffix = 'ms';
-    } else {
-      time = result.time;
-    }
-
-    time = `+${time.toFixed(2)}${suffix}`;
+    const time = `+${formatSeconds(perfy.end(label).time)}`;
     return `${chalk.cyan(time)}`;
   }
 
