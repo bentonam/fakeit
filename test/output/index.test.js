@@ -23,6 +23,7 @@ test('without args', async (t) => {
     root: output_root,
     log: true,
     verbose: false,
+    spinners: true,
     timestamp: true
   });
   t.truthy(t.context.log_types);
@@ -630,6 +631,22 @@ test.group('output', (test) => {
       t.deepEqual(files.sort(), keys);
     });
   }));
+
+
+  test('throws error', async (t) => {
+    t.context.output_options.output = p(root, 'error-folder');
+    await t.context.prepare();
+    t.context.outputter.output = function output() {
+      throw new Error('failed correctly');
+    };
+    const inspect = stdout.inspect();
+
+    await t.context.output(data.json.raw)
+      .then(() => t.fail())
+      .catch(() => t.pass());
+    inspect.restore();
+    t.truthy(/\[?Error: failed correctly\]?/.test(inspect.output[1].split(/\n/)[0].trim()));
+  });
 
   // These are too difficult to unit test but they are tested else where
   // test.group('couchbase', (test) => {

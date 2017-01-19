@@ -17,6 +17,7 @@ export default class Base extends Logger {
       root,
       log: true,
       verbose: false,
+      spinners: true,
       timestamp: true,
     }, this.options || {});
     this.options = to.extend(this.options, options);
@@ -25,6 +26,10 @@ export default class Base extends Logger {
 
     if (this.options.verbose) {
       this.options.log = true;
+    }
+
+    if (!this.options.log) {
+      this.options.spinners = false;
     }
   }
 

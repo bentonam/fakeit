@@ -18,6 +18,7 @@ import findRoot from 'find-root';
 export default class Models extends Base {
   constructor(options = {}) {
     super(to.extend({
+      count: 0,
       seed: 0,
       babel_config: '+(.babelrc|package.json)',
     }, options));
@@ -29,6 +30,8 @@ export default class Models extends Base {
     this.registered_models = []; // holds the paths that have already been added
 
     this.prepared = false;
+
+    this.progress = this.spinner('Models');
   }
 
   ///# @name prepare
@@ -89,6 +92,13 @@ export default class Models extends Base {
     this.prepared = true;
   }
 
+  ///# @name update
+  ///# @description
+  ///# This updates the progress spinner to show how many models have been parsed and how many are left
+  update() {
+    this.progress.text = `Models (${this.models.length}/${this.registered_models.length})`;
+  }
+
   /// @name filterModelFiles
   /// @description This is used to filter out valid and unregistered model files
   /// @returns {array}
@@ -99,6 +109,7 @@ export default class Models extends Base {
   }
 
   async registerModels(models, dependency = false) {
+    this.progress.start();
     // if models weren't passed in then don't do anything
     if (!models) {
       return;
@@ -136,6 +147,7 @@ export default class Models extends Base {
 
       // add it to the models
       this.registered_models.push(file);
+      this.update();
 
       // read yaml file and convert it to json
       const model = await utils.parsers.yaml.parse(to.string(await fs.readFile(file)));
@@ -169,10 +181,18 @@ export default class Models extends Base {
       // add the parsed model to the global object should always have a model name
       await this.parseModel(model);
       this.models.push(model);
-    });
+      this.update();
+    })
+      .catch((err) => {
+        this.progress.fail(err);
+      });
 
     // update the models order
     this.models = resolveDependenciesOrder(this.models);
+
+    if (this.models.length === this.registered_models.length) {
+      this.progress.stop();
+    }
     return this;
   }
 
@@ -294,7 +314,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     fn = fn.map((line) => `  ${line}`).filter(Boolean).join('\n');
 
     // wrap the users function in the function we're going to use to trigger their function
-    fn = `function __result(documents, globals, inputs, faker, chance, document_index) {\n${fn}\n}`;
+    fn = `function __result(documents, globals, inputs, faker, chance, document_index, require) {\n${fn}\n}`;
 
     // if a babel config exists then transform the function
     if (
@@ -314,7 +334,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     // create the main function that will be run.
     /* eslint-disable indent */
     fn = [
-      `function ${name}(_documents, _globals, _inputs, _faker, _chance, _document_index) {`,
+      `function ${name}(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {`,
         // indent each line and create a string
         fn.split('\n').map((line) => `  ${line}`).filter(Boolean).join('\n'),
         '  return __result.apply(this, [].slice.call(arguments));',

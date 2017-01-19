@@ -159,13 +159,20 @@ export async function readFiles(files) {
 export async function pool(items, fn, limit = 100) {
   let i = 0;
   const results = [];
+  let length;
+  if (typeof items === 'number') {
+    length = items;
+    items = [];
+  } else {
+    length = items.length;
+  }
   const producer = () => {
-    if (i < items.length) {
+    if (i < length) {
       const index = i;
-      return fn(items[index], i++, items)
-        .then((result) => {
-          results[index] = result;
-        });
+      return fn(items[index] || i, i++, items)
+      .then((result) => {
+        results[index] = result;
+      });
     }
 
     return null;

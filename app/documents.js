@@ -1,7 +1,7 @@
 import faker from 'faker';
 import Chance from 'chance';
 import Base from './base';
-import { objectSearch } from './utils';
+import { objectSearch, pool } from './utils';
 import { set, get } from 'lodash';
 import to from 'to-js';
 
@@ -13,9 +13,9 @@ import to from 'to-js';
 /// @name Document
 /// @description This is used to generate documents based off a model
 export default class Document extends Base {
-  constructor(options, documents = {}, globals = {}, inputs = {}) {
+  constructor(options = {}, documents = {}, globals = {}, inputs = {}) {
     super(options);
-    this.options = this.options || {};
+    this.options = to.extend({ count: 0 }, this.options);
     this.documents = documents;
     this.globals = globals;
     this.inputs = inputs;
@@ -31,7 +31,7 @@ export default class Document extends Base {
   ///# This builds the documents from the passed model
   ///# @arg {object} model - The model to generate data from
   ///# @returns {array} - The array of documents that were generated
-  build(model) {
+  async build(model) {
     if (!this.documents[model.name]) {
       this.documents[model.name] = [];
     }
@@ -43,13 +43,27 @@ export default class Document extends Base {
     }
     const key_type = to.type(model.key);
 
+    const spinner = this.spinner(`Documents ${model.name}`);
+    spinner.text = `${model.name}`;
+    const update = () => {
+      spinner.text = `${model.name} documents (${this.documents[model.name].length}/${model.data.count})`;
+    };
+
     // if there is a pre_run function call it
     this.runData(model.data.pre_run, model);
 
-    this.log('info', `Generating ${this.options.count || model.count} document(s) for ${model.name} model`);
+    // if the count is set then overwrite the model.data.count
+    if (this.options.count) {
+      model.data.count = this.options.count;
+    }
 
-    for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
-      const doc = this.buildDocument(model, i);
+    spinner.start();
+    const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
+    await pool(model.data.count, async (i) => { // loop over each model and execute in order of dependency
+      // this allows the spinner to actually update the count and doesn't affect performance much
+      const doc = await this.buildDocument(model, i);
+      update();
+      await delay(0);
       // build the key for the document
       let key;
       if (key_type === 'object') {
@@ -64,9 +78,12 @@ export default class Document extends Base {
       Object.defineProperty(doc, '__key', { value: key });
       Object.defineProperty(doc, '__name', { value: model.name });
       this.documents[model.name].push(doc);
-    }
+    }, this.options.spinners ? 75 : 1000);
 
     this.runData(model.data.post_run, model);
+
+    update();
+    spinner.stop();
     return this.documents[model.name];
   }
 
@@ -93,9 +110,10 @@ export default class Document extends Base {
   runData(fn, context, index = 0) {
     if (to.type(fn) === 'function') {
       try {
-        return fn.call(context, this.documents, this.globals, this.inputs, this.faker, this.chance, index);
+        return fn.call(context, this.documents, this.globals, this.inputs, this.faker, this.chance, index, require);
       } catch (e) {
-        this.log('error', `${fn.name} failed\n`, e);
+        e.message = `${fn.name} failed, ${e.message}`;
+        this.log('error', e);
       }
     }
   }

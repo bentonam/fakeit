@@ -4,6 +4,8 @@ import symbols from 'log-symbols';
 import perfy from 'perfy';
 symbols.warn = symbols.warning;
 symbols.ok = symbols.okay = symbols.success;
+import ora from 'ora';
+import formatSeconds from 'format-seconds';
 
 /// @name Logger
 /// @description
@@ -16,11 +18,16 @@ export default class Logger {
       log: true,
       verbose: false,
       timestamp: true,
+      spinners: true,
     }, options);
 
     // ensure that if `verbose` is true then `log` must also be true
     if (this.options.verbose) {
       this.options.log = true;
+    }
+
+    if (!this.options.log) {
+      this.options.spinners = false;
     }
 
     ///# @name log_types
@@ -35,6 +42,8 @@ export default class Logger {
       verbose: 'magenta',
       log: 'gray'
     };
+
+    this.spinners = {};
   }
 
   ///# @name log
@@ -44,23 +53,22 @@ export default class Logger {
   ///# will add special characters before the rest of the log depending on the type that was passed.
   ///# If it's not one of these then the type will default to `log` and the value you passed will be
   ///# prepended to the rest of the arguments
-  ///# @arg {*} ...args - Any other arguments that you wish to pass
+  ///# @arg {*} arg - What will be logged;
   ///# @chainable
-  log(type, ...args) {
+  log(type, arg) {
     if (type instanceof Error) {
-      args.unshift(type);
+      arg = type;
       type = 'error';
     }
     if (this.options.log || type === 'error') {
       if ([ 'time', 'timeEnd' ].includes(type)) {
-        return this[type](...args);
+        return this[type](arg);
       }
 
       if (!to.keys(this.log_types).includes(type)) {
-        args.unshift(type);
+        arg = type;
         type = 'log';
       }
-      args = args.join('\n');
 
       if (type === 'verbose') {
         if (!this.options.verbose) return;
@@ -74,10 +82,14 @@ export default class Logger {
         process.stdout.write(stamp);
       }
 
-      console.log(args);
+      console.log(arg);
 
       if (type === 'error') {
-        throw new Error(args);
+        if (arg instanceof Error) {
+          throw arg;
+        } else {
+          throw new Error(arg);
+        }
       }
     }
     return this;
@@ -124,18 +136,83 @@ export default class Logger {
     if (!label) {
       return this.log('error', 'You must pass in a label for `Logger.prototype.timeEnd`');
     }
-    const result = perfy.end(label);
-    let suffix = 's';
-    let time;
-    // convert to milliseconds
-    if (result.time < 1) {
-      time = result.milliseconds;
-      suffix = 'ms';
-    } else {
-      time = result.time;
+    const time = `+${formatSeconds(perfy.end(label).time)}`;
+    return `${chalk.cyan(time)}`;
+  }
+
+  ///# @name spinner
+  ///# @description
+  ///# This creates an instance of a spinner to help show progress of something. It returns and instance of [ora](https://github.com/sindresorhus/ora)
+  ///# @arg {string} options - Same options passed to [ora](https://github.com/sindresorhus/ora). You can additionaly pass in `verbose` as an option that is a boolean
+  ///# @returns {object} - The new instance of [ora](https://github.com/sindresorhus/ora)
+  spinner(options) {
+    if (typeof options === 'string') {
+      options = { text: options };
     }
 
-    time = `+${time.toFixed(2)}${suffix}`;
-    return `${chalk.cyan(time)}`;
+    if (this.spinners[options.text]) {
+      return this.spinners[options.text];
+    }
+    const spinner = this.spinners[options.text] = ora(options);
+    spinner.title = options.text;
+    const self = this;
+    // store the originals
+    spinner.originalStart = spinner.start;
+    spinner.originalStop = spinner.stop;
+    // overwrite it to support timing
+    spinner.start = function start() {
+      if (
+        !this.enabled ||
+        !self.options.spinners
+      ) {
+        return this;
+      }
+      this.originalStart();
+      if (self.options.verbose) {
+        self.time(`spinner_${this.title}`);
+      }
+      return this;
+    };
+    spinner.stop = function stop() {
+      if (
+        !this.enabled ||
+        this.id == null ||
+        !self.options.spinners
+      ) {
+        return this;
+      }
+
+      if (self.options.verbose) {
+        const time = self.timeEnd(`spinner_${this.title}`);
+        spinner.text += ` ${time}`;
+        this.succeed();
+        return this;
+      }
+      return this.originalStop();
+    };
+
+    spinner.fail = function fail(err) {
+      spinner.stopAndPersist(symbols.error);
+      // stop the rest of spinners
+      to.each(self.spinners, ({ value }) => {
+        value.originalStop();
+      });
+
+      self.log('error', err);
+    };
+
+    spinner.stopAndPersist = function stopAndPersist(symbol) {
+      if (
+        !this.enabled ||
+        this.id == null ||
+        !self.options.spinners
+      ) {
+        return this;
+      }
+      this.originalStop();
+      this.stream.write(`${symbol || ' '} ${this.text}\n`);
+      return this;
+    };
+    return spinner;
   }
 }

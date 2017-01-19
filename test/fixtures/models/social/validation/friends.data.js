@@ -9,6 +9,6 @@ module.exports = is.object({
       user_id: is.number().min(0).max(6),
       date_friended: is.date(),
     })
-    .min(1)
+    .min(0) // has to allow 0 because if only 1 document is created it won't let you to be friends with your self
     .max(200),
 });

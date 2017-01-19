@@ -3,11 +3,12 @@
 ////
 
 import path from 'path';
-import { extend } from 'lodash';
+import { extend, mean, uniqueId } from 'lodash';
 import to, { is } from 'to-js';
 import Base from '../base';
 import { parsers, pool } from '../utils';
 import default_options from './default-options';
+import perfy from 'perfy';
 
 export const output_types = [ 'return', 'console', 'couchbase', 'sync-gateway' ];
 
@@ -87,9 +88,11 @@ export default class Output extends Base {
   ///# @returns {array, object, string} - This is determined by the output type that's passed and the format that's used.
   ///# @async
   async output(documents) {
+    let count = 0;
     if (!documents) {
       return this.log('error', 'You must pass in documents to the output');
     }
+
     documents = to.array(documents);
 
     if (this.prepared !== true) {
@@ -100,28 +103,59 @@ export default class Output extends Base {
     }
 
     const { format, spacing, limit, output } = this.output_options;
+    const name = documents[0].__name; // eslint-disable-line
+    const spinner = this.spinner(`Outputting ${name}`);
+    const times = [];
+    const update = () => {
+      spinner.text = `Outputting ${name} to ${output} (${count}/${documents.length})`;
+      if (times.length) {
+        spinner.text += ` (${mean(times).toFixed(2)}ms on average)`;
+      }
+    };
+
     const parser = parsers[format].stringify;
 
     // if the output type is `return` or `console` then this will return the complete
     // data set instead of running them individually
     if ([ 'return', 'console' ].includes(output)) {
       const parsed = await parser(documents, spacing);
-      return output === 'console' ? this.outputter.output(null, parsed) : parsed;
+      // hack to get around the console outputting before the spinner
+      if (output === 'console') {
+        spinner.start();
+        const result = await this.outputter.output(null, parsed);
+        spinner.text = `Outputting ${name} to ${output}`;
+        spinner.stop();
+        console.log(result);
+        return result;
+      }
+      return parsed;
     }
 
     // if the output isn't `return` or `console` and the `format` is `csv`
     // then it needs to be updated
     if (format === 'csv') {
-      // key = documents[0].__name; // eslint-disable-line no-underscore-dangle
       documents = [ documents ];
     }
 
     // reformat the data into the output type
-    return pool(documents, async (document) => {
+    spinner.start();
+    return pool(documents, async (document, i) => {
+      const label = uniqueId(`document ${name} ${i}`);
+      perfy.start(label);
       const key = document.__key || document.__name || (document[0] || {}).__name || ''; // eslint-disable-line no-underscore-dangle
       // use the outputter's output function to output the data
-      return this.outputter.output(key, await parser(document, spacing));
-    }, limit);
+      const result = await this.outputter.output(key, await parser(document, spacing));
+      update(count++);
+      times.push(perfy.end(label).milliseconds);
+      return result;
+    }, limit)
+      .then((result) => {
+        spinner.stop();
+        return result;
+      })
+      .catch((err) => {
+        spinner.fail(err);
+      });
   }
 
   ///# @name finalize
