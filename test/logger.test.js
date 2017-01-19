@@ -84,7 +84,7 @@ test.serial.group('log', (test) => {
       inspect.restore();
       t.is(inspect.output.length, 2);
       let [ message, ...err_lines ] = inspect.output[1].split('\n');
-      t.is(message.trim(), 'Error: woohoo');
+      t.truthy(/\[?Error: woohoo\]?/.test(message.trim()));
       err_lines.forEach((line) => {
         line = line.trim();
         if (line) {

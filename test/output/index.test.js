@@ -645,7 +645,7 @@ test.group('output', (test) => {
       .then(() => t.fail())
       .catch(() => t.pass());
     inspect.restore();
-    t.is(inspect.output[1].split(/\n/)[0].trim(), 'Error: failed correctly');
+    t.truthy(/\[?Error: failed correctly\]?/.test(inspect.output[1].split(/\n/)[0].trim()));
   });
 
   // These are too difficult to unit test but they are tested else where

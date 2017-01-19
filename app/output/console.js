@@ -46,10 +46,14 @@ export default class Console extends Base {
       return this.prepare();
     }
 
-    // theres noting to setup for the Console output
-    // this is just here so that all the Outputters are setup the same
-    process.nextTick(() => {
-      this.prepared = true;
+
+    return new Promise((resolve) => {
+      // theres noting to setup for the Console output
+      // this is just here so that all the Outputters are setup the same
+      process.nextTick(() => {
+        this.prepared = true;
+        resolve();
+      });
     });
   }
 
