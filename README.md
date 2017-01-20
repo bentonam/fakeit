@@ -51,7 +51,7 @@ npm install fakeit
     -S, --no-spinners    Disables progress spinners
     -L, --no-log         Disables all logging except for errors
     -T, --no-timestamp   Disables timestamps from logging output
-    -f, --format <type>  this determins the output format to use. Supported formats: json, csv, yaml, yml, cson. (json)
+    -f, --format <type>  this determines the output format to use. Supported formats: json, csv, yaml, yml, cson. (json)
     -n, --spacing <n>    the number of spaces to use for indention (2)
     -l, --limit <n>      limit how many files are output at a time (100)
     -x, --seed <seed>    The global seed to use for repeatable data
