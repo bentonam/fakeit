@@ -68,12 +68,55 @@ At the root of a model the following keys are used, if it's not required then it
 #### `name` *(required)*
 The name of the model
 
-#### `type` *(required)*
-The data type of the model to be generated
+#### `type`
+The data type of the model to be generated. This needs to be set top level, as well as a per property/items basis. It determines the starting data type, and how the result of the build loop will be converted once complete
 
 #### `key`
 The main key for the document.  This is a reference to a generated property and is used for the filename or Document ID.
 If the key is an object it can use the same keys as the `data` option defined below. If the key is a string then it use the string value to find the value of the document that was just built.
+**Note:** If type isn't set it defaults to `'null'`.
+
+###### Available types
+
+| types                              | data type   | description                                                                                                                                   |
+|------------------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| number, long, integer              | `0`         | Converts result to number using parseInt                                                                                                      |
+| double, float                      | `0`         | Converts result to number using parseFloat                                                                                                    |
+| string                             | `''`        | Converts result to a string using result.toString()                                                                                           |
+| boolean, bool                      | `false`     | Converts result to a boolean if it's not already, if result is a string and is `'false'`, `'0'`, `'undefined'`, `'null'` it will return false |
+| array                              | `[]`        | returns the result from the build loop                                                                                                        |
+| object, structure                  | `{}`        | returns the result from the build loop                                                                                                        |
+| null, undefined, * (anything else) | `null`      | returns the result from the build loop                                                                                                        |
+
+###### Places where it can be set
+
+```yaml
+name: Types example
+# typically object or array
+type: object
+key:
+  build: faker.random.uuid()
+properties:
+  foo:
+    # can be set on properties of an object
+    type: object
+    properties:
+      bar:
+        # can be set on nested properties
+        type: string
+        data:
+          value: FakeIt ftw
+  bar:
+    type: array
+    items:
+      # can be set on items
+      type: string
+      data:
+        min: 1
+        max: 10
+        build: faker.random.word()
+```
+
 
 
 #### `seed`
