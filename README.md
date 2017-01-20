@@ -23,7 +23,9 @@ Generated data can be output in the following formats and destinations:
 ## Install
 
 ```bash
-npm install fakeit
+npm install fakeit --save-dev
+# or
+npm install fakeit --global
 ```
 
 ## CLI Usage
