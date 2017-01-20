@@ -1,9 +1,11 @@
 import Models from './models';
-import { series } from 'async-array-methods';
+import { map } from 'async-array-methods';
 import Output from './output/index';
 import Base from './base';
 import to from 'to-js';
+import { uniqueId } from 'lodash';
 import Document from './documents';
+import { success } from 'log-symbols';
 
 /// @name Fakeit
 /// @page api
@@ -19,6 +21,8 @@ import Document from './documents';
 ///   count: null,
 ///   // Base options
 ///   root: process.cwd(),
+///   seed: 0,
+///   babel_config: '+(.babelrc|package.json)',
 ///   log: true,
 ///   verbose: false,
 ///   timestamp: true,
@@ -42,28 +46,35 @@ export default class Fakeit extends Base {
     if (!models) {
       return;
     }
+    const label = uniqueId('fakeit');
+    this.time(label);
     const model = new Models(this.options);
     const output = new Output(this.options, output_options);
-    const preparing = output.prepare();
+    output.prepare();
 
     await model.registerModels(models);
 
     const document = new Document(this.options, this.documents, this.globals, model.inputs);
 
-    await preparing;
     let result = [];
 
     for (let obj of to.flatten(model.models)) {
-      const value = document.build(obj);
+      const value = await document.build(obj);
       if (!obj.is_dependency) {
         result.push(value);
       }
     }
 
+    result = await Promise.all(result);
 
-    result = await series(result, (data) => output.output(data));
-
+    await output.preparing;
+    result = await map(result, (data) => output.output(data));
     await output.finalize();
+    const time = this.timeEnd(label);
+    const total = to.reduce(document.documents, (prev, { value }) => prev + value.length, 0);
+    if (this.options.verbose) {
+      console.log(`${success} Finished generating ${total} documents in ${time}`);
+    }
 
     return result;
   }

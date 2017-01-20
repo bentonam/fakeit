@@ -1,90 +1,193 @@
-import program from 'commander';
+import commander from 'commander';
 import Fakeit from './index.js';
 import updateNotifier from 'update-notifier';
 import pkg from './../package.json';
-import { pick, omit } from 'lodash';
+import path from 'path';
+import { extend, flattenDeep, pick } from 'lodash';
 import chalk from 'chalk';
-import to from 'to-js';
 
 export default async function() {
   // check for update and notify
   updateNotifier({ pkg }).notify();
+  const base_options = [
+    'root',
+    'babel',
+    'count',
+    'verbose',
+    'log',
+    'spinners',
+    'timestamp',
+    'seed',
+  ];
 
-  // const deprecated = chalk.red('[DEPRECATED]:');
-
-  // get the inputs
-  program
-    .version(pkg.version)
-    .usage('fakeit [options]')
-
-    // @todo change this option to be `--format`
-    .option('-o, --output [value]', `The output format to generate. Supported formats: ${code('json', 'csv', 'yaml', 'yml', 'cson')}. (${dim('json')})`, 'json') // eslint-disable-line max-len
-
-    // @todo change this option to a file path and determin the type based off the extention.
-    .option('-a, --archive [value]', 'The archive file to generate. Supported formats are: zip')
-
-    // @todo change this option to be the last argument passed to `fakeit`
-    .option('-m, --models [value]', `A directory or comma-delimited list of files models to use. (${dim(process.cwd())})`, process.cwd())
-
-    // @todo change this option to `--output`
-    .option('-d, --destination [value]', `The output destination. Supported values: ${code('couchbase', 'sync-gateway', 'console')} or a ${code('directory path')}. (${dim('console')})`, 'console') // eslint-disable-line max-len
-
-    // @todo change this option to be `-n`
-    .option('-f, --spacing [value]', `The spacing format to use for JSON and YAML file generation. ${code('2')}`, 2)
-
-    // @todo change this option to be `--count`
-    .option('-n, --number [value]', 'Overrides the number of documents to generate specified by the model.')
-
-    // @todo deprecate this option after the `input` has moved to the model layer.
-    .option('-i, --input [value]', `List of globs to use as inputs. Support formats are: ${code('json', 'yaml', 'yml', 'csv', 'cson', 'zip')}`)
-
-    // @todo move these option to `fakeit serve` or `fakeit server`.
-    .option('-s, --server [address]', `Couchbase Server or Sync-Gateway address. (${dim('127.0.0.1')})`, '127.0.0.1')
-    .option('-b, --bucket [name]', `The name of a Couchbase Bucket. (${dim('default')})`, 'default')
-    .option('-p, --password [value]', 'Bucket password')
-    .option('-u, --username [name]', 'The sync-gateway username')
-
-    .option('-t, --timeout [value]', 'A timeout value for database operations', 5000)
-    .option('-l, --limit [value]', `Limit the number of save operations at a time. (${dim('100')})`, 100)
-    .option('-v, --verbose', 'Whether or not to use verbose output')
-
-    // @todo deprecate this option after the way models are parsed has been updated to automatically include other dependencies.
-    .option('-e, --exclude [model]', 'A comma-delimited list of model names to exclude from output', '')
-    .parse(process.argv);
-
-
-  let output_options = [
+  const output_options = [
+    // global options
+    'format',
     'spacing',
-    'output',
+    'limit',
+    // action specific options
+    'highlight',
+    'archive',
     'server',
     'bucket',
-    'password',
     'username',
-    'destination',
-    'archive',
+    'password',
+    'timeout',
+    // gets set based off the command that's used
+    'output',
   ];
-  const options = omit(program, output_options);
-  output_options = pick(program, output_options);
 
-  const fakeit = new Fakeit(options);
-  try {
-    await fakeit.generate(program.models, output_options);
-    process.exit();
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
+  // get the inputs
+  commander
+    .version(pkg.version)
+    .usage('[command] [<file|directory|glob> ...]')
+    .option('--root <directory>', `Defines the root directory from which paths are resolve from (${dim('process.cwd()')})`, process.cwd())
+    .option('--babel <glob>', `The location to the babel config (${dim('+(.babelrc|package.json)')})`, '+(.babelrc|package.json)')
+    .option('-c, --count <n>', 'Overrides the number of documents to generate specified by the model. Defaults to model defined count', parseInt)
+    .option('-v, --verbose', `Enables verbose logging mode (${dim(false)})`)
+    .option('-S, --no-spinners', 'Disables progress spinners', false)
+    .option('-L, --no-log', 'Disables all logging except for errors', false)
+    .option('-T, --no-timestamp', 'Disables timestamps from logging output', false)
+    // global output options
+    .option('-f, --format <type>', `this determins the output format to use. Supported formats: ${code('json', 'csv', 'yaml', 'yml', 'cson')}. (${dim('json')})`, 'json') // eslint-disable-line
+    .option('-n, --spacing <n>', `the number of spaces to use for indention (${dim('2')})`, 2)
+    .option('-l, --limit <n>', `limit how many files are output at a time (${dim('100')})`, 100)
+    .option('-x, --seed <seed>', 'The global seed to use for repeatable data', (seed) => {
+      const number = parseInt(seed);
+
+      if (number > 0 || seed === '0') {
+        return number;
+      }
+      return seed;
+    });
+
+
+  commander
+    .command('console')
+    .option('-h, --no-highlight', 'This turns off the cli-table when a csv format', Boolean, false)
+    .description('outputs the result to the console')
+    .action(async (...args) => {
+      const { highlight } = args.pop();
+
+      await run({ output: 'console', highlight });
+    });
+
+  function runServer(output) {
+    /* istanbul ignore next : too difficult to test the servers via the cli */
+    return async (...args) =>{
+      const options = pick(args.pop(), [ 'server', 'bucket', 'username', 'password', 'timeout' ]);
+      options.output = output;
+      await run(options);
+    };
+  }
+
+  commander
+    .command('couchbase')
+    .option('-s, --server', `The server address (${dim('127.0.0.1')})`)
+    .option('-b, --bucket', `The bucket name (${dim('default')})`)
+    .option('-u, --username', 'the username to use (optional)')
+    .option('-p, --password', 'the password for the account (optional)')
+    .option('-t, --timeout', `timeout for the servers (${dim(5000)})`)
+    .description('This will output to couchbase')
+    .action(runServer('couchbase'));
+
+  commander
+    .command('sync-gateway')
+    .option('-s, --server', `The server address (${dim('127.0.0.1')})`)
+    .option('-b, --bucket', `The bucket name (${dim('default')})`)
+    .option('-u, --username', 'the username to use (optional)')
+    .option('-p, --password', 'the password for the account (optional)')
+    .option('-t, --timeout', 'timeout for the servers')
+    .description('no idea')
+    .action(runServer('sync-gateway'));
+
+  commander
+    .command('directory [<dir|file.zip>] [<models...>]')
+    .alias('folder')
+    .option('-a, --archive [file.zip]', 'If an archive file is passed then the data will be output as a zip file', '')
+    .description('Output the file(s) into a directory')
+    .action(async (output, models, { archive }) => {
+      const parsed = path.parse(output);
+
+      if (parsed.ext) {
+        archive = parsed.base;
+        output = parsed.dir || commander.root;
+      }
+
+      // update the commander args to be correct
+      commander.args = process.argv.slice(4);
+      await run({ archive, output });
+    });
+
+
+  commander
+    .command('help')
+    .action(() => {
+      commander.help();
+    });
+
+  commander.parse(process.argv);
+
+  if (!commander.args.length) {
+    commander.help();
+  }
+
+
+  // this function is used as a helper to run the different actions
+  async function run(output = {}, opts = {}) {
+    output = typeof output === 'string' ? { output } : output;
+
+
+    opts = pick(extend(pick(commander, base_options), opts), base_options);
+    opts.babel_config = opts.babel;
+    delete opts.babel;
+
+    output = extend(pick(commander, output_options), pick(output, output_options));
+
+    const output_path = path.join(output.output, output.archive || '');
+    const models = commander.args.filter((str, i, args) => {
+      const prev = args[i - 1] || '';
+      if (
+        typeof str !== 'string' ||
+        // if the previous str was one of these commands that has options then remove it
+        /^(\-\-(?:commander|root|babel|count|format|spacing|seed|limit)|(?:\-[cfnxl]{1,}))$/.test(prev) ||
+        // if the str is one of the commands then remove it
+        /^(([-]{1,2}[a-zA-Z]+)|\-\-no\-[a-z]+)$/.test(str) ||
+        // if the str is the same as the output path then remove it
+        str === output_path
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    const fakeit = new Fakeit(opts);
+    if (!models.length) {
+      fakeit.log('warning', 'you must pass in models to use');
+      commander.help();
+      return;
+    }
+
+    try {
+      await fakeit.generate(models, output);
+      process.exit();
+    } catch (err) {
+      process.exit(1);
+      throw err;
+    }
   }
 }
 
+/* istanbul ignore next : too hard to test */
 process.on('uncaughtException', (err) => {
-  console.error('An uncaughtException was found:', err);
+  console.log('An uncaughtException was found:', err);
   process.exit(1);
 });
 
 export function code(...args) {
-  return to.flatten(args).map((str) => chalk.bold(str)).join(', ');
+  return flattenDeep(args).map((str) => chalk.bold(str)).join(', ');
 }
 
 export function dim(...args) {
-  return to.flatten(args).map((str) => chalk.dim(str)).join(', ');
+  return flattenDeep(args).map((str) => chalk.dim(str)).join(', ');
 }

@@ -1,8 +1,7 @@
 import faker from 'faker';
 import Chance from 'chance';
-const chance = new Chance();
 import Base from './base';
-import { objectSearch } from './utils';
+import { objectSearch, pool } from './utils';
 import { set, get } from 'lodash';
 import to from 'to-js';
 
@@ -14,12 +13,17 @@ import to from 'to-js';
 /// @name Document
 /// @description This is used to generate documents based off a model
 export default class Document extends Base {
-  constructor(options, documents = {}, globals = {}, inputs = {}) {
+  constructor(options = {}, documents = {}, globals = {}, inputs = {}) {
     super(options);
-    this.options = this.options || {};
+    this.options = to.extend({ count: 0 }, this.options);
     this.documents = documents;
     this.globals = globals;
     this.inputs = inputs;
+    // set chance and faker without a seed by default
+    // so it can still be used
+    this.chance = new Chance();
+    this.faker = faker;
+    this.updateFakers(this.options.seed);
   }
 
   ///# @name build
@@ -27,23 +31,39 @@ export default class Document extends Base {
   ///# This builds the documents from the passed model
   ///# @arg {object} model - The model to generate data from
   ///# @returns {array} - The array of documents that were generated
-  build(model) {
+  async build(model) {
     if (!this.documents[model.name]) {
       this.documents[model.name] = [];
     }
+
+    this.updateFakers(model.seed);
 
     if (!model.data) {
       model.data = { count: 1 };
     }
     const key_type = to.type(model.key);
 
+    const spinner = this.spinner(`Documents ${model.name}`);
+    spinner.text = `${model.name}`;
+    const update = () => {
+      spinner.text = `${model.name} documents (${this.documents[model.name].length}/${model.data.count})`;
+    };
+
     // if there is a pre_run function call it
     this.runData(model.data.pre_run, model);
 
-    this.log('info', `Generating ${model.count} documents for ${model.name} model`);
+    // if the count is set then overwrite the model.data.count
+    if (this.options.count) {
+      model.data.count = this.options.count;
+    }
 
-    for (let i = 0; i < model.data.count; i++) { // loop over each model and execute in order of dependency
-      const doc = this.buildDocument(model, i);
+    spinner.start();
+    const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
+    await pool(model.data.count, async (i) => { // loop over each model and execute in order of dependency
+      // this allows the spinner to actually update the count and doesn't affect performance much
+      const doc = await this.buildDocument(model, i);
+      update();
+      await delay(0);
       // build the key for the document
       let key;
       if (key_type === 'object') {
@@ -58,10 +78,27 @@ export default class Document extends Base {
       Object.defineProperty(doc, '__key', { value: key });
       Object.defineProperty(doc, '__name', { value: model.name });
       this.documents[model.name].push(doc);
-    }
+    }, this.options.spinners ? 75 : 1000);
 
     this.runData(model.data.post_run, model);
+
+    update();
+    spinner.stop();
     return this.documents[model.name];
+  }
+
+  ///# @name updateFakers
+  ///# @description
+  ///# If a usable seed is passed then this updates the instances of chance and faker to use a seed version
+  ///# @arg {number, null} seed - The seed to use for this instance
+  ///# @arg {number} modifier
+  updateFakers(seed) {
+    // if the seed is a number then update
+    // the instance of chance and faker
+    if (typeof seed === 'number') {
+      this.chance = new Chance(seed);
+      this.faker.seed(seed);
+    }
   }
 
   ///# @name runData
@@ -73,9 +110,10 @@ export default class Document extends Base {
   runData(fn, context, index = 0) {
     if (to.type(fn) === 'function') {
       try {
-        return fn.call(context, this.documents, this.globals, this.inputs, faker, chance, index);
+        return fn.call(context, this.documents, this.globals, this.inputs, this.faker, this.chance, index, require);
       } catch (e) {
-        this.log('error', `${fn.name} failed\n`, e);
+        e.message = `${fn.name} failed, ${e.message}`;
+        this.log('error', e);
       }
     }
   }
@@ -188,13 +226,16 @@ export default class Document extends Base {
       } else if (property.data.build) {
         return this.runData(property.data.build, doc, index);
       } else if (property.data.fake) {
-        return faker.fake(property.data.fake);
+        return this.faker.fake(property.data.fake);
       }
     } else if (
       property.type === 'array' &&
       property.items
     ) {
-      const count = property.items.data.count;
+      let { count, min, max } = property.items.data;
+      if (count <= 0 && !!max) {
+        count = this.chance.integer({ min, max });
+      }
 
       // builds a complex array
       if (property.items.type === 'object') {

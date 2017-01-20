@@ -7,6 +7,7 @@ import Models, {
   parseModelTypes,
   parseModelDefaults,
   parseModelCount,
+  parseModelSeed,
   resolveDependenciesOrder,
 } from '../dist/models.js';
 import path, { join as p } from 'path';
@@ -18,6 +19,8 @@ import fs from 'fs-extra-promisify';
 import AdmZip from 'adm-zip';
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
+import { stdout } from 'test-console';
+import { stripColor } from 'chalk';
 /* istanbul ignore next */
 const utils = require('./utils');
 const models = utils.models({
@@ -29,16 +32,6 @@ const models = utils.models({
     return model.replace(/models(.*)\.yaml/g, 'validation$1.model.js');
   }
 });
-
-const done = [
-  p('contacts', 'models', 'contacts.yaml'),
-  p('music', 'models', 'countries.yaml')
-];
-
-function filterDone() { // eslint-disable-line
-  return _.without(models.files, ...done);
-}
-
 
 let babel_config, contents;
 
@@ -55,27 +48,36 @@ test.beforeEach((t) => {
   });
 });
 
+
 test('without args', async (t) => {
   t.context.options.log = true;
-  const { error } = is.object({
-    options: is.object({
-      babel_config: is.string().regex(/\+\(\.babelrc\|package\.json\)/),
-    })
-      .unknown()
-      .required(),
+  const expected = {
+    options: {
+      root: models_root,
+      log: true,
+      verbose: false,
+      spinners: false,
+      timestamp: true,
+      count: 0,
+      seed: 0,
+      babel_config: '+(.babelrc|package.json)'
+    },
     log_types: is.object().required(),
     inputs: is.object().length(0),
     models: is.array().length(0),
     prepared: is.boolean(),
     registered_models: is.array().length(0),
-  })
-    .validate(t.context);
+    spinners: is.object().required(),
+    progress: is.object().required(),
+  };
+  const { error } = is.validate(t.context, expected);
   if (error) {
     t.fail(error);
   } else {
     t.pass();
   }
 });
+
 
 test('prepare', async (t) => {
   t.is(t.context.prepared, false);
@@ -90,7 +92,8 @@ test('prepare', async (t) => {
   t.deepEqual(t.context.options.babel_config, babel_config);
 });
 
-test.group('setup', (test) => {
+
+test.serial.group('setup', (test) => {
   test('babel_config as a string', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
@@ -121,6 +124,21 @@ test.group('setup', (test) => {
   test('babel_config in the package.json', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
+    t.context.options.babel_config = 'package.json';
+    t.is(typeof t.context.options.babel_config, 'string');
+    const preparing = t.context.setup();
+    t.is(typeof t.context.preparing.then, 'function');
+    t.is(t.context.prepared, false);
+    await preparing;
+    t.is(t.context.prepared, true);
+    t.is(to.type(t.context.options.babel_config), 'object');
+    t.deepEqual(t.context.options.babel_config, babel_config);
+  });
+
+  test('babel_config process.cwd failed to find a babel config', async (t) => {
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+    t.context.options.root = t.context.options.root.split('fakeit')[0].slice(0, -1);
     t.context.options.babel_config = 'package.json';
     t.is(typeof t.context.options.babel_config, 'string');
     const preparing = t.context.setup();
@@ -197,11 +215,23 @@ test.group('registerModels', (test) => {
 
     return actual;
   }));
+
+  test.serial('fails when filepath that was passed doesn\'t exist', async (t) => {
+    const inspect = stdout.inspect();
+    await t.context.registerModels('lol/i/do/not/exist.yaml')
+      .then(() => t.fail())
+      .catch(() => t.pass());
+    inspect.restore();
+    t.truthy(/^\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\]\s+.\s+error:$/.test(stripColor(inspect.output[0]).trim()));
+    t.truthy(/ENOENT: no such file or directory/.test(inspect.output[1]));
+  });
 });
+
 
 test('parseModel', (t) => {
   t.is(typeof t.context.parseModel, 'function');
 });
+
 
 test.group('filterModelFiles', (test) => {
   test('filter none', (t) => {
@@ -216,6 +246,7 @@ test.group('filterModelFiles', (test) => {
     t.deepEqual(t.context.filterModelFiles([ 'foo.yaml', 'bar.yaml', 'baz.zip', 'qux.json', 'quxx.cson' ]), [ 'bar.yaml' ]);
   });
 });
+
 
 test.group('parseModelDependencies', models(async (t, file) => {
   const model = to.clone(contents[file]);
@@ -260,6 +291,7 @@ test.group('parseModelDependencies', models(async (t, file) => {
   check(model.data.dependencies);
 }));
 
+
 test.group('parseModelInputs', models(async (t, file) => {
   t.deepEqual(to.keys(t.context.inputs).length, 0);
   const model = to.clone(contents[file]);
@@ -295,12 +327,13 @@ test.group('parseModelInputs', models(async (t, file) => {
   }
 }));
 
+
 test.group('parseModelFunctions', (test) => {
   test.group('ensure all `pre` and `post` instances are functions', models((t, file) => {
     const model = to.clone(contents[file]);
     const paths = utils.getPaths(model, /((pre|post)_run)|(pre_|post_)?build$/);
     const obj = _.pick(model, paths);
-    parseModelFunctions(obj);
+    parseModelFunctions(obj, babel_config);
 
     for (let str of paths) {
       let fn = _.get(obj, str);
@@ -316,17 +349,17 @@ test.group('parseModelFunctions', (test) => {
       {
         name: 'single line has a return',
         actual: '`contact_${this.contact_id}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index) {\n  function __result(documents, globals, inputs, faker, chance, document_index) {\n    return \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    return \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
       },
       {
         name: 'multi line doesn\'t have automatic return',
         actual: 'console.log("woohoo");\n`contact_${this.contact_id}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index) {\n  function __result(documents, globals, inputs, faker, chance, document_index) {\n    console.log(\"woohoo\");\n    \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    console.log(\"woohoo\");\n    \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
       },
       {
         name: 'object deconstruction',
         actual: 'const { countries } = inputs\nreturn `${this.contact_id}${countries[0]}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index) {\n  function __result(documents, globals, inputs, faker, chance, document_index) {\n    var countries = inputs.countries;\n  \n    return \"\" + this.contact_id + countries[0];\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    var countries = inputs.countries;\n  \n    return \"\" + this.contact_id + countries[0];\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
       },
     ];
     /* eslint-enable max-len, quotes */
@@ -377,7 +410,7 @@ test.group('parseModelFunctions', (test) => {
       const stub = tests.map((item) => null); // eslint-disable-line
       test(name, (t) => {
         stub[i] = name;
-        const expected = `function build(_documents, _globals, _inputs, _faker, _chance, _document_index) {\n  function __result(documents, globals, inputs, faker, chance, document_index) {\n    return ${name} + \"[${i}]\";\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}`; // eslint-disable-line max-len
+        const expected = `function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    return ${name} + \"[${i}]\";\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}`; // eslint-disable-line max-len
         let actual = {
           name,
           build: `\`\$\{${name}\}[${i}]\``
@@ -391,6 +424,7 @@ test.group('parseModelFunctions', (test) => {
     });
   });
 });
+
 
 test.group('parseModelReferences', models((t, file) => {
   const model = to.clone(contents[file]);
@@ -418,6 +452,7 @@ test.group('parseModelReferences', models((t, file) => {
   }
 }));
 
+
 test.group('parseModelTypes', models((t, file) => {
   const model = to.clone(contents[file]);
   const pattern = /.*properties\.[^.]+(\.items)?$/;
@@ -435,6 +470,7 @@ test.group('parseModelTypes', models((t, file) => {
     t.is(_.get(model, str).type, 'null');
   }
 }, models.files));
+
 
 test.group('parseModelDefaults', models((t, file) => {
   const test_model = to.clone(contents[file]);
@@ -463,6 +499,7 @@ test.group('parseModelDefaults', models((t, file) => {
     }
   }
 }));
+
 
 test.group('parseModelCount', (test) => {
   function getContext() {
@@ -540,12 +577,6 @@ test.group('parseModelCount', (test) => {
     t.is(obj.data.count, 1);
   });
 
-  test('doesn\'t do anything if no data keys exist', async (t) => {
-    const obj = {};
-    parseModelCount(obj);
-    t.deepEqual(obj, {});
-  });
-
   test('returns 1 when data is 0', async (t) => {
     const obj = {
       data: { min: 0, max: 0, count: 0 },
@@ -557,15 +588,65 @@ test.group('parseModelCount', (test) => {
 
   test.group(models((t, file) => {
     const model = to.clone(contents[file]);
-    // const original_model = to.clone(contents[file]);
     parseModelDefaults(model);
     parseModelCount(model);
-    for (let str of utils.getPaths(model, /^(?:.*\.items\.data|data)$/)) {
-      let property = _.get(model, str);
-      t.truthy(property.count > 0);
+    t.truthy(model.data.count > 0);
+    if (!!model.data.max) {
+      t.truthy(model.data.count <= model.data.max);
+      t.truthy(model.data.count >= model.data.min);
     }
-  }, 0));
+  }));
 });
+
+
+test.group('parseModelSeed', (test) => {
+  function toNumber(str) {
+    let result = '';
+    for (let char of str) {
+      result += char.charCodeAt(0);
+    }
+    return parseInt(result);
+  }
+
+  test('uses passed seed abc', (t) => {
+    const model = {};
+    const seed = 'abc';
+    parseModelSeed(model, seed);
+    t.is(typeof model.seed, 'number');
+    t.is(model.seed, toNumber(seed));
+  });
+
+  test('uses passed seed def when model has a seed set', (t) => {
+    const original_seed = 'abc';
+    const model = { seed: original_seed };
+    const seed = 'def';
+    parseModelSeed(model, seed);
+    t.is(typeof model.seed, 'number');
+    t.not(model.seed, toNumber(original_seed));
+    t.is(model.seed, toNumber(seed));
+  });
+
+  test('set seed ghi', (t) => {
+    const seed = 'ghi';
+    const model = { seed };
+    parseModelSeed(model);
+    t.is(typeof model.seed, 'number');
+    t.is(model.seed, toNumber(seed));
+  });
+
+  test('seed us set to null when it\'s not defined or passed', (t) => {
+    const model = {};
+    parseModelSeed(model);
+    t.truthy(model.seed == null);
+  });
+
+  test('seed uses set number 123456789', (t) => {
+    const model = { seed: 123456789 };
+    parseModelSeed(model);
+    t.is(model.seed, 123456789);
+  });
+});
+
 
 test.group('resolveDependenciesOrder', (test) => {
   const tests = [];

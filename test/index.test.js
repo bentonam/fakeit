@@ -1,4 +1,3 @@
-import proxyquire from 'proxyquire';
 import default_options from '../dist/output/default-options';
 import to from 'to-js';
 import globby from 'globby';
@@ -8,36 +7,7 @@ import path, { join as p } from 'path';
 import { stripColor } from 'chalk';
 import ava from 'ava-spec';
 import AdmZip from 'adm-zip';
-
-/* istanbul ignore next */
-const Document = require('../dist/documents.js').default;
-Document.prototype.originalBuild = Document.prototype.build;
-Document.prototype.build = function MockBuild(model) {
-  // overwrite the count to be 1 so thousands of documents don't have to be created for the test
-  // this will happen in the `index.test.js` file
-  if (!model.is_dependency) {
-    model.data.count = 1;
-  } else if (model.file.includes('flight-data')) {
-    model.data.count = to.random(1, 2);
-  } else {
-    model.data.count = to.random(3, 6);
-  }
-
-  let fn = (model.data.pre_run || {}).toString();
-  // if data.count is being set in the pre_run function then replace it with the overwritten count
-  if (/this\.data\.count/.test(fn)) {
-    fn = fn.replace(/this\.data\.count = [^\n]+/, `this.data.count = ${model.data.count};`);
-    // eslint-disable-next-line
-    model.data.pre_run = new Function(`return ${fn}`)();
-  }
-
-  return this.originalBuild(model);
-};
-
-const Fakeit = proxyquire('../dist/index.js', {
-  './documents': { default: Document }
-}).default;
-
+import Fakeit from '../dist/index.js';
 
 const test = ava.group('fakeit');
 const fakeit_root = p(__dirname, 'fixtures', 'models');
@@ -57,6 +27,7 @@ const models = require('./utils').models({
   }
 });
 
+
 test.beforeEach((t) => {
   t.context.fakeit = new Fakeit({
     root: fakeit_root,
@@ -67,18 +38,22 @@ test.beforeEach((t) => {
   t.context.defaults = to.clone(default_options);
 });
 
+
 test('without args', async (t) => {
   delete t.context.fakeit.options.count;
-  t.context.fakeit.options.log = true;
+  t.context.fakeit.options.log = t.context.fakeit.options.spinners = true;
+
   t.deepEqual(t.context.fakeit.options, {
     root: fakeit_root,
     log: true,
     verbose: false,
+    spinners: true,
     timestamp: true,
   });
   t.is(to.type(t.context.fakeit.documents), 'object');
   t.is(to.type(t.context.fakeit.globals), 'object');
 });
+
 
 const generate = test.group('generate');
 generate('generate no models', async (t) => {
@@ -91,6 +66,7 @@ generate('generate no models', async (t) => {
   }
 });
 
+
 generate.serial.group('console', models(async (t, model) => {
   t.context.defaults.output = 'console';
 
@@ -102,6 +78,7 @@ generate.serial.group('console', models(async (t, model) => {
   return actual;
 }));
 
+
 generate.group('return', models(async (t, model) => {
   t.context.defaults.output = 'return';
   let actual = await t.context.fakeit.generate(model, t.context.defaults);
@@ -112,6 +89,32 @@ generate.group('return', models(async (t, model) => {
   return actual[0];
 }));
 
+
+generate.group('supports globs', (test) => {
+  test('ecommerce/**/*.yaml', async (t) => {
+    t.context.defaults.output = 'return';
+    const actual = await t.context.fakeit.generate('ecommerce/**/*.yaml', t.context.defaults);
+
+    t.is(actual.length, 4);
+
+    const doc_types = actual.map((item) => to.object(item)[0].doc_type);
+    const documents = [ 'Products', 'Users', 'Reviews', 'Orders' ];
+    t.deepEqual(to.keys(t.context.fakeit.documents), documents);
+    t.deepEqual(doc_types, documents.map((doc) => doc.toLowerCase().slice(0, -1)));
+  });
+
+  test('ecommerce/**/@(o|p)*.yaml', async (t) => {
+    t.context.defaults.output = 'return';
+    const actual = await t.context.fakeit.generate('ecommerce/**/@(orders|products).yaml', t.context.defaults);
+    // expect 3 documents because orders requires `products.yaml`, and `users.yaml`
+    t.deepEqual(to.keys(t.context.fakeit.documents), [ 'Products', 'Users', 'Orders' ]);
+    // only the files that were passed should be returned which should be `products`, and `orders`
+    const doc_types = actual.map((item) => to.object(item)[0].doc_type);
+    t.deepEqual(doc_types, [ 'product', 'order' ]);
+  });
+});
+
+
 generate.group('folder', models(async (t, model) => {
   const root = p(folder_root, model.replace(new RegExp(path.sep, 'g'), '-').replace('.yaml', ''));
   t.context.defaults.output = root;
@@ -120,6 +123,7 @@ generate.group('folder', models(async (t, model) => {
   t.is(files.length, 1);
   return fs.readJson(files[0]);
 }));
+
 
 generate.group('zip', models(async (t, model) => {
   const root = p(zip_root, model.replace(new RegExp(path.sep, 'g'), '-').replace('.yaml', ''));
@@ -137,6 +141,7 @@ generate.group('zip', models(async (t, model) => {
   return to.object(await zip.readAsText(entry_file));
 }));
 
+
 // couchbase and sync-gateway are too difficult to test in this way
 // since we have to use the mock equivalents of some of their inner functions
 // so they are not tested here, but they're functionality is tested else where.
@@ -149,6 +154,7 @@ generate.group('zip', models(async (t, model) => {
 //   t.is(typeof model, 'string');
 //   t.pass();
 // }, null, models.files));
+
 
 // log all the schema keys that still need to be done
 test.after.always(() => {

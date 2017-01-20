@@ -8,9 +8,10 @@ module.exports = is.object({
   root: is.string(),
   is_dependency: is.boolean(),
   key: '_id',
+  seed: 0,
   data: {
-    min: is.number().min(100).max(100),
-    max: is.number().min(500).max(500),
+    min: 100,
+    max: 500,
     count: is.number().min(100).max(500),
     dependencies: is.array().length(0),
     inputs: is.object().length(0),
@@ -30,9 +31,9 @@ module.exports = is.object({
       items: {
         type: 'string',
         data: {
-          min: is.number().min(0).max(0),
-          max: is.number().min(10).max(10),
-          count: is.number().min(0).max(10),
+          min: 0,
+          max: 10,
+          count: 0,
           build: is.func(),
         },
       },
@@ -49,9 +50,9 @@ module.exports = is.object({
       items: {
         type: 'string',
         data: {
-          min: is.number().min(0).max(0),
-          max: is.number().min(4).max(4),
-          count: is.number().min(0).max(4),
+          min: 0,
+          max: 4,
+          count: 0,
           build: is.func(),
         },
       },

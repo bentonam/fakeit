@@ -108,14 +108,14 @@ module.exports.models = function(settings) {
             item = settings.modules[item];
           }
 
-          return !!item && item.includes(model);
+          return !!item && item.indexOf(model) >= 0;
         }).filter(Boolean).length;
 
         // if the model isn't in the todo list then run the tests
         if (
-          should_test && !options.todo.includes(model)
+          should_test && options.todo.indexOf(model) < 0
         ) {
-          let schema;
+          var schema;
           // get the schema to use for validating that the output is correct
           try {
             schemas[model] = schema = schemas[model] || require(p(settings.root, settings.validation(model)));
@@ -146,7 +146,9 @@ module.exports.models = function(settings) {
 
                 // find the keys that still need to be validated
                 var omitted = _.difference(to.keys(actual), schema_keys)
-                  .filter((key) => ![ '__key', '__name' ].includes(key));
+                  .filter(function(key) {
+                    return [ '__key', '__name' ].indexOf(key) < 0;
+                  });
                 // test the keys that exsit
                 var picked = _.pick(actual, schema_keys);
 
@@ -160,13 +162,13 @@ module.exports.models = function(settings) {
                 // validate the object that can be validated
                 function validate(err) {
                   if (err) {
-                    let segments = err.message.match(/(?:child\s+(?:"))([^"]+)(?:")/g);
+                    var segments = err.message.match(/(?:child\s+(?:"))([^"]+)(?:")/g);
                     if (segments) {
                       segments = segments.map(function(segment) {
                         return segment.replace(/child\s+|"/g, '');
                       });
-                      let item_path = segments.join('.');
-                      let item = _.get(picked, item_path);
+                      var item_path = segments.join('.');
+                      var item = _.get(picked, item_path);
                       if (item) {
                         console.log('   ', item_path, '=', item);
                       } else {
@@ -233,11 +235,11 @@ module.exports.models = function(settings) {
 module.exports.getPaths = function getPaths(model, regex) {
   return to.keys(model).concat(to.keys(to.flatten(model)))
     .reduce((result, next) => {
-      let current = '';
-      for (let key of next.split('.')) {
+      var current = '';
+      for (var key of next.split('.')) {
         current = current.split('.').concat(key).filter(Boolean).join('.');
         if (regex == null || regex.test(current)) {
-          if (!result.includes(current)) {
+          if (result.indexOf(current) < 0) {
             result.push(current);
           }
         }

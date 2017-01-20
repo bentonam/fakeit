@@ -4,10 +4,11 @@ import path from 'path';
 import DependencyResolver from 'dependency-resolver';
 import * as utils from './utils';
 import Base from './base';
-import { set, get } from 'lodash';
+import { set, get, find } from 'lodash';
 import to, { is } from 'to-js';
 import { transform } from 'babel-core';
 import globby from 'globby';
+import findRoot from 'find-root';
 
 ////
 /// @name Models
@@ -17,6 +18,8 @@ import globby from 'globby';
 export default class Models extends Base {
   constructor(options = {}) {
     super(to.extend({
+      count: 0,
+      seed: 0,
       babel_config: '+(.babelrc|package.json)',
     }, options));
     // holds all the inputs that are registerd
@@ -27,6 +30,8 @@ export default class Models extends Base {
     this.registered_models = []; // holds the paths that have already been added
 
     this.prepared = false;
+
+    this.progress = this.spinner('Models');
   }
 
   ///# @name prepare
@@ -63,15 +68,35 @@ export default class Models extends Base {
       return;
     }
 
-    const dir = path.join(__dirname.split('node_modules')[0], '..');
-    let file = await globby(this.resolvePaths(babel_config, dir), { dot: true });
+    let file = [ process.cwd(), this.options.root ]
+      .reduce((prev, next) => {
+        try {
+          return prev.concat(path.join(findRoot(next), babel_config));
+        } catch (e) {
+          return prev;
+        }
+      }, []);
+
+    file = await globby(to.unique(file), { dot: true });
     file = file[0];
-    let config = await fs.readJson(file);
-    if (file.includes('package.json')) {
-      config = config.babelConfig || {};
+
+    if (file) {
+      let config = await fs.readJson(file);
+      if (file.includes('package.json')) {
+        config = config.babelConfig || {};
+      }
+
+      this.options.babel_config = config;
     }
-    this.options.babel_config = config;
+
     this.prepared = true;
+  }
+
+  ///# @name update
+  ///# @description
+  ///# This updates the progress spinner to show how many models have been parsed and how many are left
+  update() {
+    this.progress.text = `Models (${this.models.length}/${this.registered_models.length})`;
   }
 
   /// @name filterModelFiles
@@ -84,6 +109,7 @@ export default class Models extends Base {
   }
 
   async registerModels(models, dependency = false) {
+    this.progress.start();
     // if models weren't passed in then don't do anything
     if (!models) {
       return;
@@ -112,11 +138,16 @@ export default class Models extends Base {
     await forEach(files, async (file) => {
       // if the model aready exists then return
       if (this.registered_models.includes(file)) {
+        if (!dependency) {
+          const model = find(this.models, [ 'file', file ]);
+          model.is_dependency = dependency;
+        }
         return;
       }
 
       // add it to the models
       this.registered_models.push(file);
+      this.update();
 
       // read yaml file and convert it to json
       const model = await utils.parsers.yaml.parse(to.string(await fs.readFile(file)));
@@ -127,7 +158,9 @@ export default class Models extends Base {
       model.root = path.resolve(this.options.root, path.dirname(model.file));
 
       // used to determin if something is a dependency or not.
-      model.is_dependency = dependency;
+      if (model.is_dependency == null) {
+        model.is_dependency = dependency;
+      }
 
       /* istanbul ignore if : currently hard to test */
       if (!model.name) {
@@ -148,10 +181,18 @@ export default class Models extends Base {
       // add the parsed model to the global object should always have a model name
       await this.parseModel(model);
       this.models.push(model);
-    });
+      this.update();
+    })
+      .catch((err) => {
+        this.progress.fail(err);
+      });
 
     // update the models order
     this.models = resolveDependenciesOrder(this.models);
+
+    if (this.models.length === this.registered_models.length) {
+      this.progress.stop();
+    }
     return this;
   }
 
@@ -172,6 +213,7 @@ export default class Models extends Base {
     parseModelTypes(model);
     parseModelDefaults(model);
     parseModelCount(model, this.options.count);
+    parseModelSeed(model, this.options.seed);
 
     // add this models inputs to the main inputs object
     this.inputs = to.extend(this.inputs || {}, await inputs);
@@ -272,7 +314,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     fn = fn.map((line) => `  ${line}`).filter(Boolean).join('\n');
 
     // wrap the users function in the function we're going to use to trigger their function
-    fn = `function __result(documents, globals, inputs, faker, chance, document_index) {\n${fn}\n}`;
+    fn = `function __result(documents, globals, inputs, faker, chance, document_index, require) {\n${fn}\n}`;
 
     // if a babel config exists then transform the function
     if (
@@ -292,7 +334,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     // create the main function that will be run.
     /* eslint-disable indent */
     fn = [
-      `function ${name}(_documents, _globals, _inputs, _faker, _chance, _document_index) {`,
+      `function ${name}(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {`,
         // indent each line and create a string
         fn.split('\n').map((line) => `  ${line}`).filter(Boolean).join('\n'),
         '  return __result.apply(this, [].slice.call(arguments));',
@@ -376,28 +418,39 @@ export function parseModelDefaults(model) {
 /// @arg {object} model - The model to update
 /// @arg {undefined, null, number} count - The count to override the model settings
 export function parseModelCount(model, count) {
-  for (let data_path of utils.objectSearch(model, /^(?:.*\.items\.data|data)$/)) {
-    let value = to.number(count);
-    let property = get(model, data_path);
+  let value = to.number(count);
+  const { data } = model;
 
-    if (data_path !== 'data' || value == null || value === 0) {
-      if (property.count > 0) {
-        value = property.count;
-      } else if (property.min != null && property.max != null) {
-        value = to.random(property.min, property.max);
-      }
+  if (!value) {
+    if (data.count > 0) {
+      value = data.count;
+    } else if (!!data.min && !!data.max) {
+      value = to.random(data.min, data.max);
     }
+  }
 
-    // if count is null or 0 then set it to 1
-    if (!value) {
-      value = 1;
+  // if count is null or 0 then set it to 1
+  if (!value) {
+    value = 1;
+  }
+  model.data.count = value;
+}
+
+
+/// @name parseModelSeed
+/// @description Resolves the seed that was passed in
+/// @arg {object} model - The model to update
+/// @arg {undefined, null, number, string} seed - The seed to override the model settings
+/// @note {2} - The resolved seed will either be null or a number since faker requires the seed to be a number
+export function parseModelSeed(model, seed) {
+  model.seed = !!seed ? seed : model.seed;
+
+  if (typeof model.seed === 'string') {
+    seed = '';
+    for (let char of model.seed) {
+      seed += char.charCodeAt(0);
     }
-
-    if (!property.max) {
-      set(model, `${data_path}.max`, value);
-    }
-
-    set(model, `${data_path}.count`, value);
+    model.seed = parseInt(seed);
   }
 }
 

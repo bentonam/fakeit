@@ -7,7 +7,7 @@ import Document, {
 } from '../dist/documents.js';
 /* istanbul ignore next : needed to test models */
 const Model = require('../dist/models.js').default;
-import path, { join as p } from 'path';
+import { join as p } from 'path';
 import ava from 'ava-spec';
 import to from 'to-js';
 import is from 'joi';
@@ -34,6 +34,7 @@ test.before(async () => {
   babel_config = await fs.readJson(p(__dirname, '..', '.babelrc'));
 });
 
+
 test.beforeEach(async (t) => {
   t.context.model = new Model({
     root: documents_root,
@@ -51,24 +52,30 @@ test.beforeEach(async (t) => {
   await t.context.model.setup();
 });
 
+
 test('without args', (t) => {
   const doc = t.context.document;
   // rest the log option to what it is by default.
-  doc.options.log = true;
+  doc.options.log = doc.options.spinners = true;
   t.deepEqual(doc.options, {
     root: documents_root,
     log: true,
     verbose: false,
+    spinners: true,
+    count: 0,
     timestamp: true,
   });
   t.is(to.type(doc.log_types), 'object');
   t.deepEqual(doc.documents, {});
   t.deepEqual(doc.globals, {});
   t.deepEqual(doc.inputs, {});
+  t.is(to.type(doc.faker), 'object');
+  t.is(to.type(doc.chance), 'object');
 });
 
+
 test.group('build', (test) => {
-  test('model with no data', (t) => {
+  test('model with no data', async (t) => {
     const model = {
       name: 'build_test',
       type: 'object',
@@ -88,7 +95,7 @@ test.group('build', (test) => {
     const doc = t.context.document;
     t.deepEqual(doc.globals, {});
     t.deepEqual(doc.documents, {});
-    const actual = doc.build(model);
+    const actual = await doc.build(model);
     const schema = is.array()
       .items(is.object({
         test: is.string().regex(/woohoo/),
@@ -146,13 +153,13 @@ test.group('build', (test) => {
       if (to.type(title) === 'object') {
         title = to.keys(title)[0];
       }
-      test(`is ${title}`, (t) => {
+      test(`is ${title}`, async (t) => {
         const doc = t.context.document;
         const obj = to.clone(model);
         if (actual != null) {
           obj.key = actual;
         }
-        const result = doc.build(obj);
+        const result = await doc.build(obj);
         if (to.type(expected) === 'regexp') {
           t.truthy(expected.test(result[0].__key)); // eslint-disable-line
         } else {
@@ -164,16 +171,9 @@ test.group('build', (test) => {
 
   test.group(models(async (t, file) => {
     const { document, model } = t.context;
+    // ensure that only 1 document gets created
+    document.options.count = model.options.count = 1;
     await model.registerModels(file);
-
-    // overwrite the inputs to only include 1 item in it's array because several models
-    // in flight-data overwrite the data.count to be what ever the model length is and that is
-    // brutal on testing performance.
-    if ([ 'flight-data', 'music' ].includes(file.split(path.sep)[0])) {
-      model.inputs = to.map(model.inputs, ({ key, value }) => {
-        return { [key]: [ 0, 0, 0, 0, 0, 0 ].map(() => to.random(value)) };
-      });
-    }
 
     // set the document inputs to be what the model inputs are
     document.inputs = model.inputs;
@@ -181,36 +181,138 @@ test.group('build', (test) => {
     let actual = [];
 
     for (let obj of model.models) {
-      t.truthy(obj.data.count >= obj.data.min);
-      if (obj.data.max !== 0) {
-        t.truthy(obj.data.count <= obj.data.max);
-      }
+      t.is(obj.data.count, 1);
 
-      // overwrite the count to be 1 so thousands of documents don't have to be created for the test
-      // this will happen in the `index.test.js` file
-      obj.data.count = !obj.is_dependency ? 1 : to.random(3, 6);
-
-      let fn = (obj.data.pre_run || {}).toString();
-      // if data.count is being set in the pre_run function then replace it with the overwritten count
-      if (/this\.data\.count/.test(fn)) {
-        fn = fn.replace(/this\.data\.count = [^\n]+/, `this.data.count = ${obj.data.count};`);
-        // eslint-disable-next-line
-        obj.data.pre_run = new Function(`return ${fn}`)();
-      }
-
-      const result = document.build(obj);
+      let result = await document.build(obj);
+      // ensure data count is still set to 1
+      t.is(obj.data.count, 1);
+      t.is(result.length, 1);
       if (!obj.is_dependency) {
-        actual.push(result);
+        actual.push(result[0]);
       }
     }
-
+    // ensure there was only 1 item output
     t.is(actual.length, 1);
-    actual = actual[0];
-    t.is(actual.length, 1);
-    actual = actual[0];
-    return actual;
+    return actual[0];
   }));
+
+  test.group('seed', (test) => {
+    const min = 2;
+    const max = 10;
+    const expected_phone_lengths = [ 2, 1, 3, 3, 3, 3, 3, 1, 1, 1 ];
+    // used to generate a new model
+    function getModel(is_expected) {
+      if (typeof is_expected !== 'boolean') {
+        is_expected = false;
+      }
+      return {
+        name: 'test',
+        type: 'object',
+        seed: 123456789,
+        data: { min, max, count: is_expected ? max : to.random(2, 10), inputs: {}, dependencies: [], },
+        properties: {
+          phones: {
+            type: 'array',
+            description: 'An array of phone numbers',
+            items: {
+              type: 'object',
+              data: { min: 1, max: 3, count: 0, },
+              properties: {
+                type: {
+                  type: 'string',
+                  data: {
+                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                      return faker.random.arrayElement([ 'Home', 'Work', 'Mobile', 'Main', 'Other' ]);
+                    },
+                  },
+                },
+                phone_number: {
+                  type: 'string',
+                  data: {
+                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                      return faker.phone.phoneNumber().replace(/\s*x[0-9]+$/, '');
+                    },
+                  },
+                },
+                extension: {
+                  type: 'string',
+                  data: {
+                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                      return chance.bool({ likelihood: 20 }) ? chance.integer({ min: 1000, max: 9999 }).toString() : null;
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+    }
+
+    test('phones array lengths are the same', async (t) => {
+      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      t.plan(count * 2);
+      for (var i = 0; i < count; i++) {
+        const model = getModel();
+        // reset the documents for each iteration
+        t.context.document.documents = {};
+        const actual = await t.context.document.build(model);
+        t.is(actual.length, model.data.count);
+        const lengths = actual.map((obj) => obj.phones.length);
+        t.deepEqual(lengths, expected_phone_lengths.slice(0, lengths.length));
+      }
+    });
+
+
+    test('none of the items in phones array are the same', async (t) => {
+      const model = getModel();
+      const actual = await t.context.document.build(model);
+      const phones = actual.map((obj) => obj.phones);
+      phones.reduce((prev, next) => {
+        // none of the items in the current array are the same as the other items
+        for (var i = 0; i < next.length - 1; i++) {
+          t.notDeepEqual(next[i], next[i + 1]);
+        }
+        // none of the items are equal
+        t.notDeepEqual(prev, next);
+        return prev;
+      }, phones.pop());
+    });
+
+    test('the content is exactly the same everytime', async (t) => {
+      const model = getModel();
+      let actual = [];
+      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      t.plan(count - 1);
+      for (var i = 0; i < count; i++) {
+        t.context.document.documents = {};
+        actual.push(t.context.document.build(model));
+      }
+      actual = await Promise.all(actual);
+
+      actual.reduce((expected, next) => {
+        t.deepEqual(next, expected);
+        return expected;
+      }, actual.pop());
+    });
+
+    test('the two items returned are always the same', async (t) => {
+      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      const model = getModel();
+      model.data.count = 1;
+      t.plan(count);
+      for (var i = 0; i < count; i++) {
+        t.context.document.documents = {};
+        const actual = await t.context.document.build(model);
+        t.deepEqual(actual[0].phones, [
+          { type: 'Mobile', phone_number: '505.771.2870', extension: null },
+          { type: 'Mobile', phone_number: '275-728-6040', extension: null }
+        ]);
+      }
+    });
+  });
 });
+
 
 test.group('runData', (test) => {
   test('function wasn\'t passed', (t) => {
@@ -232,13 +334,13 @@ test.group('runData', (test) => {
       return bar.data.woohoo;
     }
     // highjack the log function
-    t.context.document.log = (type, message, err) => {
+    t.context.document.log = (type, err) => {
       if (type === 'error') {
-        throw new Error(message + err.message);
+        throw err;
       }
     };
     const tester = () => t.context.document.runData(Foo, 'context');
-    t.throws(tester, /Foo failed\nCannot read property 'woohoo' of undefined/);
+    t.throws(tester, /Foo failed, Cannot read property 'woohoo' of undefined/);
   });
 });
 
@@ -292,6 +394,7 @@ test.group('initializeDocument', (test) => {
     }
   }));
 });
+
 
 test.group('buildObject', (test) => {
   const model = {
@@ -531,7 +634,13 @@ test.group('buildValue', (test) => {
     function items(obj) {
       return {
         type: 'array',
-        items: obj,
+        items: to.extend({
+          data: {
+            min: 0,
+            max: 0,
+            count: 0,
+          }
+        }, obj),
       };
     }
 
@@ -608,6 +717,25 @@ test.group('buildValue', (test) => {
       t.is(to.type(actual), 'array');
       t.is(actual.length, 5);
       actual.forEach((item) => t.truthy(/[A-Z]/.test(item)));
+    });
+
+    test('called multiple times returns different array lengths between min and max', (t) => {
+      let actual = [];
+      for (let i = 0; i < 10; i++) {
+        const value = t.context.document.buildValue(items({
+          type: 'string',
+          data: {
+            min: 1,
+            max: 10,
+            fake: '{{name.firstName}}',
+          }
+        }), []);
+        actual.push(value);
+      }
+
+      actual.forEach((item) => t.truthy(/[A-Z]/.test(item)));
+      actual = actual.map((item) => item.length);
+      t.truthy(_.uniq(actual).length > 1);
     });
 
     test('complex array', (t) => {
@@ -882,6 +1010,7 @@ test.group('transformValueToType', (test) => {
   });
 });
 
+
 test.group('getPaths', models(async (t, file) => {
   await t.context.model.registerModels(file);
   const model = _.find(t.context.model.models, (obj) => {
@@ -895,6 +1024,7 @@ test.group('getPaths', models(async (t, file) => {
   t.falsy(paths.document.join(',').includes('properties.'), 'shouldn\'t have an instance of `properties`');
   t.is(paths.model.length, paths.document.length, 'They should have the same length');
 }));
+
 
 test.group('typeToValue', (test) => {
   const tests = [

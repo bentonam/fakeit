@@ -4,7 +4,7 @@ var is = require('joi');
 module.exports = is.object({
   _id: is.string().regex(/^order_[0-9]+$/),
   doc_type: 'order',
-  order_id: is.number().min(1).max(1),
+  order_id: 1,
   user_id: is.number(),
   order_date: is.date(),
   order_status: [ 'Pending', 'Processing', 'Cancelled', 'Shipped' ],

@@ -8,9 +8,10 @@ module.exports = is.object({
   root: is.string(),
   is_dependency: is.boolean(),
   key: '_id',
+  seed: 0,
   data: {
-    min: is.number().min(400).max(400),
-    max: is.number().min(600).max(600),
+    min: 400,
+    max: 600,
     count: is.number().min(400).max(600),
     dependencies: is.array().length(0),
     inputs: is.object().length(0),

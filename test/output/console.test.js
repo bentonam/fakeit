@@ -3,7 +3,6 @@
 import Console from '../../dist/output/console';
 import default_options from '../../dist/output/default-options';
 import to from 'to-js';
-import { stdout } from 'test-console';
 import { stripColor } from 'chalk';
 import ava from 'ava-spec';
 
@@ -30,7 +29,7 @@ test('prepare', async (t) => {
   t.is(t.context.prepared, true);
 });
 
-test('setup', async (t) => {
+test.serial('setup', async (t) => {
   t.is(t.context.prepared, false);
   t.is(t.context.preparing, undefined); // eslint-disable-line
   const preparing = t.context.setup();
@@ -41,7 +40,7 @@ test('setup', async (t) => {
 });
 
 // These tests must be run in order since they're testing the console output.
-test.serial.group('output', (test) => {
+test.group('output', (test) => {
   const languages = {
     cson: to.normalize(`
       [
@@ -114,14 +113,13 @@ test.serial.group('output', (test) => {
   for (let language of to.keys(languages)) {
     const data = languages[language];
     test(`${language}`, async (t) => {
+      t.context.output_options.format = language;
       t.is(t.context.prepared, false);
       t.is(t.context.preparing, undefined); // eslint-disable-line
-      const inspect = stdout.inspect();
-      await t.context.output(null, data);
+      const actual = await t.context.output(null, data);
       t.is(t.context.prepared, true);
-      inspect.restore();
-      t.not(inspect.output[0].trim(), data);
-      t.is(stripColor(inspect.output[0]).trim(), data);
+      t.not(actual.trim(), data);
+      t[language !== 'csv' ? 'is' : 'not'](stripColor(actual).trim(), data);
     });
   }
 });

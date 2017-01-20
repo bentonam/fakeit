@@ -23,6 +23,7 @@ test('without args', async (t) => {
     root: output_root,
     log: true,
     verbose: false,
+    spinners: true,
     timestamp: true
   });
   t.truthy(t.context.log_types);
@@ -32,6 +33,7 @@ test('without args', async (t) => {
     archive: '',
     output: 'return',
     limit: 100,
+    highlight: true,
     server: '127.0.0.1',
     bucket: 'default',
     password: '',
@@ -144,6 +146,31 @@ test.group('validation', (test) => {
         t.context.output_options.limit = limit;
         const validateLimit = () => validate.limit(limit);
         t.throws(validateLimit);
+        t.throws(t.context.validateOutputOptions);
+      });
+    });
+  });
+
+  test.group('highlight', (test) => {
+    const passing = [ true, false ];
+    passing.forEach((highlight) => {
+      test(`passing ${highlight}`, (t) => {
+        t.context.output_options.highlight = highlight;
+        try {
+          validate.highlight(highlight);
+          t.context.validateOutputOptions();
+          t.pass();
+        } catch (e) {
+          t.fail(e);
+        }
+      });
+    });
+    const failing = [ 2, '', [], {} ];
+    failing.forEach((highlight) => {
+      test(`failing ${highlight}`, (t) => {
+        t.context.output_options.highlight = highlight;
+        const validateHighlight = () => validate.highlight(highlight);
+        t.throws(validateHighlight);
         t.throws(t.context.validateOutputOptions);
       });
     });
@@ -425,7 +452,7 @@ test.group('validation', (test) => {
 });
 
 
-test.group('prepare', (test) => {
+test.serial.group('prepare', (test) => {
   const root = p(output_root, 'prepare');
 
   test('without options', async (t) => {
@@ -487,7 +514,7 @@ test.group('prepare', (test) => {
 });
 
 
-test.group('setup', (test) => {
+test.serial.group('setup', (test) => {
   test('without options', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
@@ -521,7 +548,7 @@ test.group('output', (test) => {
     data = await getData();
   });
 
-  test.group('return', languages((test, language) => {
+  test.serial.group('return', languages((test, language) => {
     test(language, async (t) => {
       const { raw, node } = data[language];
       t.context.output_options.output = 'return';
@@ -546,7 +573,9 @@ test.group('output', (test) => {
       t.is(t.context.prepared, true);
       inspect.restore();
       t.not(inspect.output[0].trim(), node);
-      t.is(stripColor(inspect.output[0]).trim(), node);
+      if (language !== 'csv') {
+        t.is(stripColor(inspect.output[0]).trim(), node);
+      }
     });
   }));
 
@@ -602,6 +631,22 @@ test.group('output', (test) => {
       t.deepEqual(files.sort(), keys);
     });
   }));
+
+
+  test('throws error', async (t) => {
+    t.context.output_options.output = p(root, 'error-folder');
+    await t.context.prepare();
+    t.context.outputter.output = function output() {
+      throw new Error('failed correctly');
+    };
+    const inspect = stdout.inspect();
+
+    await t.context.output(data.json.raw)
+      .then(() => t.fail())
+      .catch(() => t.pass());
+    inspect.restore();
+    t.truthy(/\[?Error: failed correctly\]?/.test(inspect.output[1].split(/\n/)[0].trim()));
+  });
 
   // These are too difficult to unit test but they are tested else where
   // test.group('couchbase', (test) => {

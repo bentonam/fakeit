@@ -8,10 +8,11 @@ module.exports = is.object({
   root: is.string(),
   is_dependency: is.boolean(),
   key: '_id',
+  seed: 0,
   data: {
-    min: is.number().min(0).max(0),
-    max: is.number().min(1000).max(1000),
-    count: is.number().min(1000).max(1000),
+    min: 0,
+    max: 0,
+    count: 1000,
     dependencies: is.array().length(0),
     inputs: is.object().length(0),
     pre_run: is.func(),
@@ -34,9 +35,9 @@ module.exports = is.object({
       items: {
         type: 'object',
         data: {
-          min: is.number().min(0).max(0),
-          max: is.number().min(5).max(5),
-          count: is.number().min(0).max(5),
+          min: 0,
+          max: 5,
+          count: 0,
         },
         $ref: '#/definitions/Children',
         properties: {

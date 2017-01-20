@@ -1,7 +1,10 @@
-import { extend } from 'lodash';
+import { extend, keys, values } from 'lodash';
 import highlight from 'highlight-es';
 import default_options from './default-options';
 import Base from '../base';
+import { parsers } from '../utils';
+import Table from 'cli-table';
+import chalk from 'chalk';
 
 /// @name Console
 /// @page api
@@ -12,7 +15,9 @@ export default class Console extends Base {
   ///# @arg {object} output_options - The output options
   constructor(options = {}, output_options = {}) {
     super(options);
-    this.output_options = extend({}, default_options, output_options);
+    this.output_options = extend({
+      highlight: true,
+    }, default_options, output_options);
 
     this.prepared = false;
   }
@@ -41,10 +46,14 @@ export default class Console extends Base {
       return this.prepare();
     }
 
-    // theres noting to setup for the Console output
-    // this is just here so that all the Outputters are setup the same
-    process.nextTick(() => {
-      this.prepared = true;
+
+    return new Promise((resolve) => {
+      // theres noting to setup for the Console output
+      // this is just here so that all the Outputters are setup the same
+      process.nextTick(() => {
+        this.prepared = true;
+        resolve();
+      });
     });
   }
 
@@ -62,6 +71,21 @@ export default class Console extends Base {
       await this.preparing;
     }
 
-    console.log(`${highlight(data)}`);
+    if (this.output_options.highlight) {
+      if (this.output_options.format === 'csv') {
+        const table = new Table();
+        data = await parsers.csv.parse(data);
+
+        table.push(keys(data[0]).map((key) => chalk.bold(key)));
+        data.forEach((obj) => table.push(values(obj)));
+        data = table;
+      } else {
+        data = highlight(data);
+      }
+
+      data += '';
+    }
+
+    return data;
   }
 }

@@ -5,6 +5,7 @@
   ],
   "plugins": [
     "transform-runtime",
-    "external-helpers"
+    "external-helpers",
+    "array-includes"
   ]
 }

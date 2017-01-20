@@ -59,20 +59,31 @@ test:
 # run coverage for the tests
 coverage test-coverage code-coverage:
 	# if there's no instance source maps files then build the files with source maps
-	@[ -f ./dist/index.js.map ] || echo "building files with source maps" && make build-source-maps
-	NODE_ENV="test" nyc make test -- $(args)
+	@[ -f ./dist/index.js.map ] || (echo "building files with source maps" && make build-source-maps)
+	NODE_ENV="test" nyc --silent -- ava --verbose --no-cache
+
 
 # These commands only run the report of the code coverage
 report-coverage report-code-coverage:
-	@[ -d ./.nyc_output ] && NODE_ENV="test" nyc report || make test-coverage
+	@[ -d ./.nyc_output ] && NODE_ENV="test" nyc report || make test-coverage report-coverage
+
+# posts code coverage to coveralls
+post-coverage:
+	@[ -d ./.nyc_output ] && nyc report --reporter=text-lcov | coveralls || make test-coverage post-coverage
+
+# The command the ci server runs
+ci:
+	make lint build-source-maps -i
+	# if the tests fail then it will exit with an error
+	make coverage || exit 1
+	# show the coverage report
+	nyc report
+	# check check-coverage and if it fails then exit
+	nyc check-coverage --statements 95 --functions 95 --lines 95 || exit 1
 
 # run benchmark tests
 bench benchmark speed:
 	ava $(args) 'bench/**/*.bench.js'
-
-# The command the ci server runs
-ci:
-	make lint build-source-maps coverage -i
 
 # "patch", "minor", "major", "prepatch",
 VERS ?= "patch"
