@@ -203,6 +203,7 @@ export default class Models extends Base {
   ///# @returns {object} - The model that's been updated
   async parseModel(model) {
     // resolve the input paths
+    parseModelDefaults(model);
     model.data.inputs = this.resolvePaths(model.data.inputs, model.root);
     // resolve the dependencies paths
     model.data.dependencies = this.resolvePaths(model.data.dependencies, model.root);
@@ -211,7 +212,6 @@ export default class Models extends Base {
     parseModelFunctions(model, this.options.babel_config);
     parseModelReferences(model);
     parseModelTypes(model);
-    parseModelDefaults(model);
     parseModelCount(model, this.options.count);
     parseModelSeed(model, this.options.seed);
 

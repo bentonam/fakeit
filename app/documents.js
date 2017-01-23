@@ -41,7 +41,6 @@ export default class Document extends Base {
     if (!model.data) {
       model.data = { count: 1 };
     }
-    const key_type = to.type(model.key);
 
     const spinner = this.spinner(`Documents ${model.name}`);
     spinner.text = `${model.name}`;
@@ -64,19 +63,6 @@ export default class Document extends Base {
       const doc = await this.buildDocument(model, i);
       update();
       await delay(0);
-      // build the key for the document
-      let key;
-      if (key_type === 'object') {
-        key = this.buildValue({ data: model.key }, null, doc, i);
-      } else if (key_type === 'string') {
-        key = doc[model.key];
-      } else {
-        key = `${model.name}${i}`;
-      }
-
-      // @todo update this to use `new Map`, or `new WeakMap`;
-      Object.defineProperty(doc, '__key', { value: key });
-      Object.defineProperty(doc, '__name', { value: model.name });
       this.documents[model.name].push(doc);
     }, this.options.spinners ? 75 : 1000);
 
@@ -124,6 +110,7 @@ export default class Document extends Base {
   ///# @arg {object} model - The model to build the document from
   ///# @arg {number} index [0] - The place in the list this item is being run from
   buildDocument(model, index = 0) {
+    const key_type = to.type(model.key);
     const paths = getPaths(model);
     // generate the initial values
     let doc = this.initializeDocument(model, paths);
@@ -136,6 +123,20 @@ export default class Document extends Base {
 
     // if there is a post_build function for the document call it
     this.runData(model.data.post_build, doc, index);
+
+    // build the key for the document
+    let key;
+    if (key_type === 'object') {
+      model.key.data = model.key.data || {};
+      key = this.buildValue(model.key, typeToValue(model.key.type), doc, index);
+    } else if (key_type === 'string') {
+      key = get(doc, model.key);
+    }
+    key = key || `${model.name}_${index}`;
+
+    // @todo update this to use `new Map`, or `new WeakMap`;
+    Object.defineProperty(doc, '__key', { value: key });
+    Object.defineProperty(doc, '__name', { value: model.name });
 
     return doc;
   }

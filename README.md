@@ -2,11 +2,12 @@
 
 Utility that generates fake data in `json`, `yaml`, `yml`, `cson`, or `csv` formats based on models which are defined in `yaml`.  Data can be generated using any combination of [FakerJS](http://marak.github.io/faker.js), [ChanceJS](http://chancejs.com), or Custom Functions.
 
-[![Build Status](https://travis-ci.org/bentonam/fakeit.svg?branch=master)](https://travis-ci.org/bentonam/fakeit)
-[![Coverage Status](https://coveralls.io/repos/bentonam/fakeit/badge.svg?branch=master&service=github)](https://coveralls.io/github/bentonam/fakeit?branch=master)
 
-[![Dependency Status](https://david-dm.org/bentonam/fakeit.svg)](https://david-dm.org/bentonam/fakeit)
-[![devDependency Status](https://david-dm.org/bentonam/fakeit/dev-status.svg)](https://david-dm.org/bentonam/fakeit#info=devDependencies)
+[![Build Status](https://img.shields.io/travis/bentonam/fakeit/master.svg)](https://travis-ci.org/bentonam/fakeit)
+[![Coverage Status](https://img.shields.io/coveralls/bentonam/fakeit/master.svg)](https://coveralls.io/github/bentonam/fakeit?branch=master)
+
+[![Dependency Status](https://img.shields.io/david/bentonam/fakeit.svg?maxAge=2592000&style=flat-square)](https://david-dm.org/bentonam/fakeit)
+[![devDependency Status](https://img.shields.io/david/dev/bentonam/fakeit.svg?maxAge=2592000&style=flat-square)](https://david-dm.org/bentonam/fakeit#info=devDependencies)
 
 ![Example of how it works](https://github.com/bentonam/fakeit/blob/release/1.0.0/assets/example.gif)
 
@@ -23,7 +24,9 @@ Generated data can be output in the following formats and destinations:
 ## Install
 
 ```bash
-npm install fakeit
+npm install fakeit --save-dev
+# or
+npm install fakeit --global
 ```
 
 ## CLI Usage
@@ -51,7 +54,7 @@ npm install fakeit
     -S, --no-spinners    Disables progress spinners
     -L, --no-log         Disables all logging except for errors
     -T, --no-timestamp   Disables timestamps from logging output
-    -f, --format <type>  this determins the output format to use. Supported formats: json, csv, yaml, yml, cson. (json)
+    -f, --format <type>  this determines the output format to use. Supported formats: json, csv, yaml, yml, cson. (json)
     -n, --spacing <n>    the number of spaces to use for indention (2)
     -l, --limit <n>      limit how many files are output at a time (100)
     -x, --seed <seed>    The global seed to use for repeatable data
@@ -66,27 +69,55 @@ At the root of a model the following keys are used, if it's not required then it
 #### `name` *(required)*
 The name of the model
 
-#### `type` *(required)*
-The data type of the model to be generated
+#### `type`
+The data type of the model to be generated. This needs to be set top level, as well as a per property/items basis. It determines the starting data type, and how the result of the build loop will be converted once complete
 
-#### `key`
-The main key for the document.  This is a reference to a generated property and is used for the filename or Document ID.
-If the key is an object it can use the same keys as the `data` option defined below. If the key is a string then it use the string value to find the value of the document that was just built.
+**Note:** If type isn't set it defaults to `'null'`.
 
+###### Available types
 
-#### `seed`
+| types                              | data type   | description                                                                                                                                   |
+|------------------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| number, long, integer              | `0`         | Converts result to number using parseInt                                                                                                      |
+| double, float                      | `0`         | Converts result to number using parseFloat                                                                                                    |
+| string                             | `''`        | Converts result to a string using result.toString()                                                                                           |
+| boolean, bool                      | `false`     | Converts result to a boolean if it's not already, if result is a string and is `'false'`, `'0'`, `'undefined'`, `'null'` it will return false |
+| array                              | `[]`        | returns the result from the build loop                                                                                                        |
+| object, structure                  | `{}`        | returns the result from the build loop                                                                                                        |
+| null, undefined, * (anything else) | `null`      | returns the result from the build loop                                                                                                        |
 
-If a seed is defined it will ensure that the documents created repeatable results. If you have a model with a data range of 2-10 a random number between 2 and 10 documents will be created no matter what the seed is. Let's say that 4 documents are generated the first time you run the model, each of those documents will be completely different than the next (as expected). Later you come back and you generate the data again this time it might generate 6 documents. The first 4 documents generated the second time will be exactly the same as the first time you generated the data. The seed can be number or string.
+###### Places where it can be set
 
-
-###### Note:
-
-This only works if you use `faker` and `chance` to generate your random fake data. It can be produced with other fake data generation libraries if they support seeds.
-
-`faker.date` functions will not produce the same fake data each time.
+```yaml
+name: Types example
+# typically object or array
+type: object
+key:
+  build: faker.random.uuid()
+properties:
+  foo:
+    # can be set on properties of an object
+    type: object
+    properties:
+      bar:
+        # can be set on nested properties
+        type: string
+        data:
+          value: FakeIt ftw
+  bar:
+    type: array
+    items:
+      # can be set on items
+      type: string
+      data:
+        min: 1
+        max: 10
+        build: faker.random.word()
+```
 
 
 #### `data`
+
 This is the main data object that is uses the same properties in several different situations.
 
   - `min`: The minimum number of documents to generate
@@ -108,6 +139,68 @@ The following keys can only be defined in the top level data object
      It can be relative to the model or an absolute path.
 
 
+
+#### `key` *(required)*
+
+This determines the name of the document that's being generated. It only needs to be defined once per document.  This is a reference to a generated property and is used for the filename or Document ID.
+If the key is an object it needs the `data` option defined above, it will only work with `value`, `build`, and `fake` since this already runs after the document has been built.
+If the key is a string then it use the string value to find the value of the document that was just built (using the [lodash get](https://lodash.com/docs/4.17.4#get) method).
+
+###### Examples of setting a key
+
+In this example after each document is built it will look for the `_id` property and return it's result (aka `user_1`, `user_2`, etc.)
+
+```yaml
+name: Key String Example
+type: object
+key: _id
+data:
+  pre_run: |
+    globals.user_counter = 0;
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: `user_${this.user_id}`
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: ++globals.user_counter
+```
+
+In this example the key will be `'user_' + the current user_id` (aka `user_1`, `user_2`, etc.)
+
+```yaml
+name: Key Object Example
+type: object
+key:
+  data:
+    build: `user_${this.user_id}`
+data:
+  pre_run: |
+    globals.user_counter = 0;
+properties:
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: ++globals.user_counter
+```
+
+
+#### `seed`
+
+If a seed is defined it will ensure that the documents created repeatable results. If you have a model with a data range of 2-10 a random number between 2 and 10 documents will be created no matter what the seed is. Let's say that 4 documents are generated the first time you run the model, each of those documents will be completely different than the next (as expected). Later you come back and you generate the data again this time it might generate 6 documents. The first 4 documents generated the second time will be exactly the same as the first time you generated the data. The seed can be number or string.
+
+###### Note:
+
+This only works if you use `faker` and `chance` to generate your random fake data. It can be produced with other fake data generation libraries if they support seeds.
+
+`faker.date` functions will not produce the same fake data each time.
+
+
 ##### Functions
 
 For any function defined above be sure to use `|` for multi line functions and **NOT** `>`. To see an in depth explanation see this [issue](https://github.com/bentonam/fakeit/issues/84#issuecomment-266905423)
@@ -119,84 +212,78 @@ Each of these functions is passed the following variables that can be used at th
   - `faker` - A reference to [FakerJS](http://marak.github.io/faker.js/)
   - `chance` - A reference to [ChanceJS](http://chancejs.com/)
   - `document_index` - This is a number that represents the currently generated document's position in the run order
-  - `require` - This is nodes require function, it allows you to require your own packages. Should require and set them in the pre_run functions for better performance.
+  - `require` - This is the node `require` function, it allows you to require your own packages. Should require and set them in the pre_run functions for better performance.
 
 For the `pre_run`, and `post_run` the `this` context refers to the current model.
 For the `pre_build`, `build`, and `post_build` the `this` context refers to the object currently being generated.
-If you have a nested object being created in an array or something the `this` will refer to closest object not the outer object.
+If you have a nested object being created in an array or something, `this` will refer to closest object not the outer object/array.
 
 #### Example `users.yaml` Model
 
 ```yaml
 name: Users
 type: object
-key: _id
+key:
+  data:
+    build: `user_${this.user_id}`
 data:
   min: 200
   max: 500
   pre_run: |
-    globals.counter = 0;
+    globals.user_counter = 0;
 properties:
-  id:
-    type: string
-    data:
-      post_build: "`user_${this.user_id}`" # if your project uses babel then so can your functions :)
-  type:
-    type: string
-    data:
-      value: "user"
   user_id:
-    type: integer
+    description: The users id
     data:
-      build: "++globals.counter"
-  first_name:
-    type: string
+      build: faker.random.uuid()
+  name:
+    description: The users first name
     data:
-      fake: "{{name.firstName}}"
+      fake: '{{name.firstName}}'
   last_name:
-    type: string
     description: The users last name
     data:
-      fake: "{{name.lastName}}"
-  email_address:
-    type: string
+      fake: '{{name.lastName}}'
+  username:
+    description: The users username
     data:
-      fake: "{{internet.email}}"
+      fake: '{{internet.userName}}'
+  password:
+    description: The users password
+    data:
+      fake: '{{internet.password}}'
+  email:
+    description: The users email address
+    data:
+      fake: '{{internet.email}}'
   phone:
-    type: string
+    description: The users mobile phone
     data:
-      build: "chance.phone()"
-  created_on:
-    type: string
-    data:
-      fake: "{{date.past}}"
-      post_build: "new Date(this.created_on).toISOString()"
+      fake: '{{phone.phoneNumber}}'
+      post_build: this.phone.replace(/x[0-9]+$/, '')
+
 ```
 
 Results in the following
 
 ```json
 {
-  "id": "user_1",
-  "type": "user",
-  "user_id": 1,
-  "first_name": "Emile",
-  "last_name": "Murphy",
-  "email_address": "Jacques_Langosh0@yahoo.com",
-  "phone": "(206) 627-7366",
-  "active": true,
-  "created_on": "2015-11-20T09:53:33.000Z"
+  "user_id": "4d9ec95c-f45d-42f4-9d32-4ac81d83f95b",
+  "name": "Sandy",
+  "last_name": "Turner",
+  "username": "Zella61",
+  "password": "gi7NVXsUoARHhyU",
+  "email": "Buck_Cormier@hotmail.com",
+  "phone": "715.612.8609"
 }
 {
-  "id": "user_2",
-  "type": "user",
-  "user_id": 2,
-  "first_name": "Levi",
-  "last_name": "Osinski",
-  "email_address": "Franz.Kshlerin@yahoo.com",
-  "phone": "(925) 202-9963",
-  "active": true,
-  "created_on": "2016-04-01T13:54:09.000Z"
+  "user_id": "7f513d5b-f944-4a80-b52a-4876627368b7",
+  "name": "Duane",
+  "last_name": "VonRueden",
+  "username": "Mafalda92",
+  "password": "3uXo4hFZJTdf1hp",
+  "email": "Rickie_Braun@hotmail.com",
+  "phone": "(356) 009-7477 "
 }
 ...etc
 ```
@@ -213,8 +300,13 @@ Each key inside of the `properties` will be apart of the generated object. Each 
 
 ```yaml
 name: test
+key:
+  build: faker.random.uuid()
 type: object
 properties:
+  id:
+    data:
+      build: faker.random.uuid()
   title:
     type: string
     description: The main title to use
@@ -230,24 +322,35 @@ properties:
         type: string
         data:
           # this will also be returned
-          build: "faker.phone.phoneNumber().replace(/x[0-9]+$/, '')"
+          build: faker.phone.phoneNumber().replace(/x[0-9]+$/, '')
       work:
         type: string
         data:
           # this will also be returned
-          build: "chance.bool({ likelihood: 35 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null"
+          build: chance.bool({ likelihood: 35 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null
 ```
 
 This will return a object like this
 
 ```json
 {
-  "title": "Fakeit",
+  "id": "4ce4da5c-0614-47d3-8fd6-3614c5461830",
+  "title": "alliance",
   "phone": {
-    "home": "(888) 888 - 8888",
+    "home": "(949) 194-3347",
+    "work": "314-939-0541"
+  }
+}
+{
+  "id": "a649bbec-d629-4594-8fc8-ae34d97811a2",
+  "title": "Unbranded",
+  "phone": {
+    "home": "012-296-9810",
     "work": null
   }
 }
+
+etc...
 ```
 
 #### `items`
@@ -257,6 +360,9 @@ It uses the same structure as `properties` does but it will return an array of v
 
 ```yaml
 name: Array example
+key:
+  data:
+    build: faker.random.uuid()
 type: object
 properties:
   keywords:
@@ -265,9 +371,9 @@ properties:
     items:
       type: string
       data:
-        min: 0
+        min: 3
         max: 10
-        build: "faker.random.word();"
+        build: faker.random.word()
   # You can also create a array of objects
   phones:
     type: array
@@ -281,20 +387,20 @@ properties:
         cell:
           type: string
           data:
-            build: "faker.phone.phoneNumber().replace(/x[0-9]+$/, '')"
+            build: faker.phone.phoneNumber().replace(/x[0-9]+$/, '')
         home:
           type: string
           data:
-            build: "chance.bool({ likelihood: 45 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null"
+            build: chance.bool({ likelihood: 45 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null
         work:
           type: string
           data:
-            build: "chance.bool({ likelihood: 10 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null"
+            build: chance.bool({ likelihood: 10 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null
 ```
 
 ```json
 {
-  "keywords": [ "foo", "bar", "baz", "qux", "quxx" ],
+  "keywords": [ "GB", "Sports", "redundant", "Plastic", ],
   "phones": [
     {
       "cell": "(555) 555 - 5555",
@@ -320,7 +426,7 @@ It can be beneficial to define definitions that can be referenced one or more ti
 ```yaml
 name: Contacts
 type: object
-key: _id
+key: contact_id
 data:
   min: 1
   max: 4
@@ -439,10 +545,6 @@ data:
 
 This becomes beneficial if you are providing input data and want to generate a fixed number of documents.  Take the following command for example:
 
-```bash
-fakeit export.zip countries.yaml
-```
-
 Here we want to generate a countries model but we might not necessarily know the exact amount of data being provided by the input.  We can reference the input data in our model's `pre_run` function and set the number to generate based on the input array.
 
 ```yaml
@@ -457,10 +559,9 @@ data:
 ```
 
 
-## API
+## JS API
 
 If you don't want to use the CLI version of this app you can always use the JS api.
-
 
 ```js
 import Fakeit from 'fakeit'
@@ -479,7 +580,6 @@ Below are the default options that are used unless overwritten.
 
 ```js
 import Fakeit from 'fakeit'
-
 const fakeit = new Fakeit({
   root: process.cwd(), // The root directory to operate from
   babel_config: '+(.babelrc|package.json)', // glob to search for the babel config. This search starts from the closest instance of `node_modules`
