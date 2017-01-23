@@ -71,9 +71,6 @@ The name of the model
 #### `type`
 The data type of the model to be generated. This needs to be set top level, as well as a per property/items basis. It determines the starting data type, and how the result of the build loop will be converted once complete
 
-#### `key`
-The main key for the document.  This is a reference to a generated property and is used for the filename or Document ID.
-If the key is an object it can use the same keys as the `data` option defined below. If the key is a string then it use the string value to find the value of the document that was just built.
 **Note:** If type isn't set it defaults to `'null'`.
 
 ###### Available types
@@ -152,6 +149,56 @@ The following keys can only be defined in the top level data object
      The key is what you reference when you want to get data (aka `this.inputs[key]`). The value is the file path to the inputs location.
      It can be relative to the model or an absolute path.
 
+
+
+#### `key` *(required)*
+
+This determines the name of the document that's being generated. It only needs to be defined once per document.  This is a reference to a generated property and is used for the filename or Document ID.
+If the key is an object it needs the `data` option defined above, it will only work with `value`, `build`, and `fake` since this already runs after the document has been built.
+If the key is a string then it use the string value to find the value of the document that was just built (using the [lodash get](https://lodash.com/docs/4.17.4#get) method).
+
+###### Examples of setting a key
+
+In this example after each document is built it will look for the `_id` property and return it's result (aka `user_1`, `user_2`, etc.)
+
+```yaml
+name: Key String Example
+type: object
+key: _id
+data:
+  pre_run: |
+    globals.user_counter = 0;
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: `user_${this.user_id}`
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: ++globals.user_counter
+```
+
+In this example the key will be `'user_' + the current user_id` (aka `user_1`, `user_2`, etc.)
+
+```yaml
+name: Key Object Example
+type: object
+key:
+  data:
+    build: `user_${this.user_id}`
+data:
+  pre_run: |
+    globals.user_counter = 0;
+properties:
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: ++globals.user_counter
+```
 
 ##### Functions
 

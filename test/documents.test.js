@@ -128,18 +128,18 @@ test.group('build', (test) => {
 
     const tests = [
       {
-        expected: 'key_test0',
+        expected: 'key_test_0',
       },
       {
-        actual: { value: 'value' },
+        actual: { data: { value: 'value' } },
         expected: 'value',
       },
       {
-        actual: { build: () => 'build' },
+        actual: { data: { build: () => 'build' } },
         expected: 'build',
       },
       {
-        actual: { fake: '{{finance.account}}' },
+        actual: { data: { fake: '{{finance.account}}' } },
         expected: /^[0-9]{8}$/,
       },
       {
