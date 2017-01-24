@@ -68,7 +68,6 @@ test('without args', async (t) => {
     prepared: is.boolean(),
     registered_models: is.array().length(0),
     spinners: is.object().required(),
-    progress: is.object().required(),
   };
   const { error } = is.validate(t.context, expected);
   if (error) {
@@ -258,7 +257,6 @@ test.group('parseModelDependencies', models(async (t, file) => {
     t.plan(0);
   } else {
     const length = t.context.models.length;
-    t.plan(length * 2 + 1);
     t.is(length, to.unique(t.context.registered_models).length);
   }
 
@@ -278,11 +276,7 @@ test.group('parseModelDependencies', models(async (t, file) => {
       } else {
         t.truthy(dependency.is_dependency);
       }
-      if (
-        dependency.data &&
-        dependency.data.dependencies &&
-        dependency.data.dependencies.length
-      ) {
+      if (dependency.data.dependencies.length) {
         check(dependency.data.dependencies);
       }
     }

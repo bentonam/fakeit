@@ -236,7 +236,7 @@ export default class Models extends Base {
     }
 
     // get list of files, flatten the array of files and filter files for valid input formats: yaml
-    const files = this.filterModelFiles(await utils.findFiles(model.data.dependencies));
+    const files = to.flatten(await utils.findFiles(model.data.dependencies));
 
     if (!files.length) {
       model.data.dependencies = [];
