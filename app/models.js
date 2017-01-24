@@ -30,8 +30,6 @@ export default class Models extends Base {
     this.registered_models = []; // holds the paths that have already been added
 
     this.prepared = false;
-
-    this.progress = this.spinner('Models');
   }
 
   ///# @name prepare
@@ -109,7 +107,7 @@ export default class Models extends Base {
   }
 
   async registerModels(models, dependency = false) {
-    this.progress.start();
+    this.progress = this.progress || this.spinner('Models').start();
     // if models weren't passed in then don't do anything
     if (!models) {
       return;
@@ -192,6 +190,8 @@ export default class Models extends Base {
 
     if (this.models.length === this.registered_models.length) {
       this.progress.stop();
+      // unset progress so when it's run again it works correctly
+      // this.progress = null;
     }
     return this;
   }
