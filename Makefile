@@ -73,7 +73,7 @@ post-coverage:
 
 # The command the ci server runs
 ci:
-	make lint build-source-maps -i
+	make lint || exit 1
 	# if the tests fail then it will exit with an error
 	make coverage || exit 1
 	# show the coverage report
