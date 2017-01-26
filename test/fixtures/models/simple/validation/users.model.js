@@ -13,7 +13,7 @@ module.exports = is.object({
     max: 100,
     count: is.number().min(50).max(100),
     dependencies: is.array().length(0),
-    inputs: is.object().length(0),
+    inputs: is.array().items(is.string()).length(0),
   },
   properties: {
     id: {

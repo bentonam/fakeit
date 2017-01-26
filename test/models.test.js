@@ -309,7 +309,9 @@ test.group('parseModelInputs', models(async (t, file) => {
 
   const actual = await parseModelInputs(model);
 
-  const tests = [ t.context.inputs, actual, model.data.inputs ];
+  t.is(to.type(model.data.inputs), 'array');
+
+  const tests = [ t.context.inputs, actual ];
 
   for (let item of tests) {
     const { error } = is.object(expected).validate(item);

@@ -216,7 +216,7 @@ export default class Models extends Base {
     parseModelSeed(model, this.options.seed);
 
     // add this models inputs to the main inputs object
-    this.inputs = to.extend(this.inputs || {}, await inputs);
+    this.inputs = Object.assign(this.inputs || {}, await inputs);
     await dependencies;
     return model;
   }
@@ -260,7 +260,7 @@ export async function parseModelInputs(model) {
     !model.data.inputs ||
     !model.data.inputs.length
   ) {
-    model.data.inputs = {};
+    model.data.inputs = [];
     return {};
   }
 
@@ -286,7 +286,6 @@ export async function parseModelInputs(model) {
     return file;
   });
 
-  model.data.inputs = inputs;
   return inputs;
 }
 

@@ -14,7 +14,7 @@ module.exports = is.object({
     max: 500,
     count: is.number().min(200).max(500),
     dependencies: is.array().length(0),
-    inputs: is.object().length(0),
+    inputs: is.array().items(is.string()).length(0),
     pre_run: is.func(),
   },
   properties: {

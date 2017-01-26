@@ -14,7 +14,7 @@ module.exports = is.object({
     max: 600,
     count: is.number().min(400).max(600),
     dependencies: is.array().length(0),
-    inputs: is.object().length(0),
+    inputs: is.array().items(is.string()).length(0),
   },
   properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func(), }),

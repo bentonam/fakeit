@@ -14,7 +14,7 @@ module.exports = is.object({
     max: 400,
     count: is.number().min(100).max(400),
     dependencies: is.array().length(0),
-    inputs: is.object().length(0),
+    inputs: is.array().items(is.string()).length(0),
   },
   properties: {
     user_id: utils.check('integer', 'The users id', { build: is.func(), }),
