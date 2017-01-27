@@ -49,9 +49,15 @@ test.beforeEach((t) => {
 });
 
 
-test('without args', async (t) => {
+test('without args', (t) => {
   t.context.options.log = true;
   const expected = {
+    // inherited from events-async
+    domain: null,
+    _events: {},
+    _eventsCount: 0,
+    _maxListeners: 50,
+
     options: {
       root: models_root,
       log: true,
