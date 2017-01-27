@@ -1,10 +1,9 @@
 import Models from './models';
-import { map } from 'async-array-methods';
 import Output from './output/index';
 import Base from './base';
 import to from 'to-js';
 import { uniqueId } from 'lodash';
-import Document from './documents';
+import Documents from './documents';
 import { success } from 'log-symbols';
 
 /// @name Fakeit
@@ -53,27 +52,17 @@ export default class Fakeit extends Base {
     output.prepare();
 
     await model.registerModels(models);
-
-    const document = new Document(this.options, this.documents, this.globals, model.inputs);
-
-    let result = [];
-
-    for (let obj of to.flatten(model.models)) {
-      const value = await document.build(obj);
-      if (!obj.is_dependency) {
-        result.push(value);
-      }
-    }
-
-    result = await Promise.all(result);
-
     await output.preparing;
-    result = await map(result, (data) => output.output(data));
+
+    const documents = new Documents(this.options, this.documents, this.globals, model.inputs);
+    delete model.inputs;
+    let result = documents.build(model.models);
+    documents.on('data', (data) => output.output(data));
+    result = await result;
     await output.finalize();
     const time = this.timeEnd(label);
-    const total = to.reduce(document.documents, (prev, { value }) => prev + value.length, 0);
     if (this.options.verbose) {
-      console.log(`${success} Finished generating ${total} documents in ${time}`);
+      console.log(`${success} Finished generating ${documents.total} documents in ${time}`);
     }
 
     return result;

@@ -1,9 +1,10 @@
 /* eslint-disable no-undefined */
 
-import Document, {
+import {
   transformValueToType,
   getPaths,
   typeToValue,
+  Document,
 } from '../dist/documents.js';
 /* istanbul ignore next : needed to test models */
 const Model = require('../dist/models.js').default;

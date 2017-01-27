@@ -1,3 +1,9 @@
+let exit = false;
+process.on('SIGINT', () => {
+  exit = true;
+  process.exit(2);
+});
+
 import faker from 'faker';
 import Chance from 'chance';
 import Base from './base';
@@ -6,13 +12,111 @@ import { set, get } from 'lodash';
 import to from 'to-js';
 
 ////
-/// @name Document
-/// @page api/document
+/// @name Documents
+/// @page api/documents
 ////
+
+/// @name Documents
+/// @description This class is used to generate all the documents for the passed models
+export default class Documents extends Base {
+  constructor(options = {}, documents = {}, globals = {}, inputs = {}) {
+    super(options);
+    this.options = to.extend({ count: 0 }, this.options);
+    this.documents = documents;
+    this.globals = globals;
+    this.inputs = inputs;
+    this.total = 0;
+  }
+
+  ///# @name build
+  ///# @description
+  ///# This takes an array of models and builds them
+  ///# @arg {array} models - Array of models
+  ///# @returns {array} of documents
+  ///# @async
+  build(models) {
+    models = to.clone(models);
+    const todo = models.map((model) => model.file);
+    const result = [];
+
+    function finished(dependencies) {
+      for (let file of dependencies) {
+        for (let model of models) {
+          if (model.file === file && !model.complete) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }
+
+    this.on('run', () => {
+      // don't run again if the program should exit
+      if (exit) return;
+      for (let model of models) {
+        const index = todo.indexOf(model.file);
+        if (index > -1 && finished(model.data.dependencies)) {
+          todo.splice(index, 1);
+          const document = this.document(model);
+
+          if (!model.is_dependency) {
+            result.push(document);
+          }
+        }
+        if (model.complete && finished(model.dependants)) {
+          // if the model is no longer needed then remove it
+          delete this.documents[model.name];
+        }
+      }
+
+      if (!todo.length) {
+        this.emit('finished');
+      }
+    });
+
+    this.emit('run');
+
+    return new Promise((resolve, reject) => {
+      this.once('error', (err) => {
+        reject(err);
+      });
+      this.once('finished', () => {
+        Promise.all(result).then((res) => {
+          this.inputs = {};
+          resolve(res);
+        });
+      });
+    });
+  }
+
+  document(model) {
+    const document = new Document(this.options, this.documents, this.globals, this.inputs);
+    return document.build(model)
+      .then(() => {
+        let result;
+        if (!model.is_dependency) {
+          result = this.emit('data', this.documents[model.name], model);
+        }
+        // update the total documents number
+        this.total += this.documents[model.name].length;
+        model.complete = true;
+        this.emit('run');
+        return result;
+      })
+      .catch((err) => {
+        exit = true;
+        process.exit(2);
+        this.emit('error', err);
+      });
+  }
+}
+
+
 
 /// @name Document
 /// @description This is used to generate documents based off a model
-export default class Document extends Base {
+export class Document extends Base {
   constructor(options = {}, documents = {}, globals = {}, inputs = {}) {
     super(options);
     this.options = to.extend({ count: 0 }, this.options);
@@ -59,12 +163,19 @@ export default class Document extends Base {
     spinner.start();
     const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
     await pool(model.data.count, async (i) => { // loop over each model and execute in order of dependency
+      // don't anymore if the program should exit
+      if (exit) return;
+
+      update();
       // this allows the spinner to actually update the count and doesn't affect performance much
       const doc = await this.buildDocument(model, i);
       update();
       await delay(0);
       this.documents[model.name].push(doc);
-    }, this.options.spinners ? 75 : 1000);
+    }, this.options.spinners ? 75 : 1000)
+      .catch((err) => {
+        spinner.fail(err);
+      });
 
     this.runData(model.data.post_run, model);
 
