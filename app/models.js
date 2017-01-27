@@ -187,6 +187,7 @@ export default class Models extends Base {
 
     // update the models order
     this.models = resolveDependenciesOrder(this.models);
+    this.models = resolveDependants(this.models);
 
     if (this.models.length === this.registered_models.length) {
       this.progress.stop();
@@ -479,4 +480,25 @@ export function resolveDependenciesOrder(models = []) {
   }
 
   return resolver.sort().map((file) => models[order[file]]);
+}
+
+
+/// @name resolveDependenciesOf
+/// @description Figures out which models use the model as a dependency
+/// @arg {array} models [[]] - The models to loop over
+/// @returns {array} - The models are returned with the `dependants`
+export function resolveDependants(models = []) {
+  return models.map((model) => {
+    model.dependants = models.reduce((prev, next) => {
+      if (
+        model.file !== next.file &&
+        next.data.dependencies.includes(model.file)
+      ) {
+        prev.push(next.file);
+      }
+      return prev;
+    }, []);
+
+    return model;
+  });
 }
