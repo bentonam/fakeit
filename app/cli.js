@@ -83,21 +83,20 @@ export default async function() {
 
   commander
     .command('couchbase')
-    .option('-s, --server', `The server address (${dim('127.0.0.1')})`)
-    .option('-b, --bucket', `The bucket name (${dim('default')})`)
-    .option('-u, --username', 'the username to use (optional)')
-    .option('-p, --password', 'the password for the account (optional)')
-    .option('-t, --timeout', `timeout for the servers (${dim(5000)})`)
+    .option('-s, --server [server]', `The server address (${dim('127.0.0.1')})`)
+    .option('-b, --bucket [bucket]', `The bucket name (${dim('default')})`)
+    .option('-p, --password [password]', 'the password for the account (optional)')
+    .option('-t, --timeout [timeout]', `timeout for the servers (${dim(5000)})`)
     .description('This will output to couchbase')
     .action(runServer('couchbase'));
 
   commander
     .command('sync-gateway')
-    .option('-s, --server', `The server address (${dim('127.0.0.1')})`)
-    .option('-b, --bucket', `The bucket name (${dim('default')})`)
-    .option('-u, --username', 'the username to use (optional)')
-    .option('-p, --password', 'the password for the account (optional)')
-    .option('-t, --timeout', 'timeout for the servers')
+    .option('-s, --server [server]', `The server address (${dim('127.0.0.1')})`)
+    .option('-b, --bucket [bucket]', `The bucket name (${dim('default')})`)
+    .option('-u, --username [username]', 'the username to use (optional)')
+    .option('-p, --password [password]', 'the password for the account (optional)')
+    .option('-t, --timeout [timeout]', 'timeout for the servers')
     .description('no idea')
     .action(runServer('sync-gateway'));
 
