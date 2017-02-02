@@ -48,7 +48,7 @@ properties:
     type: string
     description: The users gender
     data:
-      build: "chance.bool({ likelihood: 70 })? faker.random.arrayElement([ 'M', 'F' ]) : null;"
+      build: "chance.bool({ likelihood: 70 }) ? faker.random.arrayElement([ 'M', 'F' ]) : null;"
   dob:
     type: string
     description: The users dob

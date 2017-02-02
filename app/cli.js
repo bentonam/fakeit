@@ -3,7 +3,7 @@ import Fakeit from './index.js';
 import updateNotifier from 'update-notifier';
 import pkg from './../package.json';
 import path from 'path';
-import { extend, flattenDeep, pick } from 'lodash';
+import { extend, flattenDeep, pick, find } from 'lodash';
 import chalk from 'chalk';
 
 export default async function() {
@@ -83,22 +83,21 @@ export default async function() {
 
   commander
     .command('couchbase')
-    .option('-s, --server', `The server address (${dim('127.0.0.1')})`)
-    .option('-b, --bucket', `The bucket name (${dim('default')})`)
-    .option('-u, --username', 'the username to use (optional)')
-    .option('-p, --password', 'the password for the account (optional)')
-    .option('-t, --timeout', `timeout for the servers (${dim(5000)})`)
-    .description('This will output to couchbase')
+    .option('-s, --server [server]', `The server address (${dim('127.0.0.1')})`)
+    .option('-b, --bucket [bucket]', `The bucket name (${dim('default')})`)
+    .option('-p, --password [password]', 'the password for the account (optional)')
+    .option('-t, --timeout [timeout]', `timeout for the servers (${dim(5000)})`)
+    .description('This will output to a Couchbase Server')
     .action(runServer('couchbase'));
 
   commander
     .command('sync-gateway')
-    .option('-s, --server', `The server address (${dim('127.0.0.1')})`)
-    .option('-b, --bucket', `The bucket name (${dim('default')})`)
-    .option('-u, --username', 'the username to use (optional)')
-    .option('-p, --password', 'the password for the account (optional)')
-    .option('-t, --timeout', 'timeout for the servers')
-    .description('no idea')
+    .option('-s, --server [server]', `The server address (${dim('127.0.0.1')})`)
+    .option('-b, --bucket [bucket]', `The bucket name (${dim('default')})`)
+    .option('-u, --username [username]', 'the username to use (optional)')
+    .option('-p, --password [password]', 'the password for the account (optional)')
+    .option('-t, --timeout [timeout]', 'timeout for the servers')
+    .description('This will output to a Couchbase Sync-Gateway Server')
     .action(runServer('sync-gateway'));
 
   commander
@@ -164,7 +163,7 @@ export default async function() {
     const fakeit = new Fakeit(opts);
     if (!models.length) {
       fakeit.log('warning', 'you must pass in models to use');
-      commander.help();
+      find(commander.commands, [ '_name', output.output ]).help();
       return;
     }
 
