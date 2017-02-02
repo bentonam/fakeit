@@ -191,8 +191,6 @@ export default class Models extends Base {
 
     if (this.models.length === this.registered_models.length) {
       this.progress.stop();
-      // unset progress so when it's run again it works correctly
-      // this.progress = null;
     }
     return this;
   }
@@ -489,9 +487,12 @@ export function resolveDependenciesOrder(models = []) {
 /// @returns {array} - The models are returned with the `dependants`
 export function resolveDependants(models = []) {
   return models.map((model) => {
+    // loop over each model and find out which other models depend on the current model
     model.dependants = models.reduce((prev, next) => {
       if (
+        // the next file in the loop doesn't matche the current models file
         model.file !== next.file &&
+        // the next models dependencies includes the current models files
         next.data.dependencies.includes(model.file)
       ) {
         prev.push(next.file);

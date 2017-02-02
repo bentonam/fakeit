@@ -64,8 +64,9 @@ export default class Documents extends Base {
             result.push(document);
           }
         }
+
+        // if the model is complete and it's dependants are also completed is no longer needed then remove it
         if (model.complete && finished(model.dependants)) {
-          // if the model is no longer needed then remove it
           delete this.documents[model.name];
         }
       }

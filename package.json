@@ -60,7 +60,7 @@
     "dependency-resolver": "~2.0.1",
     "es6-promise-pool": "^2.4.4",
     "es6-promisify": "^5.0.0",
-    "events-async": "~1.0.0",
+    "events-async": "github:tjbenton/events-async#temp",
     "faker": "^3.1.0",
     "find-root": "~1.0.0",
     "format-seconds": "~0.3.1",
@@ -119,7 +119,7 @@
       "test/utils.js"
     ],
     "failFast": true,
-    "concurrency": 5,
+    "concurrency": 1,
     "babel": "inherit"
   },
   "nyc": {
