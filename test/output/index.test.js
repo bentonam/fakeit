@@ -101,8 +101,10 @@ test.group('validation', (test) => {
     const passing = [ 'return', 'console', 'couchbase', 'sync-gateway', 'output/folder' ];
     passing.forEach((output) => {
       test(`passing ${output}`, (t) => {
-        if ([ 'couchbase', 'sync-gateway' ].includes(output)) {
+        if (output === 'sync-gateway') {
           t.context.output_options.username = 'tyler';
+          t.context.output_options.password = 'password';
+        } else if (output === 'couchbase') {
           t.context.output_options.password = 'password';
         }
         t.context.output_options.output = output;
@@ -265,7 +267,9 @@ test.group('validation', (test) => {
     const servers = [ 'sync-gateway', 'couchbase', 'sync-gateway', 'couchbase' ];
     passing.forEach((server, i) => {
       test(`passing ${server}`, (t) => {
-        t.context.output_options.username = 'tyler';
+        if (server !== 'couchbase') {
+          t.context.output_options.username = 'tyler';
+        }
         t.context.output_options.password = 'password';
         t.context.output_options.output = servers[i];
         t.context.output_options.server = server;
@@ -282,7 +286,9 @@ test.group('validation', (test) => {
     const failing = [ 2, '', [], {} ];
     failing.forEach((server, i) => {
       test(`failing ${server}`, (t) => {
-        t.context.output_options.username = 'tyler';
+        if (server !== 'couchbase') {
+          t.context.output_options.username = 'tyler';
+        }
         t.context.output_options.password = 'password';
         t.context.output_options.output = servers[i];
         t.context.output_options.server = server;
@@ -366,12 +372,14 @@ test.group('validation', (test) => {
     const failing = [ 2, '', [], {} ];
     failing.forEach((username, i) => {
       test(`failing ${username}`, (t) => {
-        t.context.output_options.username = username;
-        t.context.output_options.password = 'password';
-        t.context.output_options.output = servers[i];
-        const validateUsername = () => validate.username(username, t.context.output_options);
-        t.throws(validateUsername);
-        t.throws(t.context.validateOutputOptions);
+        if (servers[i] !== 'couchbase') {
+          t.context.output_options.username = username;
+          t.context.output_options.password = 'password';
+          t.context.output_options.output = 'sync-gateway';
+          const validateUsername = () => validate.username(username, t.context.output_options);
+          t.throws(validateUsername);
+          t.throws(t.context.validateOutputOptions);
+        }
       });
     });
   });
@@ -394,7 +402,7 @@ test.group('validation', (test) => {
       });
     });
 
-    const failing = [ 2, '', [], {} ];
+    const failing = [ 2, [], {} ];
     failing.forEach((password, i) => {
       test(`failing ${password}`, (t) => {
         t.context.output_options.username = 'tyler';

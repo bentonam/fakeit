@@ -310,7 +310,7 @@ export const validate = {
   ///# @throws {error} - If the username option that was pass was invalid
   username(option, { output }) {
     // ignore this validation if the output isn't one of these
-    if (!isServer(output)) return;
+    if (output !== 'sync-gateway') return;
 
     isString(option, 'username');
   },
@@ -322,8 +322,7 @@ export const validate = {
   ///# @throws {error} - If the password option that was pass was invalid
   password(option, { output }) {
     // ignore this validation if the output isn't one of these
-    if (!isServer(output)) return;
-
+    if (!isServer(output) || option === '') return;
     isString(option, 'password');
   },
 
