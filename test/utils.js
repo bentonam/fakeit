@@ -125,6 +125,11 @@ module.exports.models = function(settings) {
 
           // eslint-disable-next-line no-underscore-dangle
           const schema_keys = schema.isJoi ? _.map(schema._inner.children, 'key') : to.keys(schema);
+
+          if (model.indexOf('flight-data') >= 0) {
+            test = test.serial;
+          }
+
           test(model, function(t) { // eslint-disable-line
             // run the call back with the `t` assertion object and the current model
             var result = cb(t, model);
