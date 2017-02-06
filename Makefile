@@ -50,7 +50,7 @@ watch:
 
 # lint test files
 lint:
-	eslint 'app' 'test'
+	command -v eslint >/dev/null 2>&1 && eslint 'app' 'test' || ./node_modules/lint-rules/node_modules/.bin/eslint 'app' 'test';
 
 # run unit tests
 test:
