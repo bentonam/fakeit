@@ -7,6 +7,7 @@ module.exports = is.object({
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
+  dependants: is.array(),
   key: '_id',
   seed: 0,
   data: {
@@ -14,7 +15,7 @@ module.exports = is.object({
     max: 0,
     count: 10000,
     dependencies: is.array().items(is.string()).length(1),
-    inputs: is.object().length(0),
+    inputs: is.array().items(is.string()).length(0),
     pre_run: is.func(),
     pre_build: is.func(),
     post_build: is.func(),

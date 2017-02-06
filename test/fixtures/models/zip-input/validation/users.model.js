@@ -7,6 +7,7 @@ module.exports = is.object({
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
+  dependants: is.array(),
   key: '_id',
   seed: 0,
   data: {
@@ -14,29 +15,7 @@ module.exports = is.object({
     max: 500,
     count: is.number().min(100).max(500),
     dependencies: is.array().length(0),
-    inputs: {
-      address: {
-        types: is.array().items(is.string()).length(3)
-      },
-      email: {
-        types: is.array().items(is.string()).length(3)
-      },
-      phone: {
-        types: is.array().items(is.string()).length(8)
-      },
-      countries: is.array()
-        .items({
-          code: is.string().uppercase(),
-          name: is.string().regex(/[A-Z].+/),
-        }).length(247),
-      regions: is.array()
-        .items({
-          code: is.string().regex(/[A-Z0-9-]{4,}/),
-          name: is.string(),
-          iso_country: is.string().uppercase(),
-        })
-        .length(3999),
-    },
+    inputs: is.array().items(is.string()).length(1),
     pre_run: is.func(),
     pre_build: is.func(),
   },

@@ -30,8 +30,6 @@ export default class Models extends Base {
     this.registered_models = []; // holds the paths that have already been added
 
     this.prepared = false;
-
-    this.progress = this.spinner('Models');
   }
 
   ///# @name prepare
@@ -109,7 +107,7 @@ export default class Models extends Base {
   }
 
   async registerModels(models, dependency = false) {
-    this.progress.start();
+    this.progress = this.progress || this.spinner('Models').start();
     // if models weren't passed in then don't do anything
     if (!models) {
       return;
@@ -189,6 +187,7 @@ export default class Models extends Base {
 
     // update the models order
     this.models = resolveDependenciesOrder(this.models);
+    this.models = resolveDependants(this.models);
 
     if (this.models.length === this.registered_models.length) {
       this.progress.stop();
@@ -216,7 +215,7 @@ export default class Models extends Base {
     parseModelSeed(model, this.options.seed);
 
     // add this models inputs to the main inputs object
-    this.inputs = to.extend(this.inputs || {}, await inputs);
+    this.inputs = Object.assign(this.inputs || {}, await inputs);
     await dependencies;
     return model;
   }
@@ -236,7 +235,7 @@ export default class Models extends Base {
     }
 
     // get list of files, flatten the array of files and filter files for valid input formats: yaml
-    const files = this.filterModelFiles(await utils.findFiles(model.data.dependencies));
+    const files = to.flatten(await utils.findFiles(model.data.dependencies));
 
     if (!files.length) {
       model.data.dependencies = [];
@@ -260,7 +259,7 @@ export async function parseModelInputs(model) {
     !model.data.inputs ||
     !model.data.inputs.length
   ) {
-    model.data.inputs = {};
+    model.data.inputs = [];
     return {};
   }
 
@@ -286,7 +285,6 @@ export async function parseModelInputs(model) {
     return file;
   });
 
-  model.data.inputs = inputs;
   return inputs;
 }
 
@@ -480,4 +478,28 @@ export function resolveDependenciesOrder(models = []) {
   }
 
   return resolver.sort().map((file) => models[order[file]]);
+}
+
+
+/// @name resolveDependenciesOf
+/// @description Figures out which models use the model as a dependency
+/// @arg {array} models [[]] - The models to loop over
+/// @returns {array} - The models are returned with the `dependants`
+export function resolveDependants(models = []) {
+  return models.map((model) => {
+    // loop over each model and find out which other models depend on the current model
+    model.dependants = models.reduce((prev, next) => {
+      if (
+        // the next file in the loop doesn't matche the current models file
+        model.file !== next.file &&
+        // the next models dependencies includes the current models files
+        next.data.dependencies.includes(model.file)
+      ) {
+        prev.push(next.file);
+      }
+      return prev;
+    }, []);
+
+    return model;
+  });
 }

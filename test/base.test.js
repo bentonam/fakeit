@@ -9,6 +9,12 @@ const test = ava.group('base:');
 test('without args', (t) => {
   const base = new Base();
   t.deepEqual(base, {
+    // inherited from events-async
+    domain: null,
+    _events: {},
+    _eventsCount: 0,
+    _maxListeners: 50,
+
     options: {
       root: process.cwd(),
       log: true,
@@ -32,6 +38,12 @@ test('without args', (t) => {
 test('with args', (t) => {
   const base = new Base({ log: false });
   t.deepEqual(base, {
+    // inherited from events-async
+    domain: null,
+    _events: {},
+    _eventsCount: 0,
+    _maxListeners: 50,
+
     options: {
       root: process.cwd(),
       log: false,

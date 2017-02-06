@@ -50,7 +50,7 @@ watch:
 
 # lint test files
 lint:
-	eslint 'app' 'test'
+	command -v eslint >/dev/null 2>&1 && eslint 'app' 'test' || ./node_modules/lint-rules/node_modules/.bin/eslint 'app' 'test';
 
 # run unit tests
 test:
@@ -73,7 +73,7 @@ post-coverage:
 
 # The command the ci server runs
 ci:
-	make lint build-source-maps -i
+	make lint || exit 1
 	# if the tests fail then it will exit with an error
 	make coverage || exit 1
 	# show the coverage report

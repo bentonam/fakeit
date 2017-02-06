@@ -6,14 +6,18 @@ symbols.warn = symbols.warning;
 symbols.ok = symbols.okay = symbols.success;
 import ora from 'ora';
 import formatSeconds from 'format-seconds';
+import Emitter from 'events-async';
+
 
 /// @name Logger
 /// @description
 /// This is the main logger for the application
-export default class Logger {
+export default class Logger extends Emitter {
   ///# @name constructor
   ///# @arg {object} options [{ log: true, verbose: false, timestamp: true }]
   constructor(options = {}) {
+    super();
+    this.setMaxListeners(50);
     this.options = to.extend({
       log: true,
       verbose: false,

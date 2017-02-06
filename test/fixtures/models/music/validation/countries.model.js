@@ -7,22 +7,14 @@ module.exports = is.object({
   file: is.string(),
   root: is.string(),
   is_dependency: is.boolean(),
+  dependants: is.array(),
   key: '_id',
   seed: 0,
   data: {
     min: 0,
     max: 0,
     count: 1,
-    inputs: {
-      countries: is.array()
-        .items({
-          name: is.string(),
-          iso_2: is.string().uppercase().length(2),
-          iso_3: is.string().uppercase().length(3),
-          iso_m49: is.number(),
-        })
-        .length(247),
-    },
+    inputs: is.array().items(is.string()).length(1),
     dependencies: is.array().length(0),
     pre_run: is.func(),
     pre_build: is.func(),

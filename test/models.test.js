@@ -49,9 +49,15 @@ test.beforeEach((t) => {
 });
 
 
-test('without args', async (t) => {
+test('without args', (t) => {
   t.context.options.log = true;
   const expected = {
+    // inherited from events-async
+    domain: null,
+    _events: {},
+    _eventsCount: 0,
+    _maxListeners: 50,
+
     options: {
       root: models_root,
       log: true,
@@ -68,7 +74,6 @@ test('without args', async (t) => {
     prepared: is.boolean(),
     registered_models: is.array().length(0),
     spinners: is.object().required(),
-    progress: is.object().required(),
   };
   const { error } = is.validate(t.context, expected);
   if (error) {
@@ -258,7 +263,6 @@ test.group('parseModelDependencies', models(async (t, file) => {
     t.plan(0);
   } else {
     const length = t.context.models.length;
-    t.plan(length * 2 + 1);
     t.is(length, to.unique(t.context.registered_models).length);
   }
 
@@ -278,11 +282,7 @@ test.group('parseModelDependencies', models(async (t, file) => {
       } else {
         t.truthy(dependency.is_dependency);
       }
-      if (
-        dependency.data &&
-        dependency.data.dependencies &&
-        dependency.data.dependencies.length
-      ) {
+      if (dependency.data.dependencies.length) {
         check(dependency.data.dependencies);
       }
     }
@@ -315,7 +315,9 @@ test.group('parseModelInputs', models(async (t, file) => {
 
   const actual = await parseModelInputs(model);
 
-  const tests = [ t.context.inputs, actual, model.data.inputs ];
+  t.is(to.type(model.data.inputs), 'array');
+
+  const tests = [ t.context.inputs, actual ];
 
   for (let item of tests) {
     const { error } = is.object(expected).validate(item);
