@@ -5,7 +5,7 @@ import pkg from './../package.json';
 import path from 'path';
 import { extend, flattenDeep, pick, find } from 'lodash';
 import chalk from 'chalk';
-
+// this is not a function that is to be called by anything other than the `bin/fakeit` file in the project
 export default async function() {
   // check for update and notify
   updateNotifier({ pkg }).notify();
@@ -41,6 +41,7 @@ export default async function() {
   commander
     .version(pkg.version)
     .usage('[command] [<file|directory|glob> ...]')
+    // these are all the base options across the different actions
     .option('--root <directory>', `Defines the root directory from which paths are resolve from (${dim('process.cwd()')})`, process.cwd())
     .option('--babel <glob>', `The location to the babel config (${dim('+(.babelrc|package.json)')})`, '+(.babelrc|package.json)')
     .option('-c, --count <n>', 'Overrides the number of documents to generate specified by the model. Defaults to model defined count', parseInt)
@@ -62,6 +63,7 @@ export default async function() {
     });
 
 
+  // i.e. `fakeit console`
   commander
     .command('console')
     .option('-h, --no-highlight', 'This turns off the cli-table when a csv format', Boolean, false)
@@ -72,6 +74,7 @@ export default async function() {
       await run({ output: 'console', highlight });
     });
 
+  // helper function used for couchbase and sync-gateway below
   function runServer(output) {
     /* istanbul ignore next : too difficult to test the servers via the cli */
     return async (...args) =>{
@@ -81,6 +84,7 @@ export default async function() {
     };
   }
 
+  // i.e. `fakeit couchbase`
   commander
     .command('couchbase')
     .option('-s, --server [server]', `The server address (${dim('127.0.0.1')})`)
@@ -90,6 +94,7 @@ export default async function() {
     .description('This will output to a Couchbase Server')
     .action(runServer('couchbase'));
 
+  // i.e. `fakeit sync-gateway`
   commander
     .command('sync-gateway')
     .option('-s, --server [server]', `The server address (${dim('127.0.0.1')})`)
@@ -119,6 +124,7 @@ export default async function() {
     });
 
 
+  // i.e. `fakeit help`
   commander
     .command('help')
     .action(() => {
@@ -135,15 +141,16 @@ export default async function() {
   // this function is used as a helper to run the different actions
   async function run(output = {}, opts = {}) {
     output = typeof output === 'string' ? { output } : output;
-
-
+    // get the base options from commander
     opts = pick(extend(pick(commander, base_options), opts), base_options);
+    // set the babel config
     opts.babel_config = opts.babel;
     delete opts.babel;
-
+    // get the output options
     output = extend(pick(commander, output_options), pick(output, output_options));
-
+    // get the output path
     const output_path = path.join(output.output, output.archive || '');
+    // get the model files that have been passed into fakeit
     const models = commander.args.filter((str, i, args) => {
       const prev = args[i - 1] || '';
       if (

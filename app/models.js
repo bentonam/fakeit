@@ -294,7 +294,6 @@ export async function parseModelInputs(model) {
 /// @arg {object} model - The model to update
 /// @arg {string, object} babel_config [{}] - The configuration to use for babel
 export function parseModelFunctions(model, babel_config = {}) {
-  // console.log('models.parseModelFunctions');
   const paths = utils.objectSearch(model, /((pre|post)_run)|(pre_|post_)?build$/);
   paths.forEach((function_path) => {
     let name = to.camelCase(function_path);
@@ -354,7 +353,6 @@ export function parseModelFunctions(model, babel_config = {}) {
 /// sub_models, etc. and copies the reference to the schema
 /// @arg {object} model - The model to update
 export function parseModelReferences(model) {
-  // console.log('models.parseModelReferences');
   const pattern = /\.(schema|items).\$ref$/;
   // sort the array so definitions come first before properties, this allows definitions to have definitions
   const paths = utils.objectSearch(model, pattern).sort();
@@ -376,9 +374,7 @@ export function parseModelReferences(model) {
 /// sure the default types exist
 /// @arg {object} model - The model to update
 export function parseModelTypes(model) {
-  // console.log('models.parseModel_properties');
   for (let type_path of utils.objectSearch(model, /.*properties\.[^.]+(\.items)?$/)) {
-    // console.log(type_path);
     const property = get(model, type_path);
     // make sure there is a type property set
     if (property.type == null) {
