@@ -1,0 +1,51 @@
+name: Frequencies
+type: object
+key: _id
+data:
+  inputs: ../input/frequencies.csv
+  pre_run: |
+    if (!inputs.frequencies) {
+      throw new Error('frequencies must be provided as an input');
+    }
+    this.data.count = inputs.frequencies.length;
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`frequency_${this.frequency_id}`"
+  frequency_id:
+    type: integer
+    description: The frequency id
+    data:
+      build: "inputs.frequencies[document_index].id"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: frequency
+  airport_id:
+    type: integer
+    description: The airport id that uses the frequency
+    data:
+        build: "inputs.frequencies[document_index].airport_ref"
+  airport_ident:
+    type: string
+    description: The airport identifier
+    data:
+        build: "inputs.frequencies[document_index].airport_ident"
+  type:
+    type: string
+    description: The frequency type
+    data:
+        build: "inputs.frequencies[document_index].type"
+  description:
+    type: string
+    description: The frequency description
+    data:
+        build: "inputs.frequencies[document_index].description"
+  frequency_mhz:
+    type: float
+    description: The mhz of the frequency
+    data:
+        build: "inputs.frequencies[document_index].frequency_mhz"

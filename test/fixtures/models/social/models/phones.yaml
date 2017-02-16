@@ -1,0 +1,44 @@
+name: Phones
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length * faker.random.number({ min: 2, max: 4 });
+  dependencies:
+    - users.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`phone_${this.phone_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "phone"
+  phone_id:
+    type: string
+    description: The phone id as a GUID
+    data:
+      build: "chance.guid()"
+  user_id:
+    type: integer
+    description: The user_id the phone is for
+    data:
+      build: "faker.random.arrayElement(documents.Users).user_id"
+  phone_type:
+    type: string
+    description: The phone type
+    data:
+      build: "faker.random.arrayElement([ 'Home', 'Work', 'Mobile', 'Main', 'Other' ]);"
+  phone_number:
+    type: string
+    description: The phone number
+    data:
+      build: "faker.phone.phoneNumber().replace(/\s*x[0-9]+$/, '');"
+  extension:
+    type: string
+    description: The phone extension
+    data:
+      build: "chance.bool({ likelihood: 20 }) ? chance.integer({ min: 1000, max: 9999 }).toString() : null;"

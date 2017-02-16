@@ -1,0 +1,62 @@
+name: Posts
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length * faker.random.number({ min: 2, max: 4 });
+  dependencies:
+    - users.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`post_${this.post_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "post"
+  post_id:
+    type: string
+    description: The post id as a GUID
+    data:
+      build: "chance.guid()"
+  user_id:
+    type: integer
+    description: The user_id that made the post
+    data:
+      build: "faker.random.arrayElement(documents.Users).user_id"
+  post_date:
+    type: integer
+    description: The date of the post
+    data:
+      build: "new Date(chance.bool({ likelihood: 30 }) ? faker.date.past() : faker.date.recent()).getTime()"
+  post:
+    type: string
+    description: The post content
+    data:
+      build: "faker.lorem.sentences(chance.integer({ min: 1, max: 5 }))"
+  visibility:
+    type: string
+    description: The post visibility
+    data:
+      build: "chance.bool({ likelihood: 75 }) ? 'public' : 'private'"
+  post_access:
+    type: array
+    description: An array of users who can see the post if the visibility is private
+    data:
+      post_build: |
+        const user_ids = [];
+        let rand, user;
+        if (this.visibility === 'private') {
+          user_ids.push(this.user_id);
+          rand = chance.integer({ min: 1, max: 50 });
+          for (let i = 0; i < rand; i++) {
+            user = faker.random.arrayElement(documents.Users);
+            if (user_ids.indexOf(user.user_id) === -1) {
+              user_ids.push(user.user_id);
+            }
+          }
+        }
+        return user_ids;

@@ -1,0 +1,33 @@
+name: Countries
+type: object
+key: _id
+data:
+  inputs: ../input/countries.csv
+  pre_run: |
+    this.data.count = inputs.countries.length;
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`country_${this.country_code}`"
+  country_code:
+    type: string
+    description: The ISO country code
+    data:
+      build: "inputs.countries[document_index].code"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: country
+  country_name:
+    type: string
+    description: The country name
+    data:
+      build: "inputs.countries[document_index].name"
+  continent_code:
+    type: string
+    description: The ISO continent code the country is located in
+    data:
+      build: "inputs.countries[document_index].continent"

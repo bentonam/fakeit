@@ -1,48 +1,70 @@
-'use strict';
+import Models from './models';
+import Output from './output/index';
+import Base from './base';
+import to from 'to-js';
+import { uniqueId } from 'lodash';
+import Documents from './documents';
+import { success } from 'log-symbols';
 
-import program from 'commander';
-import generator from './generator';
-import updateNotifier from 'update-notifier';
-import pkg from './../package.json';
+/// @name Fakeit
+/// @page api
+/// @description
+/// This class is used to generate fake data in `json`, `cson`, `csv`, `yml`, `yaml` formats.
+/// You can have it output idividual files or you can connect to a data base and store the files there.
+/// @arg {object} options [{}] Here are the defaults
+/// ```
+/// options = {
+///   inputs: '', // @todo remove
+///   exclude: '', // @todo remove
+///   // a fixed number of documents to generate
+///   count: null,
+///   // Base options
+///   root: process.cwd(),
+///   seed: 0,
+///   babel_config: '+(.babelrc|package.json)',
+///   log: true,
+///   verbose: false,
+///   timestamp: true,
+/// }
+/// ```
+/* istanbul ignore next: These are already tested in other files */
+export default class Fakeit extends Base {
+  constructor(options = {}) {
+    super(options);
 
-export default function() {
-  // check for update and notify
-  updateNotifier({ pkg }).notify();
+    this.documents = {};
+    this.globals = {};
+  }
 
-  // get the inputs
-  program
-    .version(pkg.version)
-    .usage('fakeit [options]')
-    .option('-o, --output [value]', 'The output format to generate.  Supported formats are: json, csv, yaml, cson', 'json')
-    .option('-a, --archive [value]', 'The archive file to generate.  Supported formats are: zip')
-    .option('-m, --models [value]', 'A directory or comma-delimited list of files models to use.', process.cwd())
-    .option('-d, --destination [value]', 'The output destination.  Values can be: couchbase, console or a directory path.', 'console')
-    .option('-f, --format [value]', 'The spacing format to use for JSON and YAML file generation.  Default is 2', 2)
-    .option('-n, --number [value]', 'Overrides the number of documents to generate specified by the model.')
-    .option('-i, --input [value]', 'Directory or comma-delimited list of files to use as inputs.  Support formats are: json, yaml, csv, cson, zip')
-    .option('-s, --server [address]', 'Couchbase Server or Sync-Gateway address', '127.0.0.1')
-    .option('-b, --bucket [name]', 'The name of a Couchbase Bucket.  The default value is: default', 'default')
-    .option('-p, --password [value]', 'Bucket password')
-    .option('-t, --timeout [value]', 'A timeout value for database operations', 5000)
-    .option('-l, --limit [value]', 'Limit the number of save operations at a time.  Default: 100', 100)
-    .option('-u, --username [name]', 'The sync-gateway username')
-    .option('-e, --exclude [model]', 'A comma-delimited list of model names to exclude from output', '')
-    .option('-v, --verbose', 'Whether or not to use verbose output')
-    .parse(process.argv);
+  async generate(models, output_options = {}) {
+    if (to.type(models) === 'object') {
+      output_options = models;
+      models = models.models;
+    }
 
-  // run the program
-  generator(program)
-    .then(() => {
-      // console.log('Data Generation Complete');
-      process.exit();
-    })
-    .catch((err) => {
-      console.error(err.message);
-      process.exit(1);
-    });
+    if (!models) {
+      return;
+    }
+    const label = uniqueId('fakeit');
+    this.time(label);
+    const model = new Models(this.options);
+    const output = new Output(this.options, output_options);
+    output.prepare();
+
+    await model.registerModels(models);
+    await output.preparing;
+
+    const documents = new Documents(this.options, this.documents, this.globals, model.inputs);
+    delete model.inputs;
+    let result = documents.build(model.models);
+    documents.on('data', (data) => output.output(data));
+    result = await result;
+    await output.finalize();
+    const time = this.timeEnd(label);
+    if (this.options.verbose) {
+      console.log(`${success} Finished generating ${documents.total} documents in ${time}`);
+    }
+
+    return result;
+  }
 }
-
-process.on('uncaughtException', (err) => {
-  console.error('An uncaughtException was found:', err.stack);
-  process.exit(1);
-});

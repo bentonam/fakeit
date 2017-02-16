@@ -1,0 +1,44 @@
+name: Chats
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length * faker.random.number({ min: 2, max: 4 });
+  dependencies:
+    - users.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`chat_${this.chat_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "chat"
+  chat_id:
+    type: string
+    description: The chat id as a GUID
+    data:
+      build: "chance.guid()"
+  created_on:
+    type: integer
+    description: The date of the post
+    data:
+      build: "new Date(chance.bool({ likelihood: 30 }) ? faker.date.past() : faker.date.recent()).getTime()"
+  users:
+    type: array
+    description: An array of user ids who are in the chat
+    data:
+      post_build: |
+        const user_ids = [];
+        let user;
+        const rand = chance.bool({ likelihood: 70 }) ? 2 : chance.integer({ min: 2, max: 10 });
+        for (let i = 0; i < rand; i++) {
+          user = faker.random.arrayElement(documents.Users);
+          if (!user_ids.includes(user.user_id)) {
+            user_ids.push(user.user_id);
+          }
+        }
+        return user_ids;

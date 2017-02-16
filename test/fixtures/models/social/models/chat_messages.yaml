@@ -1,0 +1,47 @@
+name: ChatMessages
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Chats.length * faker.random.number({ min: 3, max: 5 });
+  pre_build: |
+    globals.chat_id = documents.Chats[chance.integer({ min: 0, max: documents.Chats.length - 1 })].chat_id;
+  dependencies:
+    - users.yaml
+    - chats.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`message_${this.message_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "chat-message"
+  message_id:
+    type: string
+    description: The message id as a GUID
+    data:
+      build: "chance.guid()"
+  chat_id:
+    type: string
+    description: The message id as a GUID
+    data:
+      build: "globals.chat_id"
+  user_id:
+    type: integer
+    description: The user_id that sent the message
+    data:
+      build: "faker.random.arrayElement(documents.Users).user_id"
+  message_date:
+    type: integer
+    description: The date of the post
+    data:
+      build: "new Date(chance.bool({ likelihood: 30 }) ? faker.date.past() : faker.date.recent()).getTime()"
+  message:
+    type: string
+    description: The message content
+    data:
+      build: "faker.lorem.sentences(chance.integer({ min: 1, max: 2 }))"

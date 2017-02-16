@@ -1,0 +1,46 @@
+name: Friends
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length;
+  dependencies:
+    - users.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`user_${this.user_id}_friends`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user-friends"
+  user_id:
+    type: integer
+    description: The user_id the lookup is for
+    data:
+      build: "documents.Users[document_index].user_id"
+  friends:
+    type: array
+    description: An array of friends (user_id)
+    data:
+      post_build: |
+        const friends = [];
+        const added = [];
+        const rand = chance.integer({ min: 10, max: 200 });
+        for (let i = 0; i < rand; i++) {
+          let user = faker.random.arrayElement(documents.Users);
+          if (
+            user.user_id !== this.user_id &&
+            !added.includes(user.user_id)
+          ) {
+            added.push(user.user_id);
+            friends.push({
+              user_id: user.user_id,
+              date_friended: new Date(chance.bool({ likelihood: 30 }) ? faker.date.past() : faker.date.recent()).getTime()
+            });
+          }
+        }
+        return friends;

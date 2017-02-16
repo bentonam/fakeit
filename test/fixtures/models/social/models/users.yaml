@@ -1,0 +1,89 @@
+name: Users
+type: object
+key: _id
+data:
+  count: 1000
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`user_${this.user_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user"
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: "document_index + 1"
+  first_name:
+    type: string
+    description: The users first name
+    data:
+      fake: "{{name.firstName}}"
+  middle_name:
+    type: string
+    description: The users middle_name
+    data:
+      build: "chance.bool() ? chance.name({ middle: true }).split(' ')[1] : null;"
+  last_name:
+    type: string
+    description: The users last name
+    data:
+      fake: "{{name.lastName}}"
+  company:
+    type: string
+    description: The users company
+    data:
+      build: "chance.bool({ likelihood: 30 }) ? faker.company.companyName() : null;"
+  job_title:
+    type: string
+    description: The users job title
+    data:
+      build: "chance.bool({ likelihood: 30 }) ? faker.name.jobTitle() : null;"
+  gender:
+    type: string
+    description: The users gender
+    data:
+      build: "chance.bool({ likelihood: 70 }) ? faker.random.arrayElement([ 'M', 'F' ]) : null;"
+  dob:
+    type: string
+    description: The users dob
+    data:
+      build: "chance.bool() ? new Date(faker.date.past()).toISOString().split('T')[0] : null;"
+  created_on:
+    type: integer
+    description: An epoch time of when the user was created
+    data:
+      fake: "{{date.past}}"
+      post_build: "new Date(this.created_on).getTime();"
+  children:
+    type: array
+    description: An array of children
+    items:
+      $ref: '#/definitions/Children'
+      data:
+        min: 0
+        max: 5
+definitions:
+  Children:
+    type: object
+    properties:
+      first_name:
+        type: string
+        description: The childs first_name
+        data:
+          fake: "{{name.firstName}}"
+      gender:
+        type: string
+        description: The childs gender
+        data:
+          build: "chance.bool({ likelihood: 60 })? faker.random.arrayElement([ 'M', 'F' ]) : null;"
+      age:
+        type: integer
+        description: The childs age
+        data:
+          build: "chance.integer({ min: 1, max: 17 })"

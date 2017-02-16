@@ -1,0 +1,41 @@
+name: Likes
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Posts.length * faker.random.number({ min: 2, max: 4 });
+  dependencies:
+    - users.yaml
+    - posts.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`like_${this.like_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "like"
+  like_id:
+    type: string
+    description: The post id as a GUID
+    data:
+      build: "chance.guid()"
+  post_id:
+    type: string
+    description: The post id as a GUID
+    data:
+      build: "faker.random.arrayElement(documents.Posts).post_id"
+  user_id:
+    type: integer
+    description: The user_id that liked the post
+    data:
+      build: "faker.random.arrayElement(documents.Users).user_id"
+  like_date:
+    type: integer
+    description: The date of the like
+    data:
+      build: "new Date(chance.bool({ likelihood: 30 }) ? faker.date.past() : faker.date.recent()).getTime()"
+

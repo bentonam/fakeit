@@ -1,0 +1,240 @@
+name: Users
+type: object
+key: _id
+data:
+  count: 10000
+  pre_run: |
+    globals.address_types = [ 'Home', 'Work', 'Other' ];
+    globals.email_types = [ 'Home', 'Work', 'Other' ];
+    globals.phone_types = [ 'Home', 'Work', 'Mobile', 'Main', 'Other', 'Fax' ];
+    globals.flattened_regions = {};
+    for (let i = 0; i < documents.Regions.length; i++) {
+      if (!globals.flattened_regions[documents.Regions[i].iso_country]) {
+        globals.flattened_regions[documents.Regions[i].iso_country] = [];
+      }
+      globals.flattened_regions[documents.Regions[i].iso_country].push(documents.Regions[i].region_code);
+    }
+  pre_build: |
+    globals.current_region = documents.Regions[chance.integer({ min: 0, max: documents.Regions.length - 1 })];
+  post_build: |
+    if (this.phones.length) {
+      this.phones[chance.integer({ min: 0, max: this.phones.length - 1 })].primary = true;
+    }
+    if (this.emails.length) {
+      this.emails[chance.integer({ min: 0, max: this.emails.length - 1 })].primary = true;
+    }
+    if (this.addresses.length) {
+      this.addresses[chance.integer({ min: 0, max: this.addresses.length - 1 })].primary = true;
+    }
+  dependencies:
+    - regions.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`user_${this.user_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user"
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: "document_index + 1;"
+  account:
+    type: object
+    properties:
+      username:
+        type: string
+        description: The users username
+        data:
+          fake: "{{internet.userName}}"
+      password:
+        type: string
+        description: The users password
+        data:
+          fake: "{{internet.password}}"
+      created_on:
+        type: integer
+        description: An epoch time of when the user was created
+        data:
+          build: "new Date(faker.date.past()).getTime();"
+      modified_on:
+        type: integer
+        description: An epoch time of when the user was last modified
+        data:
+          build: "new Date(faker.date.recent()).getTime();"
+      last_login:
+        type: integer
+        description: An epoch time of when the contact was last modified
+        data:
+          build: "new Date(faker.date.recent()).getTime()"
+  details:
+    description: An object of the user details
+    schema:
+      $ref: '#/definitions/Details'
+  phones:
+    type: array
+    description: An array of phone numbers for the user
+    items:
+      $ref: '#/definitions/Phone'
+      data:
+        min: 1
+        max: 3
+  emails:
+    type: array
+    description: An array of emails for the user
+    items:
+      $ref: '#/definitions/Email'
+      data:
+        min: 1
+        max: 3
+  addresses:
+    type: array
+    description: An array of addresses
+    items:
+      $ref: '#/definitions/Address'
+      data:
+        min: 1
+        max: 2
+definitions:
+  Email:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The phone type
+        data:
+          build: "faker.random.arrayElement(globals.email_types);"
+      email_address:
+        type: string
+        description: The email address
+        data:
+          build: "faker.internet.email()"
+      primary:
+        type: boolean
+        description: If the email address is the primary email address or not
+        data:
+          value: false
+  Phone:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The phone type
+        data:
+          build: "faker.random.arrayElement(globals.phone_types)"
+      phone_number:
+        type: string
+        description: The phone number
+        data:
+          build: "chance.phone()"
+      extension:
+        type: string
+        description: The phone extension
+        data:
+          build: "chance.bool({ likelihood: 20 }) ? chance.integer({ min: 1000, max: 9999 }).toString() : null"
+      primary:
+        type: boolean
+        description: If the phone is the primary phone or not
+        data:
+          value: false
+  Address:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The address type
+        data:
+          build: "faker.random.arrayElement(globals.address_types)"
+      address_1:
+        type: string
+        description: The address 1
+        data:
+          build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`"
+      address_2:
+        type: string
+        description: The address_2
+        data:
+          build: "chance.bool({ likelihood: 35 }) ? faker.address.secondaryAddress() : null;"
+      locality:
+        type: string
+        description: The locality
+        data:
+          build: "faker.address.city();"
+      iso_region:
+        type: string
+        description: The ISO region / state / province code
+        data:
+          build: |
+            let region = globals.current_region.region_code;
+            if (chance.bool({ likelihood: 30 })) {
+              return globals.flattened_regions[globals.current_region.iso_country][chance.integer({ min: 0, max: globals.flattened_regions[globals.current_region.iso_country].length - 1 })]
+            }
+            return region;
+      postal_code:
+        type: string
+        description: The zip code / postal code
+        data:
+          build: "faker.address.zipCode();"
+      iso_country:
+        type: string
+        description: The ISO country code
+        data:
+          build: "globals.current_region.iso_country"
+      primary:
+        type: boolean
+        description: If the email address is the primary email address or not
+        data:
+          value: false
+  Details:
+    type: object
+    properties:
+      prefix:
+        type: string
+        description: The users prefix
+        data:
+          build: "chance.bool({ likelihood: 40 }) ? chance.prefix() : null"
+      first_name:
+        type: string
+        description: The users first name
+        data:
+          fake: "{{name.firstName}}"
+      middle_name:
+        type: string
+        description: The users middle name
+        data:
+          build: "chance.bool() ? chance.name({ middle: true }).split(' ')[1] : null"
+      last_name:
+        type: string
+        description: The users last name
+        data:
+          build: "chance.bool({ likelihood: 70 }) ? faker.name.lastName() : null"
+      suffix:
+        type: string
+        description: The users suffix
+        data:
+          build: "chance.bool({ likelihood: 20 }) ? chance.suffix() : null"
+      company:
+        type: string
+        description: The users company
+        data:
+          build: "chance.bool({ likelihood: 30 }) ? faker.company.companyName() : null"
+      job_title:
+        type: string
+        description: The users job title
+        data:
+          build: "chance.bool({ likelihood: 30 }) ? faker.name.jobTitle() : null"
+      dob:
+        type: string
+        description: The users date of birth
+        data:
+          build: "chance.bool() ? new Date(faker.date.past()).toISOString().split('T')[0] : null"
+      home_country:
+        type: string
+        description: The users ISO home country
+        data:
+          build: "globals.current_region.iso_country"

@@ -1,0 +1,64 @@
+name: Addresses
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length * faker.random.number({ min: 2, max: 4 });
+  dependencies:
+    - users.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`address_${this.address_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "address"
+  address_id:
+    type: string
+    description: The address id as a GUID
+    data:
+      build: "chance.guid()"
+  user_id:
+    type: integer
+    description: The user_id the address is for
+    data:
+      build: "documents.Users[chance.integer({ min:0, max: documents.Users.length - 1 })].user_id"
+  address_type:
+    type: string
+    description: The address type
+    data:
+      build: "faker.random.arrayElement([ 'Home', 'Work', 'Other' ]);"
+  address_1:
+    type: string
+    description: The address 1
+    data:
+      build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`;"
+  address_2:
+    type: string
+    description: The address_2
+    data:
+      build: "chance.bool({ likelihood: 35 }) ? faker.address.secondaryAddress() : null;"
+  locality:
+    type: string
+    description: The locality
+    data:
+      build: "faker.address.city();"
+  region:
+    type: string
+    description: The region / state / province
+    data:
+      build: "faker.address.stateAbbr();"
+  postal_code:
+    type: string
+    description: The zip code / postal code
+    data:
+      build: "faker.address.zipCode();"
+  country:
+    type: string
+    description: The country code
+    data:
+      build: "faker.address.countryCode();"

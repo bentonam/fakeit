@@ -2,4 +2,4 @@
 'use strict';
 
 var path = require('path');
-require(path.join('..', 'dist', 'index.js')).default();
+require(path.join('..', 'dist', 'cli.js')).default();
