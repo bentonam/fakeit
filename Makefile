@@ -81,32 +81,7 @@ ci:
 	# check check-coverage and if it fails then exit
 	nyc check-coverage --statements 95 --functions 95 --lines 95 || exit 1
 
-# "patch", "minor", "major", "prepatch",
-VERS ?= "patch"
-
-# "preminor", "premajor", "prerelease"
-TAG ?= "latest"
-
-# Release a prepatch version
-prepatch:
-	export VERS="prepatch" && make release
-
-# Release a patch version
-patch:
-	export VERS="patch" && make release
-
-# Release a minor version
-minor:
-	export VERS="minor" && make release
-
-# Release a major version
-major:
-	export VERS="major" && make release
-
 publish release:
-	git checkout master
-	git pull --rebase
-	make ci
-	npm version $(VERS) -m "Release %s"
-	npm publish --tag $(TAG)
-	git push --follow-tags origin master
+	make reinstall
+	make ci || exit 1
+	np --no-cleanup --yolo $(args)
