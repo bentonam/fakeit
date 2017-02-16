@@ -1,0 +1,69 @@
+name: Playlists
+type: object
+key: _id
+data:
+  dependencies:
+    - users.yaml
+    - tracks.yaml
+  min: 500
+  max: 1000
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`playlist_${this.id}`"
+  type:
+    type: string
+    description: The document type
+    data:
+      value: "playlist"
+  id:
+    type: string
+    description: Unique identifier representing a specific playlist
+    data:
+      build: "faker.random.uuid();"
+  created:
+    type: string
+    description: The date the track was created
+    data:
+      fake: "{{date.past}}"
+      post_build: "new Date(this.created).toISOString();"
+  updated:
+    type: string
+    description: The date the track was updated
+    data:
+      fake: "{{date.recent}}"
+      post_build: "new Date(this.updated).toISOString();"
+  visibility:
+    type: string
+    description: The playlist visibility
+    data:
+        build: "chance.bool({ likelihood: 75 }) ? 'PUBLIC' : 'PRIVATE'"
+  owner:
+    type: object
+    description: The user that the playlist belongs to
+    data:
+        build: |
+          const user = faker.random.arrayElement(documents.Users);
+          return {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            created: new Date(user.created).getTime(),
+            updated: user.updated,
+            picture: user.picture,
+            username: user.username
+          };
+  tracks:
+    type: array
+    description: An array of track id's
+    items:
+      type: string
+      data:
+        min: 3
+        max: 25
+        build: |
+          const track = faker.random.arrayElement(documents.Tracks).id
+          if (!this.tracks.includes(track)) {
+            this.tracks.push(track)
+          }

@@ -1,0 +1,175 @@
+name: Orders
+type: object
+key: _id
+data:
+  dependencies:
+    - products.yaml
+    - users.yaml
+  min: 300
+  max: 600
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`order_${this.order_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "order"
+  order_id:
+    type: integer
+    description: The order_id
+    data:
+      build: |
+        let current_order_id = globals.orders_counter || 0;
+        current_order_id += 1;
+        globals.orders_counter = current_order_id;
+        return current_order_id;
+  user_id:
+    type: integer
+    description: The user_id that placed the order
+    data:
+      build: |
+        return faker.random.arrayElement(documents.Users).user_id;
+  order_date:
+    type: integer
+    description: An epoch time of when the order was placed
+    data:
+      fake: "{{date.past}}"
+      post_build: "new Date(this.order_date).getTime();"
+  order_status:
+    type: string
+    description: The status of the order
+    data:
+      build: |
+        faker.random.arrayElement([ 'Pending', 'Processing', 'Cancelled', 'Shipped' ]);
+  billing_name:
+    type: string
+    description: The name of the person the order is to be billed to
+    data:
+      build: "`${faker.name.firstName()} ${faker.name.lastName()}`"
+  billing_phone:
+    type: string
+    description: The billing phone
+    data:
+      fake: "{{phone.phoneNumber}}"
+      post_build: "this.billing_phone.replace(/x[0-9]+$/, '')"
+  billing_email:
+    type: string
+    description: The billing email
+    data:
+      fake: "{{internet.email}}"
+  billing_address_1:
+    type: string
+    description: The billing address 1
+    data:
+      build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`"
+  billing_address_2:
+    type: string
+    description: The billing address 2
+    data:
+      build: "chance.bool({ likelihood: 50 }) ? faker.address.secondaryAddress() : null;"
+  billing_locality:
+    type: string
+    description: The billing city
+    data:
+      fake: "{{address.city}}"
+  billing_region:
+    type: string
+    description: The billing region, city, province
+    data:
+      fake: "{{address.stateAbbr}}"
+  billing_postal_code:
+    type: string
+    description: The billing zip code / postal code
+    data:
+      fake: "{{address.zipCode}}"
+  billing_country:
+    type: string
+    description: The billing region, city, province
+    data:
+      value: "US"
+  shipping_name:
+    type: string
+    description: The name of the person the order is to be billed to
+    data:
+      build: "`${faker.name.firstName()} ${faker.name.lastName()}`"
+  shipping_address_1:
+    type: string
+    description: The shipping address 1
+    data:
+      build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`"
+  shipping_address_2:
+    type: string
+    description: The shipping address 2
+    data:
+      build: "chance.bool({ likelihood: 50 }) ? faker.address.secondaryAddress() : null"
+  shipping_locality:
+    type: string
+    description: The shipping city
+    data:
+      fake: "{{address.city}}"
+  shipping_region:
+    type: string
+    description: The shipping region, city, province
+    data:
+      fake: "{{address.stateAbbr}}"
+  shipping_postal_code:
+    type: string
+    description: The shipping zip code / postal code
+    data:
+      fake: "{{address.zipCode}}"
+  shipping_country:
+    type: string
+    description: The shipping region, city, province
+    data:
+      value: "US"
+  shipping_method:
+    type: string
+    description: The shipping method
+    data:
+      build: "faker.random.arrayElement([ 'USPS', 'UPS Standard', 'UPS Ground', 'UPS 2nd Day Air', 'UPS Next Day Air', 'FedEx Ground', 'FedEx 2Day Air', 'FedEx Standard Overnight' ]);"
+  shipping_total:
+    type: double
+    description: The shipping total
+    data:
+      build: "chance.dollar({ min: 10, max: 50 }).slice(1)"
+  tax:
+    type: double
+    description: The tax total
+    data:
+      build: "chance.dollar({ min: 2, max: 10 }).slice(1)"
+  line_items:
+    type: array
+    description: The products that were ordered
+    data:
+      build: |
+        const items = [];
+        for (let i = 0, count = chance.integer({ min: 1, max: 5 }); i < count; i++) {
+          const random = faker.random.arrayElement(documents.Products);
+          const product = {
+            product_id: random.product_id,
+            display_name: random.display_name,
+            short_description: random.short_description,
+            image: random.image,
+            price: random.sale_price || random.price,
+            qty: faker.random.number({ min: 1, max: 5 }),
+          };
+          product.sub_total = product.qty * product.price;
+          items.push(product);
+        }
+        return items;
+  grand_total:
+    type: double
+    description: The grand total of the order
+    data:
+      post_build: |
+        let total = 0;
+        total += this.tax;
+        total += this.shipping_total;
+        for (let i = 0; i < this.line_items.length; i++) {
+          total += this.line_items[i].sub_total;
+        }
+        return chance.dollar({ min: total, max: total }).slice(1);

@@ -1,0 +1,49 @@
+name: Countries
+type: object
+key: _id
+data:
+  inputs: '../input/countries.json'
+  pre_run: |
+    globals.index = 0;
+    this.data.count = inputs.countries.length;
+  pre_build: |
+    globals.index = faker.random.number({ min: 0, max: inputs.countries.length - 1 });
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`country_${this.country_code}`"
+  gdp:
+    type: integer
+    description: The countries GDP
+    data:
+      build: "faker.random.number({ min: 1000, max: 75000 })"
+  country_code:
+    type: string
+    description: The 2 letter ISO country code
+    data:
+      pre_build: "inputs.countries[globals.index].iso_2"
+  region-number:
+    type: string
+    description: The countries region number
+    data:
+      build: |
+        return inputs.countries[globals.index].iso_m49 || inputs.countries[globals.index].region_number || chance.integer({ min: 1, max: 999 });
+  name:
+    type: string
+    description: The name of the country
+    data:
+      build: |
+        return inputs.countries[globals.index].name || inputs.countries[globals.index].name || chance.country();
+  updated:
+    type: string
+    description: The date the country was last updated
+    data:
+      fake: "{{date.past}}"
+      post_build: "new Date(this.updated).toISOString();"
+  population:
+    type: integer
+    description: The countries population
+    data:
+      build: "faker.random.number()"

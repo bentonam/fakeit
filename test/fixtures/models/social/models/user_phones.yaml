@@ -1,0 +1,37 @@
+name: UserPhones
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length;
+  dependencies:
+    - users.yaml
+    - phones.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`user_${this.user_id}_phones`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user-phones"
+  user_id:
+    type: integer
+    description: The user_id the lookup is for
+    data:
+      build: "documents.Users[document_index].user_id"
+  phones:
+    type: array
+    description: An array of phone_ids
+    data:
+      build: |
+        const phones = [];
+        for (let i = 0; i < documents.Phones.length; i++) {
+          if (documents.Phones[i].user_id === documents.Users[document_index].user_id) {
+            phones.push(documents.Phones[i].phone_id);
+          }
+        }
+        return phones;

@@ -1,0 +1,37 @@
+name: UserEmails
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length;
+  dependencies:
+    - users.yaml
+    - emails.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`user_${this.user_id}_emails`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user-emails"
+  user_id:
+    type: integer
+    description: The user_id the lookup is for
+    data:
+      build: "documents.Users[document_index].user_id"
+  emails:
+    type: array
+    description: An array of email_ids
+    data:
+      build: |
+        const emails = [];
+        for (let i = 0; i < documents.Emails.length; i++) {
+          if (documents.Emails[i].user_id === documents.Users[document_index].user_id) {
+            emails.push(documents.Emails[i].email_id);
+          }
+        }
+        return emails;

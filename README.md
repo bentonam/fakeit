@@ -1,300 +1,439 @@
 # FakeIt Data Generator
 
-Command-line utility that generates output data in JSON, YAML, CSON, or CSV formats based on models which are defined in YAML.  Data can be generated using any combination of [FakerJS](http://marak.github.io/faker.js/), [ChanceJS](http://chancejs.com/), or Custom Build Functions.  Model dependencies can be defined, where data from a previous model's generation can be made available to the model currently being generated.
+Utility that generates fake data in `json`, `yaml`, `yml`, `cson`, or `csv` formats based on models which are defined in `yaml`.  Data can be generated using any combination of [FakerJS](http://marak.github.io/faker.js), [ChanceJS](http://chancejs.com), or Custom Functions.
+
+
+[![Build Status](https://img.shields.io/travis/bentonam/fakeit/master.svg)](https://travis-ci.org/bentonam/fakeit)
+[![Coverage Status](https://img.shields.io/coveralls/bentonam/fakeit/master.svg)](https://coveralls.io/github/bentonam/fakeit?branch=master)
+
+[![Dependency Status](https://img.shields.io/david/bentonam/fakeit.svg?maxAge=2592000&style=flat-square)](https://david-dm.org/bentonam/fakeit)
+[![devDependency Status](https://img.shields.io/david/dev/bentonam/fakeit.svg?maxAge=2592000&style=flat-square)](https://david-dm.org/bentonam/fakeit#info=devDependencies)
+
+![Example of how it works](https://github.com/bentonam/fakeit/blob/release/1.0.0/assets/example.gif)
 
 Generated data can be output in the following formats and destinations:
-
-- JSON files
-- YAML files
-- CSON files
-- CSV files
-- Zip Archive of JSON, YAML, CSON or CSV files
-- Couchbase Server
-- Couchbase Sync Gateway Server
+  - `json`
+  - `yaml`
+  - `yml`
+  - `cson`
+  - `csv`
+  - Zip Archive of `json`, `yaml`, `yml`, `cson` or `csv` files
+  - Couchbase Server
+  - Couchbase Sync Gateway Server
 
 ## Install
 
 ```bash
-npm install fakeit -g
+npm install fakeit --save-dev
+# or
+npm install fakeit --global
 ```
 
-## Usage
+## CLI Usage
 
 ```bash
-fakeit [options]
+  Usage: fakeit [command] [<file|directory|glob> ...]
+
+
+  Commands:
+
+    console [options]                                          outputs the result to the console
+    couchbase [options]                                        This will output to couchbase
+    sync-gateway [options]                                     no idea
+    directory|folder [options] [<dir|file.zip>] [<models...>]  Output the file(s) into a directory
+    help
+
+  Options:
+
+    -h, --help           output usage information
+    -V, --version        output the version number
+    --root <directory>   Defines the root directory from which paths are resolve from (process.cwd())
+    --babel <glob>       The location to the babel config (+(.babelrc|package.json))
+    -c, --count <n>      Overrides the number of documents to generate specified by the model. Defaults to model defined count
+    -v, --verbose        Enables verbose logging mode (false)
+    -S, --no-spinners    Disables progress spinners
+    -L, --no-log         Disables all logging except for errors
+    -T, --no-timestamp   Disables timestamps from logging output
+    -f, --format <type>  this determines the output format to use. Supported formats: json, csv, yaml, yml, cson. (json)
+    -n, --spacing <n>    the number of spaces to use for indention (2)
+    -l, --limit <n>      limit how many files are output at a time (100)
+    -x, --seed <seed>    The global seed to use for repeatable data
 ```
-
-## Options
-
-- `-o, --output [value]` *(optional)* The output format to generate.  Supported formats are: json, csv, yaml, cson. The default value is **json**
-- `-a, --archive [value]` *(optional)* The archive filename to generate.  Supported formats are: zip.  Example: export.zip
-- `-m, --models [value]` *(optional)* A directory or comma-delimited list of files models to use.  The default is the current working directory
-- `-d, --destination [value]` *(optional)* The output destination.  Values can be: couchbase, console or a directory path.  The default value is the current working directory.  If the directory path does not exist, it will be created automatically.
-- `-f, --format [value]` *(optional)* The spacing format to use for JSON and YAML file generation.  The default value is 2
-- `-n, --number [value]` *(optional)* Overrides the number of documents to generate specified by the model
-- `-i, --input [value]` *(optional)* A directory of files or a comma-delimited list of files to use as inputs.  Support file types are: json, yaml, csv, cson, or a zip of the previous formats
-- `-s, --server [address]` *(optional)* A Couchbase Server or Sync-Gateway Address.  The default value is **127.0.0.1**
-- `-b, --bucket [name]` *(optional)* The name of a Couchbase Bucket.  The default value is **default**
-- `-p, --password [value]` *(optional)* A Couchbase Bucket or Sync Gateway user password
-- `-t, --timeout [value]` *(optional)* A timeout for database operations, the default is 5000
-- `-l, --limit [value]` *(optional)* Limit the number of save operations at a time.  Default: 100
-- `-u, --username [value]` *(optional)* A Sync Gateway username.
-- `-e, --exclude [model]` *(optional)* A comma-delimited list of model names to exclude from output
-- `-v` --verbose` *(optional)* Whether or not to use verbose output
-- `-h, --help` Displays available options
-- `-V, --version` Display the current version
 
 ## Models
 
 All data is generated from one or more [YAML](http://yaml.org/) files.  Models are defined similarly to how models are defined in [Swagger](http://swagger.io/), with the addition of a few more properties that are used for data generation:
 
-At the root of a model the following keys are used:
+At the root of a model the following keys are used, if it's not required then it's optional
 
-- `name:` *(required)* The name of the model
-- `type:` *(required)* The data type of the model to be generated
-- `key:` *(required)* The main key for the document.  This is a reference to a generated property and is used for the filename or Document ID
-- `data:` *(optional)* Defines how many documents should be generated for the model, as well as event callbacks. The following properties are used:
-  - `min:` *(optional)* The minimum number of documents to generate
-  - `max:` *(optional)* The maximum number of documents to generate
-  - `fixed:` *(optional)* A fixed number of documents to generate
-  - `pre_run:` *(optional)* A function to be run *before the model* generation starts
-  - `pre_build:` *(optional)* A function to be run *before each document* is generated
-  - `post_build:` *(optional)* A function to be run *after each document* is generated
-  - `post_run:` *(optional)* A function to be run *after all documents for a model* have been generated
-- `properties:` *(required)* The properties for a model.  Each property can have the following:
-  - `type:` *(optional)* The data type of the property.  Values can be: `string`, `number`, `integer`, `long`, `double`, `float`, `array`, `object`, `bool`, `boolean`
-  - `description:` *(optional)* A description of the property
-  - `data:` *(optional)* Defines the how the data should be generated.  The following properties can be used:
-    - `value:` A static value to be used
-    - `fake:` A template string to be used by Faker i.e. `"{{name.firstName}}"`
-    - `pre_build:` A function to be called after the value has been initialized.  The property value is assigned from the result.
-    - `build:` A function to be called to build the value. The property value is assigned from the result.
-    - `post_build:` A function to be called on the property after all of the documents properties have been generated. The property value is assigned from the result.
+#### `name` *(required)*
+The name of the model
 
-#### Model Events / Build Functions
+#### `type`
+The data type of the model to be generated. This needs to be set top level, as well as a per property/items basis. It determines the starting data type, and how the result of the build loop will be converted once complete
 
-Each model can have it's own `pre_(run|build)` and `post_(run|build)` functions. Additionally, each property can have its on `pre_build`, `build` and `post_build` functions.
+**Note:** If type isn't set it defaults to `'null'`.
 
-Each one of these functions is passed the following variables that can be used at the time of it's execution:
+###### Available types
 
-For the `run` functions, `this` refers to the current model. For the `build` functions, `this` refers to the document currently being generated.
+| types                              | data type   | description                                                                                                                                   |
+|------------------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| number, long, integer              | `0`         | Converts result to number using parseInt                                                                                                      |
+| double, float                      | `0`         | Converts result to number using parseFloat                                                                                                    |
+| string                             | `''`        | Converts result to a string using result.toString()                                                                                           |
+| boolean, bool                      | `false`     | Converts result to a boolean if it's not already, if result is a string and is `'false'`, `'0'`, `'undefined'`, `'null'` it will return false |
+| array                              | `[]`        | returns the result from the build loop                                                                                                        |
+| object, structure                  | `{}`        | returns the result from the build loop                                                                                                        |
+| null, undefined, * (anything else) | `null`      | returns the result from the build loop                                                                                                        |
 
-- `documents` - An object containing a key for each model whose value is an array of each document that has been generated
-- `globals` - An object containing any global variables that may have been set by any of the run or build functions
-- `inputs` - An object containing a key for each input file used whose value is the deserialized version of the files data
-- `faker` - A reference to [FakerJS](http://marak.github.io/faker.js/)
-- `chance` - A reference to [ChanceJS](http://chancejs.com/)
-- `document_index` This is a number that represents the currently generated document's position in the run order
+###### Places where it can be set
+
+```yaml
+name: Types example
+# typically object or array
+type: object
+key:
+  build: faker.random.uuid()
+properties:
+  foo:
+    # can be set on properties of an object
+    type: object
+    properties:
+      bar:
+        # can be set on nested properties
+        type: string
+        data:
+          value: FakeIt ftw
+  bar:
+    type: array
+    items:
+      # can be set on items
+      type: string
+      data:
+        min: 1
+        max: 10
+        build: faker.random.word()
+```
+
+
+#### `data`
+
+This is the main data object that is uses the same properties in several different situations.
+
+  - `min`: The minimum number of documents to generate
+  - `max`: The maximum number of documents to generate
+  - `count`: A fixed number of documents to generate. If this is defined then `min` and `max` are ignored. If `min`, `max`, and `count` aren't defined `count` defaults to 1
+  - `pre_run`: A function that runs before the documents are generated
+  - `pre_build`: A function to be run *before each document* is generated
+  - `value`: Returns a value (can't be a function).
+  - `build`: The function to be run when the property is built. Only runs if `value` isn't defined
+  - `fake:` A template string to be used by Faker i.e. `"{{name.firstName}}"`. This will only run if `build`, and `value` aren't defined.
+  - `post_build`: A function to be run *after each document* is generated
+  - `post_run`: A function that runs after all the documents are generated for that model
+
+The following keys can only be defined in the top level data object
+  - `dependencies`: An array of dependencies of file paths to the dependencies of the current model. They are relative to the model, and or they can be absolute paths.
+     Don't worry about the order, we will resolve all dependencies automagically #yourwelcome
+  - `inputs`: A object/string of input(s) that's required for this model to run. If it's a string the file name is used as the key.
+     The key is what you reference when you want to get data (aka `this.inputs[key]`). The value is the file path to the inputs location.
+     It can be relative to the model or an absolute path.
+
+
+
+#### `key` *(required)*
+
+This determines the name of the document that's being generated. It only needs to be defined once per document.  This is a reference to a generated property and is used for the filename or Document ID.
+If the key is an object it needs the `data` option defined above, it will only work with `value`, `build`, and `fake` since this already runs after the document has been built.
+If the key is a string then it use the string value to find the value of the document that was just built (using the [lodash get](https://lodash.com/docs/4.17.4#get) method).
+
+###### Examples of setting a key
+
+In this example after each document is built it will look for the `_id` property and return it's result (aka `user_1`, `user_2`, etc.)
+
+```yaml
+name: Key String Example
+type: object
+key: _id
+data:
+  pre_run: |
+    globals.user_counter = 0;
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: `user_${this.user_id}`
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: ++globals.user_counter
+```
+
+In this example the key will be `'user_' + the current user_id` (aka `user_1`, `user_2`, etc.)
+
+```yaml
+name: Key Object Example
+type: object
+key:
+  data:
+    build: `user_${this.user_id}`
+data:
+  pre_run: |
+    globals.user_counter = 0;
+properties:
+  user_id:
+    type: integer
+    description: The users id
+    data:
+      build: ++globals.user_counter
+```
+
+
+#### `seed`
+
+If a seed is defined it will ensure that the documents created repeatable results. If you have a model with a data range of 2-10 a random number between 2 and 10 documents will be created no matter what the seed is. Let's say that 4 documents are generated the first time you run the model, each of those documents will be completely different than the next (as expected). Later you come back and you generate the data again this time it might generate 6 documents. The first 4 documents generated the second time will be exactly the same as the first time you generated the data. The seed can be number or string.
+
+###### Note:
+
+This only works if you use `faker` and `chance` to generate your random fake data. It can be produced with other fake data generation libraries if they support seeds.
+
+`faker.date` functions will not produce the same fake data each time.
+
+
+##### Functions
+
+For any function defined above be sure to use `|` for multi line functions and **NOT** `>`. To see an in depth explanation see this [issue](https://github.com/bentonam/fakeit/issues/84#issuecomment-266905423)
+
+Each of these functions is passed the following variables that can be used at the time of it's execution:
+  - `documents` - An object containing a key for each model whose value is an array of each document that has been generated
+  - `globals` - An object containing any global variables that may have been set by any of the run or build functions
+  - `inputs` - An object containing a key for each input file used whose value is the deserialized version of the files data
+  - `faker` - A reference to [FakerJS](http://marak.github.io/faker.js/)
+  - `chance` - A reference to [ChanceJS](http://chancejs.com/)
+  - `document_index` - This is a number that represents the currently generated document's position in the run order
+  - `require` - This is the node `require` function, it allows you to require your own packages. Should require and set them in the pre_run functions for better performance.
+
+For the `pre_run`, and `post_run` the `this` context refers to the current model.
+For the `pre_build`, `build`, and `post_build` the `this` context refers to the object currently being generated.
+If you have a nested object being created in an array or something, `this` will refer to closest object not the outer object/array.
 
 #### Example `users.yaml` Model
 
 ```yaml
 name: Users
 type: object
-key: _id
+key:
+  data:
+    build: `user_${this.user_id}`
 data:
   min: 200
   max: 500
-  pre_run: >
+  pre_run: |
     globals.user_counter = 0;
 properties:
-  id:
-    type: string
-    data:
-      post_build: "return 'user_' + this.user_id;"
-  type:
-    type: string
-    data:
-      value: "user"
   user_id:
-    type: integer
+    description: The users id
     data:
-      build: "return ++globals.user_counter;"
-  first_name:
-    type: string
+      build: faker.random.uuid()
+  name:
+    description: The users first name
     data:
-      fake: "{{name.firstName}}"
+      fake: '{{name.firstName}}'
   last_name:
-    type: string
     description: The users last name
     data:
-      fake: "{{name.lastName}}"
-  email_address:
-    type: string
+      fake: '{{name.lastName}}'
+  username:
+    description: The users username
     data:
-      fake: "{{internet.email}}"
+      fake: '{{internet.userName}}'
+  password:
+    description: The users password
+    data:
+      fake: '{{internet.password}}'
+  email:
+    description: The users email address
+    data:
+      fake: '{{internet.email}}'
   phone:
-    type: string
+    description: The users mobile phone
     data:
-      build: "return chance.phone();"
-  created_on:
-    type: string
-    data:
-      fake: "{{date.past}}"
-      post_build: "return new Date(this.created_on).toISOString();"
+      fake: '{{phone.phoneNumber}}'
+      post_build: this.phone.replace(/x[0-9]+$/, '')
+
 ```
 
-We can generate data for this model by executing the following command:
-
-```bash
-fakeit -m users.yaml -n 5 -d console
-```
-
-This will generate 5 documents for the users model and output the results to the console:
+Results in the following
 
 ```json
 {
-  "id": "user_1",
-  "type": "user",
-  "user_id": 1,
-  "first_name": "Emile",
-  "last_name": "Murphy",
-  "email_address": "Jacques_Langosh0@yahoo.com",
-  "phone": "(206) 627-7366",
-  "active": true,
-  "created_on": "2015-11-20T09:53:33.000Z"
+  "user_id": "4d9ec95c-f45d-42f4-9d32-4ac81d83f95b",
+  "name": "Sandy",
+  "last_name": "Turner",
+  "username": "Zella61",
+  "password": "gi7NVXsUoARHhyU",
+  "email": "Buck_Cormier@hotmail.com",
+  "phone": "715.612.8609"
 }
 {
-  "id": "user_2",
-  "type": "user",
-  "user_id": 2,
-  "first_name": "Levi",
-  "last_name": "Osinski",
-  "email_address": "Franz.Kshlerin@yahoo.com",
-  "phone": "(925) 202-9963",
-  "active": true,
-  "created_on": "2016-04-01T13:54:09.000Z"
+  "user_id": "7f513d5b-f944-4a80-b52a-4876627368b7",
+  "name": "Duane",
+  "last_name": "VonRueden",
+  "username": "Mafalda92",
+  "password": "3uXo4hFZJTdf1hp",
+  "email": "Rickie_Braun@hotmail.com",
+  "phone": "(356) 009-7477 "
 }
-{
-  "id": "user_3",
-  "type": "user",
-  "user_id": 3,
-  "first_name": "Halle",
-  "last_name": "Kutch",
-  "email_address": "Deontae_Connelly4@gmail.com",
-  "phone": "(972) 454-7846",
-  "active": true,
-  "created_on": "2016-02-28T06:45:42.000Z"
-}
-{
-  "id": "user_4",
-  "type": "user",
-  "user_id": 4,
-  "first_name": "Charlotte",
-  "last_name": "Koch",
-  "email_address": "Nora.Bauch68@hotmail.com",
-  "phone": "(889) 304-9408",
-  "active": false,
-  "created_on": "2015-07-19T13:49:51.000Z"
-}
-{
-  "id": "user_5",
-  "type": "user",
-  "user_id": 5,
-  "first_name": "Sharon",
-  "last_name": "Kutch",
-  "email_address": "Jackie.Cremin@gmail.com",
-  "phone": "(617) 245-7547",
-  "active": true,
-  "created_on": "2015-07-20T17:00:51.000Z"
-}
+...etc
 ```
 
-### Model Dependencies
+#### `properties`
 
-Often times generated data depends on other generated data, however for this to happen models need to be executed in a certain order.  Let's say we need to generate ecommerce related data and we have the following models:
+This is used to define out the properties for an object.
 
-- orders.yaml (needs data from both products and users)
-- products.yaml
-- users.yaml
+Each key inside of the `properties` will be apart of the generated object. Each of the keys use the following properties to build the values.
 
-If we were to execute the following to generate the data for these 3 models:
-
-```bash
-fakeit -d output/
-```
-
-This would fail because by default all models in a directory are used, and will be executed in the order that they are found, which in this case would be:
-
-- orders.yaml
-- products.yaml
-- users.yaml
-
-The **orders** model needs to reference generated documents from both **products** and **users**.  We could use the `-m` option to ensure that models are executed in order:
-
-```bash
-fakeit -d output/ -m users.yaml,products.yaml,orders.yaml
-```
-
-While this works, it would require us to remember this order and specify it anytime we would want to regenerate the models.  A better approach would be to define the dependencies as part of the model definitions, as seen in the [ecommerce example](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce):
-
-**[orders.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/models/orders.yaml)**
+  - `type`: The data type of the property.  Values can be: `string`, `object `, `structure`, `number `, `integer `, `double `, `long `, `float`, `array`, `boolean `, `bool`
+  - `description`: A description of the property. This is just extra notes for the developer and doesn't affect the data.
+  - `data`: The same data options as defined above
 
 ```yaml
-name: Orders
+name: test
+key:
+  build: faker.random.uuid()
 type: object
-key: _id
-data:
-  dependencies:
-    - Products
-    - Users
-...
+properties:
+  id:
+    data:
+      build: faker.random.uuid()
+  title:
+    type: string
+    description: The main title to use
+    data:
+      # single line is returned just like arrow functions
+      build: |
+        faker.random.word()
+  phone:
+    type: object
+    # This can be nested under another key
+    properties:
+      home:
+        type: string
+        data:
+          # this will also be returned
+          build: faker.phone.phoneNumber().replace(/x[0-9]+$/, '')
+      work:
+        type: string
+        data:
+          # this will also be returned
+          build: chance.bool({ likelihood: 35 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null
 ```
 
-**[products.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/models/products.yaml)**
+This will return a object like this
+
+```json
+{
+  "id": "4ce4da5c-0614-47d3-8fd6-3614c5461830",
+  "title": "alliance",
+  "phone": {
+    "home": "(949) 194-3347",
+    "work": "314-939-0541"
+  }
+}
+{
+  "id": "a649bbec-d629-4594-8fc8-ae34d97811a2",
+  "title": "Unbranded",
+  "phone": {
+    "home": "012-296-9810",
+    "work": null
+  }
+}
+
+etc...
+```
+
+#### `items`
+
+This is used to define out how each item in an array is built
+It uses the same structure as `properties` does but it will return an array of values.
 
 ```yaml
-name: Products
+name: Array example
+key:
+  data:
+    build: faker.random.uuid()
 type: object
-key: _id
-...
+properties:
+  keywords:
+    type: array
+    description: An array of keywords
+    items:
+      type: string
+      data:
+        min: 3
+        max: 10
+        build: faker.random.word()
+  # You can also create a array of objects
+  phones:
+    type: array
+    description: An array of phone numbers
+    items:
+      type: object
+      data:
+        min: 1
+        max: 3
+      properties:
+        cell:
+          type: string
+          data:
+            build: faker.phone.phoneNumber().replace(/x[0-9]+$/, '')
+        home:
+          type: string
+          data:
+            build: chance.bool({ likelihood: 45 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null
+        work:
+          type: string
+          data:
+            build: chance.bool({ likelihood: 10 }) ? faker.phone.phoneNumber().replace(/x[0-9]+$/, '') : null
 ```
 
-**[users.yaml](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce/models/users.yaml)**
-
-```yaml
-name: Users
-type: object
-key: _id
-...
-```
-
-Now if we execute our original command:
-
-```bash
-fakeit -d output/
-```
-
-All of the model dependencies will be resolved and executed in the order that satisfies each model's dependencies. In this case the model order will be:
-
-- products.yaml
-- users.yaml
-- orders.yaml
-
-When the **orders.yaml** model is executed, the previously generated documents would be made available to the model's `run` and `build` functions through the `documents` variable.
-
-```js
-documents.Users = [...]; // the name of the users.yaml model
-documents.Products = [...]; // the name of the products.yaml model
+```json
+{
+  "keywords": [ "GB", "Sports", "redundant", "Plastic", ],
+  "phones": [
+    {
+      "cell": "(555) 555 - 5555",
+      "home": "(666) 666 - 6666",
+      "work": null
+    },
+    {
+      "cell": "(777) 777 - 7777",
+      "home": null
+      "work": "(888) 888 - 8888",
+    }
+  ]
+}
 ```
 
 ### Model References
 
 It can be beneficial to define definitions that can be referenced one or more times throughout a model.  This can be accomplished by using the `$ref:` property.  Consider the following example:
 
+<!-- @todo update this link after launch of 1.0.0 -->
 **[contacts.yaml](https://github.com/bentonam/fakeit-examples/tree/master/contacts/models/contacts.yaml)**
 
 ```yaml
 name: Contacts
 type: object
-key: _id
+key: contact_id
 data:
   min: 1
   max: 4
 properties:
   contact_id:
     data:
-      build: "return chance.guid();"
+      build: "chance.guid()"
   details:
     schema:
       $ref: '#/definitions/Details'
@@ -322,43 +461,44 @@ properties:
 definitions:
   Email:
     data:
-      build: "return faker.internet.email();"
+      build: "faker.internet.email()"
   Phone:
     type: object
     properties:
       phone_type:
         data:
-          build: "return faker.random.arrayElement(['Home', 'Work', 'Mobile', 'Main', 'Other']);"
+          build: "faker.random.arrayElement([ 'Home', 'Work', 'Mobile', 'Main', 'Other' ])"
       phone_number:
         data:
-          build: "return faker.phone.phoneNumber().replace(/x[0-9]+$/, '');"
+          build: "faker.phone.phoneNumber().replace(/x[0-9]+$/, '')"
       extension:
         data:
-          build: "return chance.bool({likelihood: 20}) ? '' + chance.integer({min: 1000, max: 9999}) : '';"
+          build: "chance.bool({ likelihood: 20 }) ? chance.integer({min: 1000, max: 9999}).toString() : ''"
   Address:
     type: object
     properties:
       address_type:
         data:
-          build: "return faker.random.arrayElement(['Home', 'Work', 'Other']);"
+          build: "faker.random.arrayElement([ 'Home', 'Work', 'Other' ]);"
       address_1:
         data:
-          build: "return faker.address.streetAddress() + ' ' + faker.address.streetSuffix();"
+          # This uses es6 and only works if your project already has it install or you're on node 6+
+          build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`"
       address_2:
         data:
-          build: "return chance.bool({likelihood: 35}) ? faker.address.secondaryAddress() : '';"
+          build: "chance.bool({ likelihood: 35 }) ? faker.address.secondaryAddress() : ''"
       city:
         data:
-          build: "return faker.address.city();"
+          build: "faker.address.city()"
       state:
         data:
-          build: "return faker.address.stateAbbr();"
+          build: "faker.address.stateAbbr()"
       postal_code:
         data:
-          build: "return faker.address.zipCode();"
+          build: "faker.address.zipCode()"
       country:
         data:
-          build: "return faker.address.countryCode();"
+          build: "faker.address.countryCode()"
   Details:
     type: object
     properties:
@@ -367,17 +507,17 @@ definitions:
           fake: "{{name.firstName}}"
       last_name:
         data:
-          build: "return chance.bool({likelihood: 70})  ? faker.name.lastName() : '';"
+          build: "return chance.bool({ likelihood: 70 }) ? faker.name.lastName() : ''"
       company:
         type: string
         description: The contacts company
         data:
-          build: "return chance.bool({likelihood: 30})  ? faker.company.companyName() : '';"
+          build: "return chance.bool({ likelihood: 30 }) ? faker.company.companyName() : ''"
       job_title:
         type: string
         description: The contacts job_title
         data:
-          build: "return chance.bool({likelihood: 30})  ? faker.name.jobTitle() : '';"
+          build: "return chance.bool({ likelihood: 30 }) ? faker.name.jobTitle() : ''"
 ```
 
 For this model we used 4 references:
@@ -398,16 +538,12 @@ name: Users
 type: object
 key: _id
 data:
-  pre_run: >
-    this.data.fixed = 100;
-...
+  pre_run: |
+    this.data.count = 100
+# etc...
 ```
 
 This becomes beneficial if you are providing input data and want to generate a fixed number of documents.  Take the following command for example:
-
-```bash
-fakeit -m countries.yaml -i countries.csv -a export.zip
-```
 
 Here we want to generate a countries model but we might not necessarily know the exact amount of data being provided by the input.  We can reference the input data in our model's `pre_run` function and set the number to generate based on the input array.
 
@@ -416,25 +552,102 @@ name: Countries
 type: object
 key: _id
 data:
-  pre_run: >
-    if (!inputs.countries) {
-      throw new Error('countries must be provided as an input');
-    }
-    this.data.fixed = inputs.countries.length;
+  inputs: '../inputs/countries.csv'
+  pre_run: |
+    this.data.count = inputs.countries.length;
+# etc...
 ```
 
-## Examples
 
-The following examples have been provided for fakeit [https://github.com/bentonam/fakeit-examples](https://github.com/bentonam/fakeit-examples), with multiple usage examples for each.  They can be downloaded as a [Zip](https://github.com/bentonam/fakeit-examples/archive/master.zip) or by cloning the repository.
+## JS API
 
+If you don't want to use the CLI version of this app you can always use the JS api.
+
+```js
+import Fakeit from 'fakeit'
+const fakeit = new Fakeit()
+
+fakeit.generate('glob/to/models/**/*.yaml')
+  .then((data) => {
+    console.log(data)
+  })
 ```
-git clone https://github.com/bentonam/fakeit-examples.git
+
+
+### Fakeit Options
+
+Below are the default options that are used unless overwritten.
+
+```js
+import Fakeit from 'fakeit'
+const fakeit = new Fakeit({
+  root: process.cwd(), // The root directory to operate from
+  babel_config: '+(.babelrc|package.json)', // glob to search for the babel config. This search starts from the closest instance of `node_modules`
+  seed: 0, // the seed to use. If it's 0 then a random seed is used each time. A string or a number can be passed in as an seed
+  log: true, // if then logging to the console is enable
+  verbose: false, // if true then verbose logging is enable
+  timestamp: true, // if true the logging output to console has timestamps
+})
+
+// models can be an a comma delimited string of globs, or an array of globs
+// any models that are passed will output/returned.
+const models = 'glob/to/models/**/*.yaml'
+
+fakeit.generate(models, {
+  // this is the format to output it in
+  // available formats `json`, `csv`, `yaml`, `yml`, `cson`
+  format: 'json',
+
+  // the character(s) to use for spacing
+  spacing: 2,
+
+  // The type of output to use. Below are the available types
+  // `return`: This will the data in an array
+  // `console`: This will output the data to the console
+  // `couchbase`: This will output the data to a Couchbase server.
+  // `sync-gateway`: This will output the data to a Couchbase Sync Gateway server
+  // `directory`: The directory path to output the files (aka `path/to/the/destination`)
+  output: 'return',
+
+  // limit how many files are output at a time, this is useful
+  // to not overload a server or lock up your computer
+  limit: 100,
+
+  // this is used in the console output and if true it will
+  // format and colorize the output
+  highlight: true,
+
+  // the file name of the zip file. Currently this can only be used if you're
+  // outputting the data to a directory. It can't be used to output a zip file
+  // to a server, the console, or returned. (aka `archive.zip`)
+  archive: '',
+
+  // These options are used if the `output` option is `sync-gateway`,
+  // or `couchbase`. Otherwise they're ignored.
+  server: '127.0.0.1', // the server address to use for the server
+  bucket: 'default', // the bucket name
+  username: '', // the username to use if applicable
+  password: '', // the password for the account if applicable
+  timeout: 5000, // timeout for the servers
+})
+  .then((data) => {
+    // the data returned will always be a string in the format that was set
+    data = JSON.parse(data)
+    // do something with data array of arrays
+  })
 ```
 
-- [Contacts](https://github.com/bentonam/fakeit-examples/tree/master/contacts)
-- [Ecommerce](https://github.com/bentonam/fakeit-examples/tree/master/ecommerce)
-- [Flat](https://github.com/bentonam/fakeit-examples/tree/master/flat)
-- [Flight Data](https://github.com/bentonam/fakeit-examples/tree/master/flight-data)
-- [Music](https://github.com/bentonam/fakeit-examples/tree/master/music)
-- [Simple](https://github.com/bentonam/fakeit-examples/tree/master/simple)
-- [Zip Input](https://github.com/bentonam/fakeit-examples/tree/master/zip-input)
+### Examples
+
+To see more examples of some of the things you can do take a look at the [test cases](https://github.com/bentonam/fakeit/tree/master/test/fixtures/models) that are in this repo
+
+
+### Changelog
+
+  - Model Dependencies are now defined in the model it's self by the file path to the model that the current one depends on. It doesn't matter what order they're because they will be resolve automagically.
+  - Model Inputs are now defined in the model it's self by the file path to the inputs location that the current model depends on. It can be a string or an object.
+  - Babel +6 support now exists. We don't install any presets or plugins for you but if `.babelrc` or `babelConfig` exists in the `package.json` of your project then all the functions are transpiled.
+  - Better error handling has been added so you know what went wrong and where it happened.
+  - JS support has also been added so you are no longer required to use the command line to create fake data.
+  - Added support for seeds to allow repeatable data.
+  - Added a progress indicator to show how many documents have been created

@@ -1,0 +1,37 @@
+name: UserAddresses
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length;
+  dependencies:
+    - users.yaml
+    - addresses.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`user_${this.user_id}_addresses`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user-addresses"
+  user_id:
+    type: integer
+    description: The user_id the lookup is for
+    data:
+      build: "documents.Users[document_index].user_id"
+  addresses:
+    type: array
+    description: The address id
+    data:
+      build: |
+        const addresses = [];
+        for (let i = 0; i < documents.Addresses.length; i++) {
+          if (documents.Addresses[i].user_id === documents.Users[document_index].user_id) {
+            addresses.push(documents.Addresses[i].address_id);
+          }
+        }
+        return addresses;

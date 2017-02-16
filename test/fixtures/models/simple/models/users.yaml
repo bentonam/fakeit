@@ -1,0 +1,36 @@
+name: Users
+type: object
+key: id
+data:
+  min: 50
+  max: 100
+properties:
+  id:
+    data:
+      post_build: "`user_${this.user_id}`"
+  type:
+    data:
+      value: "user"
+  user_id:
+    data:
+      build: "document_index"
+  first_name:
+    data:
+      fake: "{{name.firstName}}"
+  last_name:
+    description: The users last name
+    data:
+      fake: "{{name.lastName}}"
+  email_address:
+    data:
+      fake: "{{internet.email}}"
+  phone:
+    data:
+      build: "chance.phone();"
+  active:
+    data:
+      build: "chance.bool({ likelihood: 70 });"
+  created_on:
+    data:
+      fake: "{{date.past}}"
+      post_build: "new Date(this.created_on).toISOString();"

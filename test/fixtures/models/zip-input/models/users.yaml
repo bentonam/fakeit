@@ -1,0 +1,153 @@
+name: Users
+type: object
+key: _id
+data:
+  min: 100
+  max: 500
+  inputs: ../input/config.zip
+  pre_run: |
+    const required_inputs = [ 'countries', 'regions', 'email', 'phone', 'address' ];
+    required_inputs.forEach((item) => {
+      if (!inputs[item]) {
+        throw new Error(`${item} must be provided as an input`);
+      }
+    });
+  pre_build: |
+    globals.country_code = faker.random.arrayElement(inputs.countries).code;
+    globals.region_codes = inputs.regions.filter((value) => value.iso_country === globals.country_code);
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`user_${this.user_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "user"
+  user_id:
+    type: integer
+    description: The users id
+    data:
+        build: "document_index + 1"
+  first_name:
+    type: string
+    description: The users first name
+    data:
+      fake: "{{name.firstName}}"
+  last_name:
+    type: string
+    description: The users last name
+    data:
+      fake: "{{name.lastName}}"
+  username:
+    type: string
+    description: The users username
+    data:
+      fake: "{{internet.userName}}"
+  password:
+    type: string
+    description: The users password
+    data:
+      fake: "{{internet.password}}"
+  emails:
+    type: array
+    description: An array of emails
+    items:
+      $ref: '#/definitions/Email'
+      data:
+        min: 1
+        max: 3
+  phones:
+    type: array
+    description: An array of phone numbers
+    items:
+      $ref: '#/definitions/Phone'
+      data:
+        min: 1
+        max: 3
+  addresses:
+    type: array
+    description: An array of addresses
+    items:
+      $ref: '#/definitions/Address'
+      data:
+        min: 1
+        max: 3
+  created_on:
+    type: integer
+    description: An epoch time of when the user was created
+    data:
+      fake: "{{date.past}}"
+      post_build: "new Date(this.created_on).getTime();"
+definitions:
+  Email:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The email type
+        data:
+          build: "faker.random.arrayElement(inputs.email.types)"
+      email_address:
+        type: string
+        description: The phone number
+        data:
+          build: "faker.internet.email()"
+  Phone:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The phone type
+        data:
+          build: "faker.random.arrayElement(inputs.phone.types)"
+      phone_number:
+        type: string
+        description: The phone number
+        data:
+          build: "chance.phone()"
+      extension:
+        type: string
+        description: The phone extension
+        data:
+          build: "chance.bool({ likelihood: 20 }) ? chance.integer({ min: 1000, max: 9999 }).toString() : null;"
+  Address:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The address type
+        data:
+          build: "faker.random.arrayElement(inputs.address.types)"
+      address_1:
+        type: string
+        description: The address 1
+        data:
+          build: "`${faker.address.streetAddress()} ${faker.address.streetSuffix()}`"
+      address_2:
+        type: string
+        description: The address_2
+        data:
+          build: "chance.bool({ likelihood: 35 }) ? faker.address.secondaryAddress() : null"
+      locality:
+        type: string
+        description: The locality
+        data:
+          build: "faker.address.city();"
+      region:
+        type: string
+        description: The region / state / province
+        data:
+          build: "faker.random.arrayElement(globals.region_codes).code"
+      postal_code:
+        type: string
+        description: The zip code / postal code
+        data:
+          build: "faker.address.zipCode();"
+      country:
+        type: string
+        description: The country code
+        data:
+          build: "globals.country_code"

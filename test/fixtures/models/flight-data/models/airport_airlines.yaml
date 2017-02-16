@@ -1,0 +1,56 @@
+name: AirportAirlines
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Airports.length;
+  dependencies:
+    - airports.yaml
+    - routes.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`airport_${this.airport_id}_airlines`"
+  airport_id:
+    type: integer
+    description: The route id
+    data:
+      build: "documents.Airports[document_index].airport_id"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: airport-airlines
+  airport_ident:
+    type: string
+    description: The airports iata / icao code
+    data:
+      build: "documents.Airports[document_index].airport_ident"
+  airlines:
+    type: array
+    description: An array of airline codes at the airport
+    data:
+      build: |
+        const airlines = [];
+        const airport_codes = [ documents.Airports[document_index].airport_iata, documents.Airports[document_index].airport_icao ];
+        for (let i = 0; i < documents.Routes.length; i++) {
+          const route = documents.Routes[i];
+          if (
+            (
+              (
+                route.source_airport_code &&
+                airport_codes.includes(route.source_airport_code)
+              ) ||
+              (
+                route.destination_airport_code &&
+                airport_codes.includes(route.destination_airport_code)
+              )
+            ) &&
+            !airlines.includes(route.airline_code)
+          ) {
+            airlines.push(route.airline_code);
+          }
+        }
+        return airlines;

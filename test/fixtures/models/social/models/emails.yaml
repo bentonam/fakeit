@@ -1,0 +1,39 @@
+name: Emails
+type: object
+key: _id
+data:
+  pre_run: |
+    this.data.count = documents.Users.length * faker.random.number({ min: 2, max: 4 });
+  dependencies:
+    - users.yaml
+properties:
+  _id:
+    type: string
+    description: The document id
+    data:
+      post_build: "`email_${this.email_id}`"
+  doc_type:
+    type: string
+    description: The document type
+    data:
+      value: "email"
+  email_id:
+    type: string
+    description: The email id as a GUID
+    data:
+      build: "chance.guid()"
+  user_id:
+    type: integer
+    description: The user_id the email is for
+    data:
+      build: "faker.random.arrayElement(documents.Users).user_id"
+  email_type:
+    type: string
+    description: The phone type
+    data:
+      build: "faker.random.arrayElement([ 'Home', 'Work', 'Other' ]);"
+  email_address:
+    type: string
+    description: The email address
+    data:
+      build: "faker.internet.email()"
