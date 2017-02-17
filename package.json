@@ -4,7 +4,7 @@
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
-  "version": "1.0.0",
+  "version": "0.3.2",
   "description": "Command-line utility that generates fake data which can be output as JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
   "scripts": {
     "test": "make test",
@@ -94,6 +94,7 @@
     "jsondiffpatch": "~0.2.4",
     "lint-rules": "github:ma-shop/lint-rules",
     "nixt": "~0.5.0",
+    "np": "~2.12.0",
     "nyc": "~10.1.2",
     "proxyquire": "~1.7.10",
     "test-console": "~1.0.0"

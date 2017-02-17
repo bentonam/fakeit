@@ -2,14 +2,13 @@
 
 Utility that generates fake data in `json`, `yaml`, `yml`, `cson`, or `csv` formats based on models which are defined in `yaml`.  Data can be generated using any combination of [FakerJS](http://marak.github.io/faker.js), [ChanceJS](http://chancejs.com), or Custom Functions.
 
-
-[![Build Status](https://img.shields.io/travis/bentonam/fakeit/master.svg)](https://travis-ci.org/bentonam/fakeit)
-[![Coverage Status](https://img.shields.io/coveralls/bentonam/fakeit/master.svg)](https://coveralls.io/github/bentonam/fakeit?branch=master)
+[![Build Status](https://img.shields.io/travis/bentonam/fakeit.svg)](https://travis-ci.org/bentonam/fakeit)
+[![Coverage Status](https://img.shields.io/coveralls/bentonam/fakeit.svg)](https://coveralls.io/github/bentonam/fakeit?branch=master)
 
 [![Dependency Status](https://img.shields.io/david/bentonam/fakeit.svg?maxAge=2592000&style=flat-square)](https://david-dm.org/bentonam/fakeit)
 [![devDependency Status](https://img.shields.io/david/dev/bentonam/fakeit.svg?maxAge=2592000&style=flat-square)](https://david-dm.org/bentonam/fakeit#info=devDependencies)
 
-![Example of how it works](https://github.com/bentonam/fakeit/blob/release/1.0.0/assets/example.gif)
+![Example of how it works](https://raw.githubusercontent.com/bentonam/fakeit/master/assets/example.gif)
 
 Generated data can be output in the following formats and destinations:
   - `json`
