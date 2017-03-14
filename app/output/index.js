@@ -191,11 +191,13 @@ export default class Output extends Base {
   ///# @arg {string} format - Output format
   ///# @returns {function} - Function to format a document
   getParser(output, format) {
-    if (output === "couchbase" && format === "json") {
+    if (
+      (output === 'couchbase' || output === 'sync-gateway') &&
+      format === 'json'
+    ) {
       return (obj) => obj;
-    } else {
-      return parsers[format].stringify;
     }
+    return parsers[format].stringify;
   }
 }
 
