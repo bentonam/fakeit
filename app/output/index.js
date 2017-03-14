@@ -113,7 +113,7 @@ export default class Output extends Base {
       }
     };
 
-    const parser = parsers[format].stringify;
+    const parser = this.getParser(output, format);
 
     // if the output type is `return` or `console` then this will return the complete
     // data set instead of running them individually
@@ -183,6 +183,21 @@ export default class Output extends Base {
         this.log('error', e);
       }
     });
+  }
+
+  ///# @name getParser
+  ///# @description Returns a parser function for the given output type and format
+  ///# @arg {string} output - Output type
+  ///# @arg {string} format - Output format
+  ///# @returns {function} - Function to format a document
+  getParser(output, format) {
+    if (
+      (output === 'couchbase' || output === 'sync-gateway') &&
+      format === 'json'
+    ) {
+      return (obj) => obj;
+    }
+    return parsers[format].stringify;
   }
 }
 
