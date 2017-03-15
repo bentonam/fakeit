@@ -108,9 +108,6 @@ export default class SyncGateway extends Base {
       url: `${server}/${bucket}/${encodeURIComponent(id)}`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      // @todo remove this comment
-      // not using this because the main Output function handles the data conversion
-      // body: JSON.stringify(data),
       body: data,
     };
 

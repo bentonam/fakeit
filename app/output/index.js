@@ -192,7 +192,7 @@ export default class Output extends Base {
   ///# @returns {function} - Function to format a document
   getParser(output, format) {
     if (
-      (output === 'couchbase' || output === 'sync-gateway') &&
+      output === 'couchbase' &&
       format === 'json'
     ) {
       return (obj) => obj;
