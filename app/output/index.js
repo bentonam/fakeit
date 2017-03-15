@@ -192,7 +192,7 @@ export default class Output extends Base {
   ///# @returns {function} - Function to format a document
   getParser(output, format) {
     if (
-      (output === 'couchbase' || output === 'sync-gateway') &&
+      output === 'couchbase' &&
       format === 'json'
     ) {
       return (obj) => obj;
@@ -323,11 +323,10 @@ export const validate = {
   ///# @arg {string} option - The option to validate against
   ///# @arg {object} options - The other options for that are being validated
   ///# @throws {error} - If the username option that was pass was invalid
-  username(option, { output }) {
-    // ignore this validation if the output isn't one of these
-    if (output !== 'sync-gateway') return;
-
-    isString(option, 'username');
+  username(option) {
+    if (!is.string(option)) {
+      throw new Error(`The${name}option must be a string`);
+    }
   },
 
   ///# @name password
@@ -335,10 +334,10 @@ export const validate = {
   ///# @arg {string} option - The option to validate against
   ///# @arg {object} options - The other options for that are being validated
   ///# @throws {error} - If the password option that was pass was invalid
-  password(option, { output }) {
-    // ignore this validation if the output isn't one of these
-    if (!isServer(output) || option === '') return;
-    isString(option, 'password');
+  password(option) {
+    if (!is.string(option)) {
+      throw new Error(`The${name}option must be a string`);
+    }
   },
 
   ///# @name limit
