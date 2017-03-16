@@ -325,7 +325,7 @@ export const validate = {
   ///# @throws {error} - If the username option that was pass was invalid
   username(option) {
     if (!is.string(option)) {
-      throw new Error(`The${name}option must be a string`);
+      throw new Error('The username option must be a string');
     }
   },
 
@@ -336,7 +336,7 @@ export const validate = {
   ///# @throws {error} - If the password option that was pass was invalid
   password(option) {
     if (!is.string(option)) {
-      throw new Error(`The${name}option must be a string`);
+      throw new Error('The password option must be a string');
     }
   },
 
