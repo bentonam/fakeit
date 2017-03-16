@@ -92,5 +92,6 @@ ci:
 publish release:
 	make reinstall
 	make ci || exit 1
+	# rebuild project without sourcemaps
+	make build
 	np --no-cleanup --yolo $(args)
-
