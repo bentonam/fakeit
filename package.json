@@ -71,6 +71,7 @@
     "log-symbols": "~1.0.2",
     "ora": "~0.4.1",
     "perfy": "~1.1.2",
+    "prettier-eslint-cli": "^3.4.3",
     "request": "^2.78.0",
     "set-cookie-parser": "~2.0.0",
     "to-js": "^0.0.6",

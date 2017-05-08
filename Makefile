@@ -95,3 +95,6 @@ publish release:
 	# rebuild project without sourcemaps
 	make build
 	np --no-cleanup --yolo $(args)
+
+format:
+	@prettier-eslint --write "app/**/*.js" "test/**/*.js"
