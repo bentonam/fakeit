@@ -9,14 +9,16 @@ module.exports = is.object({
   last_name: is.string(),
   username: is.string(),
   password: is.string(),
-  emails: is.array()
+  emails: is
+    .array()
     .items({
       type: is.string(),
       email_address: is.string().email(),
     })
     .min(1)
     .max(3),
-  phones: is.array()
+  phones: is
+    .array()
     .items({
       type: is.string(),
       phone_number: utils.phone,
@@ -24,7 +26,8 @@ module.exports = is.object({
     })
     .min(1)
     .max(3),
-  addresses: is.array()
+  addresses: is
+    .array()
     .items({
       type: is.string(),
       address_1: is.string(),

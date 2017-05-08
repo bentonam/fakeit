@@ -1,11 +1,6 @@
 /* eslint-disable no-undefined */
 
-import {
-  transformValueToType,
-  getPaths,
-  typeToValue,
-  Document,
-} from '../dist/documents.js';
+import { transformValueToType, getPaths, typeToValue, Document } from '../dist/documents.js';
 /* istanbul ignore next : needed to test models */
 const Model = require('../dist/models.js').default;
 import { join as p } from 'path';
@@ -25,16 +20,14 @@ const models = utils.models({
   // this gets the correct validation file to use on a per test basis
   validation(model) {
     return model.replace(/models(.*)\.yaml/g, 'validation$1.data.js');
-  }
+  },
 });
-
 
 let babel_config;
 
 test.before(async () => {
   babel_config = await fs.readJson(p(__dirname, '..', '.babelrc'));
 });
-
 
 test.beforeEach(async (t) => {
   t.context.model = new Model({
@@ -45,14 +38,18 @@ test.beforeEach(async (t) => {
   t.context.documents = {};
   t.context.globals = {};
   t.context.inputs = {};
-  t.context.document = new Document({
-    root: documents_root,
-    log: false,
-  }, t.context.documents, t.context.globals, t.context.inputs);
+  t.context.document = new Document(
+    {
+      root: documents_root,
+      log: false,
+    },
+    t.context.documents,
+    t.context.globals,
+    t.context.inputs,
+  );
 
   await t.context.model.setup();
 });
-
 
 test('without args', (t) => {
   const doc = t.context.document;
@@ -74,7 +71,6 @@ test('without args', (t) => {
   t.is(to.type(doc.chance), 'object');
 });
 
-
 test.group('build', (test) => {
   test('model with no data', async (t) => {
     const model = {
@@ -88,19 +84,22 @@ test.group('build', (test) => {
               globals.woohoo = 'woohoo';
               return 'woohoo';
             },
-          }
-        }
-      }
+          },
+        },
+      },
     };
 
     const doc = t.context.document;
     t.deepEqual(doc.globals, {});
     t.deepEqual(doc.documents, {});
     const actual = await doc.build(model);
-    const schema = is.array()
-      .items(is.object({
-        test: is.string().regex(/woohoo/),
-      }))
+    const schema = is
+      .array()
+      .items(
+        is.object({
+          test: is.string().regex(/woohoo/),
+        }),
+      )
       .length(1);
     is.assert(actual, schema);
     is.assert(doc.documents, is.object({ build_test: schema }));
@@ -116,15 +115,15 @@ test.group('build', (test) => {
           type: 'string',
           data: {
             value: '00000',
-          }
+          },
         },
         test: {
           type: 'string',
           data: {
             value: 'woohoo',
-          }
-        }
-      }
+          },
+        },
+      },
     };
 
     const tests = [
@@ -170,32 +169,34 @@ test.group('build', (test) => {
     });
   });
 
-  test.group(models(async (t, file) => {
-    const { document, model } = t.context;
-    // ensure that only 1 document gets created
-    document.options.count = model.options.count = 1;
-    await model.registerModels(file);
+  test.group(
+    models(async (t, file) => {
+      const { document, model } = t.context;
+      // ensure that only 1 document gets created
+      document.options.count = model.options.count = 1;
+      await model.registerModels(file);
 
-    // set the document inputs to be what the model inputs are
-    document.inputs = model.inputs;
+      // set the document inputs to be what the model inputs are
+      document.inputs = model.inputs;
 
-    let actual = [];
+      let actual = [];
 
-    for (let obj of model.models) {
-      t.is(obj.data.count, 1);
+      for (let obj of model.models) {
+        t.is(obj.data.count, 1);
 
-      let result = await document.build(obj);
-      // ensure data count is still set to 1
-      t.is(obj.data.count, 1);
-      t.is(result.length, 1);
-      if (!obj.is_dependency) {
-        actual.push(result[0]);
+        let result = await document.build(obj);
+        // ensure data count is still set to 1
+        t.is(obj.data.count, 1);
+        t.is(result.length, 1);
+        if (!obj.is_dependency) {
+          actual.push(result[0]);
+        }
       }
-    }
-    // ensure there was only 1 item output
-    t.is(actual.length, 1);
-    return actual[0];
-  }));
+      // ensure there was only 1 item output
+      t.is(actual.length, 1);
+      return actual[0];
+    }),
+  );
 
   test.group('seed', (test) => {
     const min = 2;
@@ -210,19 +211,20 @@ test.group('build', (test) => {
         name: 'test',
         type: 'object',
         seed: 123456789,
-        data: { min, max, count: is_expected ? max : to.random(2, 10), inputs: {}, dependencies: [], },
+        data: { min, max, count: is_expected ? max : to.random(2, 10), inputs: {}, dependencies: [] },
         properties: {
           phones: {
             type: 'array',
             description: 'An array of phone numbers',
             items: {
               type: 'object',
-              data: { min: 1, max: 3, count: 0, },
+              data: { min: 1, max: 3, count: 0 },
               properties: {
                 type: {
                   type: 'string',
                   data: {
-                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                    build(documents, globals, inputs, faker, chance) {
+                      // eslint-disable-line
                       return faker.random.arrayElement([ 'Home', 'Work', 'Mobile', 'Main', 'Other' ]);
                     },
                   },
@@ -230,7 +232,8 @@ test.group('build', (test) => {
                 phone_number: {
                   type: 'string',
                   data: {
-                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                    build(documents, globals, inputs, faker, chance) {
+                      // eslint-disable-line
                       return faker.phone.phoneNumber().replace(/\s*x[0-9]+$/, '');
                     },
                   },
@@ -238,7 +241,8 @@ test.group('build', (test) => {
                 extension: {
                   type: 'string',
                   data: {
-                    build(documents, globals, inputs, faker, chance) { // eslint-disable-line
+                    build(documents, globals, inputs, faker, chance) {
+                      // eslint-disable-line
                       return chance.bool({ likelihood: 20 }) ? chance.integer({ min: 1000, max: 9999 }).toString() : null;
                     },
                   },
@@ -263,7 +267,6 @@ test.group('build', (test) => {
         t.deepEqual(lengths, expected_phone_lengths.slice(0, lengths.length));
       }
     });
-
 
     test('none of the items in phones array are the same', async (t) => {
       const model = getModel();
@@ -307,13 +310,12 @@ test.group('build', (test) => {
         const actual = await t.context.document.build(model);
         t.deepEqual(actual[0].phones, [
           { type: 'Mobile', phone_number: '505.771.2870', extension: null },
-          { type: 'Mobile', phone_number: '275-728-6040', extension: null }
+          { type: 'Mobile', phone_number: '275-728-6040', extension: null },
         ]);
       }
     });
   });
 });
-
 
 test.group('runData', (test) => {
   test('function wasn\'t passed', (t) => {
@@ -360,42 +362,43 @@ test.group('initializeDocument', (test) => {
     t.throws(tester);
   });
 
-  test.group(models(async (t, file) => {
-    await t.context.model.registerModels(file);
-    const model = _.find(t.context.model.models, (obj) => {
-      return obj.file.includes(file);
-    });
+  test.group(
+    models(async (t, file) => {
+      await t.context.model.registerModels(file);
+      const model = _.find(t.context.model.models, (obj) => {
+        return obj.file.includes(file);
+      });
 
-    const doc = t.context.document.initializeDocument(model);
-    t.deepEqual(to.keys(doc), to.keys(model.properties));
-    function get(key) {
-      let result = _.get(model, `properties.${key}`);
-      if (!result) {
-        result = _.get(model, `properties.${key.split('.').join('.properties.')}`);
+      const doc = t.context.document.initializeDocument(model);
+      t.deepEqual(to.keys(doc), to.keys(model.properties));
+      function get(key) {
+        let result = _.get(model, `properties.${key}`);
+        if (!result) {
+          result = _.get(model, `properties.${key.split('.').join('.properties.')}`);
+        }
+        if (result) {
+          return typeToValue(result.type);
+        }
+        return null;
       }
-      if (result) {
-        return typeToValue(result.type);
-      }
-      return null;
-    }
 
-    const keys = utils.getPaths(doc);
+      const keys = utils.getPaths(doc);
 
-    for (let key of keys) {
-      const expected = get(key);
-      const actual = _.get(doc, key);
-      const type = to.type(actual);
-      if (type !== 'object') {
-        if (type === 'array') {
-          t.deepEqual(actual, expected);
-        } else {
-          t.is(actual, expected);
+      for (let key of keys) {
+        const expected = get(key);
+        const actual = _.get(doc, key);
+        const type = to.type(actual);
+        if (type !== 'object') {
+          if (type === 'array') {
+            t.deepEqual(actual, expected);
+          } else {
+            t.is(actual, expected);
+          }
         }
       }
-    }
-  }));
+    }),
+  );
 });
-
 
 test.group('buildObject', (test) => {
   const model = {
@@ -412,20 +415,20 @@ test.group('buildObject', (test) => {
             data: {
               build() {
                 return to.random([ 'Home', 'Work', 'Mobile', 'Main', 'Other' ]);
-              }
-            }
+              },
+            },
           },
           phone_number: {
             type: 'string',
             data: {
               build() {
                 return '(333) 333 - 3333';
-              }
-            }
-          }
-        }
-      }
-    }
+              },
+            },
+          },
+        },
+      },
+    },
   };
 
   test((t) => {
@@ -437,7 +440,7 @@ test.group('buildObject', (test) => {
       phone: is.object({
         type: is.string(),
         phone_number: is.string().regex(/\(333\) 333 \- 3333/),
-      })
+      }),
     });
 
     const { error } = schema.validate(actual);
@@ -465,7 +468,6 @@ test.group('buildObject', (test) => {
   });
 });
 
-
 test.group('buildValue', (test) => {
   test('passed value', (t) => {
     t.is(t.context.document.buildValue({}, 'value'), 'value');
@@ -477,16 +479,19 @@ test.group('buildValue', (test) => {
   test.group('property.data.pre_build', (test) => {
     test('without passed value', (t) => {
       const actual = t.context.document.buildValue({
-        data: { pre_build: () => 'pre_build' }
+        data: { pre_build: () => 'pre_build' },
       });
 
       t.is(actual, 'pre_build');
     });
 
     test('with passed value', (t) => {
-      const actual = t.context.document.buildValue({
-        data: { pre_build: () => 'pre_build' }
-      }, 'passed value');
+      const actual = t.context.document.buildValue(
+        {
+          data: { pre_build: () => 'pre_build' },
+        },
+        'passed value',
+      );
       t.not(actual, 'passed value');
       t.is(actual, 'pre_build');
     });
@@ -504,7 +509,7 @@ test.group('buildValue', (test) => {
         data: {
           pre_build: () => 'pre_build',
           value: 'value',
-        }
+        },
       });
 
       t.not(actual, 'pre_build');
@@ -516,7 +521,7 @@ test.group('buildValue', (test) => {
         data: {
           build: () => 'build',
           value: 'value',
-        }
+        },
       });
 
       t.not(actual, 'build');
@@ -528,7 +533,7 @@ test.group('buildValue', (test) => {
         data: {
           fake: '{{name.firstName}}',
           value: 'value',
-        }
+        },
       });
 
       t.falsy(/[A-Z]/.test(actual));
@@ -536,9 +541,12 @@ test.group('buildValue', (test) => {
     });
 
     test('with passed value', (t) => {
-      const actual = t.context.document.buildValue({
-        data: { value: 'value' }
-      }, 'passed value');
+      const actual = t.context.document.buildValue(
+        {
+          data: { value: 'value' },
+        },
+        'passed value',
+      );
 
       t.not(actual, 'passed value');
       t.is(actual, 'value');
@@ -548,7 +556,7 @@ test.group('buildValue', (test) => {
   test.group('property.data.build', (test) => {
     test((t) => {
       const actual = t.context.document.buildValue({
-        data: { build: () => 'build' }
+        data: { build: () => 'build' },
       });
       t.is(actual, 'build');
     });
@@ -558,7 +566,7 @@ test.group('buildValue', (test) => {
         data: {
           pre_build: () => 'pre_build',
           build: () => 'build',
-        }
+        },
       });
       t.not(actual, 'pre_build');
       t.is(actual, 'build');
@@ -571,7 +579,7 @@ test.group('buildValue', (test) => {
             globals.pre_build_global = 'pre_build_global';
           },
           build: (context, documents, globals) => globals.pre_build_global,
-        }
+        },
       });
 
       t.is(actual, 'pre_build_global');
@@ -582,7 +590,7 @@ test.group('buildValue', (test) => {
         data: {
           fake: '{{name.firstName}}',
           build: () => 'build',
-        }
+        },
       });
 
       t.falsy(/[A-Z]/.test(actual));
@@ -591,7 +599,7 @@ test.group('buildValue', (test) => {
 
     test('with passed value', (t) => {
       const actual = t.context.document.buildValue({
-        data: { build: () => 'build' }
+        data: { build: () => 'build' },
       });
       t.not(actual, 'passed value');
       t.is(actual, 'build');
@@ -612,7 +620,7 @@ test.group('buildValue', (test) => {
         data: {
           pre_build: () => 'pre_build',
           fake,
-        }
+        },
       });
 
       t.not(actual, 'pre_build');
@@ -621,9 +629,12 @@ test.group('buildValue', (test) => {
     });
 
     test('with passed value', (t) => {
-      const actual = t.context.document.buildValue({
-        data: { fake }
-      }, 'passed value');
+      const actual = t.context.document.buildValue(
+        {
+          data: { fake },
+        },
+        'passed value',
+      );
 
       t.not(actual, 'passed value');
       t.not(actual, fake);
@@ -635,24 +646,30 @@ test.group('buildValue', (test) => {
     function items(obj) {
       return {
         type: 'array',
-        items: to.extend({
-          data: {
-            min: 0,
-            max: 0,
-            count: 0,
-          }
-        }, obj),
+        items: to.extend(
+          {
+            data: {
+              min: 0,
+              max: 0,
+              count: 0,
+            },
+          },
+          obj,
+        ),
       };
     }
 
     test('with passed value', (t) => {
       t.plan(7);
-      const actual = t.context.document.buildValue(items({
-        type: 'string',
-        data: {
-          count: 5,
-        }
-      }), []);
+      const actual = t.context.document.buildValue(
+        items({
+          type: 'string',
+          data: {
+            count: 5,
+          },
+        }),
+        [],
+      );
 
       t.is(to.type(actual), 'array');
       t.is(actual.length, 5);
@@ -662,13 +679,16 @@ test.group('buildValue', (test) => {
 
     test('with property.items.data.pre_build', (t) => {
       t.plan(7);
-      const actual = t.context.document.buildValue(items({
-        type: 'string',
-        data: {
-          count: 5,
-          pre_build: () => 'pre_build',
-        }
-      }), []);
+      const actual = t.context.document.buildValue(
+        items({
+          type: 'string',
+          data: {
+            count: 5,
+            pre_build: () => 'pre_build',
+          },
+        }),
+        [],
+      );
 
       t.is(to.type(actual), 'array');
       t.is(actual.length, 5);
@@ -677,13 +697,16 @@ test.group('buildValue', (test) => {
 
     test('with property.items.data.value', (t) => {
       t.plan(7);
-      const actual = t.context.document.buildValue(items({
-        type: 'string',
-        data: {
-          count: 5,
-          value: 'value',
-        }
-      }), []);
+      const actual = t.context.document.buildValue(
+        items({
+          type: 'string',
+          data: {
+            count: 5,
+            value: 'value',
+          },
+        }),
+        [],
+      );
 
       t.is(to.type(actual), 'array');
       t.is(actual.length, 5);
@@ -692,13 +715,16 @@ test.group('buildValue', (test) => {
 
     test('with property.items.data.build', (t) => {
       t.plan(7);
-      const actual = t.context.document.buildValue(items({
-        type: 'string',
-        data: {
-          count: 5,
-          build: () => 'build',
-        }
-      }), []);
+      const actual = t.context.document.buildValue(
+        items({
+          type: 'string',
+          data: {
+            count: 5,
+            build: () => 'build',
+          },
+        }),
+        [],
+      );
 
       t.is(to.type(actual), 'array');
       t.is(actual.length, 5);
@@ -707,13 +733,16 @@ test.group('buildValue', (test) => {
 
     test('with property.items.data.fake', (t) => {
       t.plan(7);
-      const actual = t.context.document.buildValue(items({
-        type: 'string',
-        data: {
-          count: 5,
-          fake: '{{name.firstName}}',
-        }
-      }), []);
+      const actual = t.context.document.buildValue(
+        items({
+          type: 'string',
+          data: {
+            count: 5,
+            fake: '{{name.firstName}}',
+          },
+        }),
+        [],
+      );
 
       t.is(to.type(actual), 'array');
       t.is(actual.length, 5);
@@ -723,14 +752,17 @@ test.group('buildValue', (test) => {
     test('called multiple times returns different array lengths between min and max', (t) => {
       let actual = [];
       for (let i = 0; i < 10; i++) {
-        const value = t.context.document.buildValue(items({
-          type: 'string',
-          data: {
-            min: 1,
-            max: 10,
-            fake: '{{name.firstName}}',
-          }
-        }), []);
+        const value = t.context.document.buildValue(
+          items({
+            type: 'string',
+            data: {
+              min: 1,
+              max: 10,
+              fake: '{{name.firstName}}',
+            },
+          }),
+          [],
+        );
         actual.push(value);
       }
 
@@ -740,39 +772,47 @@ test.group('buildValue', (test) => {
     });
 
     test('complex array', (t) => {
-      const actual = t.context.document.buildValue(items({
-        type: 'object',
-        data: { count: 5 },
-        properties: {
-          first_name: {
-            type: 'string',
-            description: 'The childs first_name',
-            data: { fake: '{{name.firstName}}' },
+      const actual = t.context.document.buildValue(
+        items({
+          type: 'object',
+          data: { count: 5 },
+          properties: {
+            first_name: {
+              type: 'string',
+              description: 'The childs first_name',
+              data: { fake: '{{name.firstName}}' },
+            },
+            gender: {
+              type: 'string',
+              description: 'The childs gender',
+              data: { build: () => to.random(1, 10) >= 3 ? to.random([ 'M', 'F' ]) : null },
+            },
+            age: {
+              type: 'integer',
+              description: 'The childs age',
+              data: { build: () => to.random(1, 17) },
+            },
           },
-          gender: {
-            type: 'string',
-            description: 'The childs gender',
-            data: { build: () => to.random(1, 10) >= 3 ? to.random([ 'M', 'F' ]) : null },
-          },
-          age: {
-            type: 'integer',
-            description: 'The childs age',
-            data: { build: () => to.random(1, 17) },
-          },
-        }
-      }), []);
+        }),
+        [],
+      );
 
-      is.assert(actual, is.array()
-        .items(is.object({
-          first_name: is.string().regex(/[A-Z][a-zA-Z\s]+/),
-          gender: [ is.string().regex(/M|F/), is.allow(null) ],
-          age: is.number().min(1).max(17),
-        }))
-        .length(5));
+      is.assert(
+        actual,
+        is
+          .array()
+          .items(
+            is.object({
+              first_name: is.string().regex(/[A-Z][a-zA-Z\s]+/),
+              gender: [ is.string().regex(/M|F/), is.allow(null) ],
+              age: is.number().min(1).max(17),
+            }),
+          )
+          .length(5),
+      );
     });
   });
 });
-
 
 test.group('postProcess', (test) => {
   const model = {
@@ -814,9 +854,9 @@ test.group('postProcess', (test) => {
               let str = this.split('@');
               str[0] = to.upperCase(str[0]);
               return str.join('@');
-            }
-          }
-        }
+            },
+          },
+        },
       },
       phones: {
         type: 'array',
@@ -826,7 +866,7 @@ test.group('postProcess', (test) => {
             count: to.random(1, 4),
             post_build() {
               return;
-            }
+            },
           },
           properties: {
             type: {
@@ -837,8 +877,8 @@ test.group('postProcess', (test) => {
                 },
                 post_build() {
                   return to.titleCase(this.type);
-                }
-              }
+                },
+              },
             },
             extension: {
               type: 'string',
@@ -849,8 +889,8 @@ test.group('postProcess', (test) => {
                 post_build() {
                   // since this is returning undefined it will not change the extention
                   return;
-                }
-              }
+                },
+              },
             },
             phone_number: {
               type: 'string',
@@ -860,13 +900,13 @@ test.group('postProcess', (test) => {
                 },
                 post_build() {
                   return this.phone_number.replace(/([0-9]{3})([0-9]{3})([0-9]{4})/, '($1) $2 - $3');
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   };
 
   test((t) => {
@@ -877,16 +917,16 @@ test.group('postProcess', (test) => {
     const schema = is.object({
       nochanges: is.string().lowercase(),
       changes: is.string().uppercase(),
-      emails: is.array()
-        .items(is.string().regex(/[A-Z]+\@example\.com/))
-        .min(1)
-        .max(4),
-      phones: is.array()
-        .items(is.object({
-          type: is.string(),
-          extension: is.string().regex(/10/),
-          phone_number: is.string().regex(/\(333\) 333 \- 3333/),
-        }))
+      emails: is.array().items(is.string().regex(/[A-Z]+\@example\.com/)).min(1).max(4),
+      phones: is
+        .array()
+        .items(
+          is.object({
+            type: is.string(),
+            extension: is.string().regex(/10/),
+            phone_number: is.string().regex(/\(333\) 333 \- 3333/),
+          }),
+        )
         .min(1)
         .max(4),
     });
@@ -913,7 +953,6 @@ test.group('postProcess', (test) => {
   });
 });
 
-
 test.group('transformValueToType', (test) => {
   const tests = [
     {
@@ -925,7 +964,7 @@ test.group('transformValueToType', (test) => {
       expected: null,
     },
     {
-      actual: [ 'number', undefined ], // eslint-disable-line
+      actual: ['number', undefined], // eslint-disable-line
       expected: undefined,
     },
     {
@@ -1011,21 +1050,22 @@ test.group('transformValueToType', (test) => {
   });
 });
 
+test.group(
+  'getPaths',
+  models(async (t, file) => {
+    await t.context.model.registerModels(file);
+    const model = _.find(t.context.model.models, (obj) => {
+      return obj.file.includes(file);
+    });
+    const paths = getPaths(model);
 
-test.group('getPaths', models(async (t, file) => {
-  await t.context.model.registerModels(file);
-  const model = _.find(t.context.model.models, (obj) => {
-    return obj.file.includes(file);
-  });
-  const paths = getPaths(model);
-
-  t.is(to.type(paths), 'object');
-  t.deepEqual(to.keys(paths), [ 'model', 'document' ]);
-  t.falsy(paths.model.join(',').includes('items.properties'), 'shouldn\'t have an instance of `items.properties`');
-  t.falsy(paths.document.join(',').includes('properties.'), 'shouldn\'t have an instance of `properties`');
-  t.is(paths.model.length, paths.document.length, 'They should have the same length');
-}));
-
+    t.is(to.type(paths), 'object');
+    t.deepEqual(to.keys(paths), [ 'model', 'document' ]);
+    t.falsy(paths.model.join(',').includes('items.properties'), 'shouldn\'t have an instance of `items.properties`');
+    t.falsy(paths.document.join(',').includes('properties.'), 'shouldn\'t have an instance of `properties`');
+    t.is(paths.model.length, paths.document.length, 'They should have the same length');
+  }),
+);
 
 test.group('typeToValue', (test) => {
   const tests = [
@@ -1054,6 +1094,5 @@ test.group('typeToValue', (test) => {
     });
   });
 });
-
 
 test.after(models.todo);

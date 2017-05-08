@@ -139,16 +139,20 @@ export default class Output extends Base {
 
     // reformat the data into the output type
     spinner.start();
-    return pool(documents, async (document, i) => {
-      const label = uniqueId(`document ${name} ${i}`);
-      perfy.start(label);
-      const key = document.__key || document.__name || (document[0] || {}).__name || ''; // eslint-disable-line no-underscore-dangle
-      // use the outputter's output function to output the data
-      const result = await this.outputter.output(key, await parser(document, spacing));
-      update(count++);
-      times.push(perfy.end(label).milliseconds);
-      return result;
-    }, limit)
+    return pool(
+      documents,
+      async (document, i) => {
+        const label = uniqueId(`document ${name} ${i}`);
+        perfy.start(label);
+        const key = document.__key || document.__name || (document[0] || {}).__name || ''; // eslint-disable-line no-underscore-dangle
+        // use the outputter's output function to output the data
+        const result = await this.outputter.output(key, await parser(document, spacing));
+        update(count++);
+        times.push(perfy.end(label).milliseconds);
+        return result;
+      },
+      limit,
+    )
       .then((result) => {
         spinner.stop();
         return result;
@@ -164,10 +168,7 @@ export default class Output extends Base {
   ///# like a connection to a data base, any event listeners, or finish outputting a zip file.
   ///# @async
   async finalize() {
-    if (
-      this.outputter &&
-      is.function(this.outputter.finalize)
-    ) {
+    if (this.outputter && is.function(this.outputter.finalize)) {
       await this.outputter.finalize();
     }
   }
@@ -191,16 +192,12 @@ export default class Output extends Base {
   ///# @arg {string} format - Output format
   ///# @returns {function} - Function to format a document
   getParser(output, format) {
-    if (
-      output === 'couchbase' &&
-      format === 'json'
-    ) {
+    if (output === 'couchbase' && format === 'json') {
       return (obj) => obj;
     }
     return parsers[format].stringify;
   }
 }
-
 
 /// @name Output validate
 /// @description This holds the different options that can be passed to the Output constructor
@@ -212,10 +209,7 @@ export const validate = {
   ///# @throws {error} - If the format option that was pass was invalid
   format(option) {
     const formats = [ 'json', 'csv', 'yaml', 'yml', 'cson' ];
-    if (
-      isString(option, 'format') &&
-      formats.includes(option)
-    ) {
+    if (isString(option, 'format') && formats.includes(option)) {
       return;
     }
     throw new Error(`You must use one of the following formats ${formats}. You passed ${option}`);
@@ -238,10 +232,7 @@ export const validate = {
   output(option) {
     if (!isString(option, 'output')) return;
 
-    if (
-      output_types.includes(option) ||
-      !path.extname(option)
-    ) {
+    if (output_types.includes(option) || !path.extname(option)) {
       return;
     }
 
@@ -280,10 +271,7 @@ export const validate = {
     // there's no archive file specified
     if (!option.length) return;
 
-    if (
-      option &&
-      [ 'return', 'console' ].includes(output)
-    ) {
+    if (option && [ 'return', 'console' ].includes(output)) {
       throw new Error(`You can\'t have an archive file when you have the output option set to ${output}`);
     } else if (path.extname(option) !== '.zip') {
       throw new Error('The archive file must have a file extention of `.zip`');
@@ -351,7 +339,6 @@ export const validate = {
   },
 };
 
-
 /// @name isServer
 /// @description This is used to check if the output is `sync-gateway` or `couchbase`
 /// @arg {string} output - The output that's being used
@@ -373,10 +360,7 @@ export function isString(option, name = '') {
   }
   if (!is.string(option)) {
     throw new Error(`The${name}option must be a string`);
-  } else if (
-    is.string(option) &&
-    !option.length
-  ) {
+  } else if (is.string(option) && !option.length) {
     throw new Error(`The${name}option must have a length`);
   }
   return true;

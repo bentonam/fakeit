@@ -17,11 +17,16 @@ import findRoot from 'find-root';
 
 export default class Models extends Base {
   constructor(options = {}) {
-    super(to.extend({
-      count: 0,
-      seed: 0,
-      babel_config: '+(.babelrc|package.json)',
-    }, options));
+    super(
+      to.extend(
+        {
+          count: 0,
+          seed: 0,
+          babel_config: '+(.babelrc|package.json)',
+        },
+        options,
+      ),
+    );
     // holds all the inputs that are registerd
     this.inputs = {};
 
@@ -66,14 +71,13 @@ export default class Models extends Base {
       return;
     }
 
-    let file = [ process.cwd(), this.options.root ]
-      .reduce((prev, next) => {
-        try {
-          return prev.concat(path.join(findRoot(next), babel_config));
-        } catch (e) {
-          return prev;
-        }
-      }, []);
+    let file = [ process.cwd(), this.options.root ].reduce((prev, next) => {
+      try {
+        return prev.concat(path.join(findRoot(next), babel_config));
+      } catch (e) {
+        return prev;
+      }
+    }, []);
 
     file = await globby(to.unique(file), { dot: true });
     file = file[0];
@@ -131,7 +135,7 @@ export default class Models extends Base {
         throw new Error('No valid model files found.');
       }
       return;
-    };
+    }
 
     await forEach(files, async (file) => {
       // if the model aready exists then return
@@ -180,10 +184,9 @@ export default class Models extends Base {
       await this.parseModel(model);
       this.models.push(model);
       this.update();
-    })
-      .catch((err) => {
-        this.progress.fail(err);
-      });
+    }).catch((err) => {
+      this.progress.fail(err);
+    });
 
     // update the models order
     this.models = resolveDependenciesOrder(this.models);
@@ -226,10 +229,7 @@ export default class Models extends Base {
   ///# @arg {object} model - The model to parse.
   ///# @async
   async parseModelDependencies(model) {
-    if (
-      !model.data.dependencies ||
-      !model.data.dependencies.length
-    ) {
+    if (!model.data.dependencies || !model.data.dependencies.length) {
       model.data.dependencies = [];
       return;
     }
@@ -246,7 +246,6 @@ export default class Models extends Base {
   }
 }
 
-
 /// @name parseModelInputs
 /// @description
 /// This is used to parse files that are used to generate specific data
@@ -255,10 +254,7 @@ export default class Models extends Base {
 /// @async
 /// @note {5} The `model.data.input` paths must already be resolved to be a absolute path.
 export async function parseModelInputs(model) {
-  if (
-    !model.data.inputs ||
-    !model.data.inputs.length
-  ) {
+  if (!model.data.inputs || !model.data.inputs.length) {
     model.data.inputs = [];
     return {};
   }
@@ -266,8 +262,7 @@ export async function parseModelInputs(model) {
   const inputs = {};
 
   // get list of files, flatten the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
-  let files = to.flatten(await utils.findFiles(model.data.inputs))
-   .filter((file) => !!file && /\.(csv|json|cson|ya?ml|zip)$/i.test(file));
+  let files = to.flatten(await utils.findFiles(model.data.inputs)).filter((file) => !!file && /\.(csv|json|cson|ya?ml|zip)$/i.test(file));
 
   if (!files.length) throw new Error(`No valid input files found for ${model.file}`);
 
@@ -314,10 +309,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     fn = `function __result(documents, globals, inputs, faker, chance, document_index, require) {\n${fn}\n}`;
 
     // if a babel config exists then transform the function
-    if (
-      is.plainObject(babel_config) &&
-      !is.empty(babel_config)
-    ) {
+    if (is.plainObject(babel_config) && !is.empty(babel_config)) {
       try {
         // transform the function and remove the `'use strict';\n` part that babel adds if it exists
         fn = transform(fn, babel_config).code.replace(/^.use strict.;\n+/, '');
@@ -332,10 +324,10 @@ export function parseModelFunctions(model, babel_config = {}) {
     /* eslint-disable indent */
     fn = [
       `function ${name}(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {`,
-        // indent each line and create a string
-        fn.split('\n').map((line) => `  ${line}`).filter(Boolean).join('\n'),
-        '  return __result.apply(this, [].slice.call(arguments));',
-      '}'
+      // indent each line and create a string
+      fn.split('\n').map((line) => `  ${line}`).filter(Boolean).join('\n'),
+      '  return __result.apply(this, [].slice.call(arguments));',
+      '}',
     ].join('\n');
     /* eslint-enable indent */
 
@@ -406,7 +398,6 @@ export function parseModelDefaults(model) {
   }
 }
 
-
 /// @name parseModelCount
 /// @description Determins the total number of documents to run
 /// @arg {object} model - The model to update
@@ -430,7 +421,6 @@ export function parseModelCount(model, count) {
   model.data.count = value;
 }
 
-
 /// @name parseModelSeed
 /// @description Resolves the seed that was passed in
 /// @arg {object} model - The model to update
@@ -447,7 +437,6 @@ export function parseModelSeed(model, seed) {
     model.seed = parseInt(seed);
   }
 }
-
 
 /// @name resolveDependenciesOrder
 /// @description Resolves the dependency order that file models need to run in.
@@ -475,7 +464,6 @@ export function resolveDependenciesOrder(models = []) {
 
   return resolver.sort().map((file) => models[order[file]]);
 }
-
 
 /// @name resolveDependenciesOf
 /// @description Figures out which models use the model as a dependency

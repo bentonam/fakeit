@@ -93,7 +93,8 @@ export default class Documents extends Base {
 
   document(model) {
     const document = new Document(this.options, this.documents, this.globals, this.inputs);
-    return document.build(model)
+    return document
+      .build(model)
       .then(() => {
         let result;
         if (!model.is_dependency) {
@@ -112,8 +113,6 @@ export default class Documents extends Base {
       });
   }
 }
-
-
 
 /// @name Document
 /// @description This is used to generate documents based off a model
@@ -163,20 +162,24 @@ export class Document extends Base {
 
     spinner.start();
     const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
-    await pool(model.data.count, async (i) => { // loop over each model and execute in order of dependency
-      // don't anymore if the program should exit
-      if (exit) return;
+    await pool(
+      model.data.count,
+      async (i) => {
+        // loop over each model and execute in order of dependency
+        // don't anymore if the program should exit
+        if (exit) return;
 
-      update();
-      // this allows the spinner to actually update the count and doesn't affect performance much
-      const doc = await this.buildDocument(model, i);
-      update();
-      await delay(0);
-      this.documents[model.name].push(doc);
-    }, this.options.spinners ? 75 : 1000)
-      .catch((err) => {
-        spinner.fail(err);
-      });
+        update();
+        // this allows the spinner to actually update the count and doesn't affect performance much
+        const doc = await this.buildDocument(model, i);
+        update();
+        await delay(0);
+        this.documents[model.name].push(doc);
+      },
+      this.options.spinners ? 75 : 1000,
+    ).catch((err) => {
+      spinner.fail(err);
+    });
 
     this.runData(model.data.post_run, model);
 
@@ -341,10 +344,7 @@ export class Document extends Base {
       } else if (property.data.fake) {
         return this.faker.fake(property.data.fake);
       }
-    } else if (
-      property.type === 'array' &&
-      property.items
-    ) {
+    } else if (property.type === 'array' && property.items) {
       let { count, min, max } = property.items.data;
       if (count <= 0 && !!max) {
         count = this.chance.integer({ min, max });
@@ -361,7 +361,8 @@ export class Document extends Base {
       // builds a simple array
       for (let i = 0; i < count; i++) {
         const result = this.buildValue(property.items, typeToValue(property.items.type), doc, index);
-        if (result !== undefined) { // eslint-disable-line no-undefined
+        if (result !== undefined) {
+          // eslint-disable-line no-undefined
           value.push(result);
         }
       }
@@ -413,18 +414,13 @@ export class Document extends Base {
   }
 }
 
-
 /// @name transformValueToType
 /// @description This will transform a value to the correct type
 /// @arg {string} type - The type to convert the value to
 /// @arg {*} value - The actual value
 /// @returns {*} - The converted value
 export function transformValueToType(type, value) {
-  if (
-    type == null ||
-    value == null ||
-    type === 'array'
-  ) {
+  if (type == null || value == null || type === 'array') {
     return value;
   }
 
@@ -445,14 +441,7 @@ export function transformValueToType(type, value) {
   // if it is a string make sure it is treated as such
   if ('boolean,bool'.includes(type)) {
     // if the value is a string that is 'false', '0', 'undefined', or 'null' as a string set a boolean false
-    if (
-      typeof value === 'string' && (
-        value === 'false' ||
-        value === '0' ||
-        value === 'undefined' ||
-        value === 'null'
-      )
-    ) {
+    if (typeof value === 'string' && (value === 'false' || value === '0' || value === 'undefined' || value === 'null')) {
       return false;
     }
     return Boolean(value);
@@ -460,7 +449,6 @@ export function transformValueToType(type, value) {
 
   return value;
 }
-
 
 /// @name getPaths
 /// @description finds all the paths to be used
@@ -474,8 +462,7 @@ export function transformValueToType(type, value) {
 /// ```
 export function getPaths(obj) {
   // finds all of the properties paths in a model
-  const model = objectSearch(obj, /^properties\.([^.]+|(?!items\.).+properties\.[^.]+)$/)
-    .filter((str) => !str.includes('items.properties'));
+  const model = objectSearch(obj, /^properties\.([^.]+|(?!items\.).+properties\.[^.]+)$/).filter((str) => !str.includes('items.properties'));
 
   return {
     model,

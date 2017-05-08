@@ -97,13 +97,13 @@ test.group((test) => {
         id: 302672,
         code: 'AD',
         name: 'Andorra',
-        continent: 'EU'
+        continent: 'EU',
       },
       {
         id: 302618,
         code: 'AE',
         name: 'United Arab Emirates',
-        continent: 'AS'
+        continent: 'AS',
       },
     ]),
     yaml: to.normalize(`
@@ -122,7 +122,7 @@ test.group((test) => {
         code: AF
         name: Afghanistan
         continent: AS
-    `)
+    `),
   };
 
   test.group('output', (test) => {

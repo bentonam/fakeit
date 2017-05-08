@@ -8,5 +8,5 @@ module.exports = is.object({
   user_id: is.number().min(0).max(6),
   phone_type: [ 'Home', 'Work', 'Mobile', 'Main', 'Other' ],
   phone_number: utils.phone,
-  extension: [ utils.phone, null ]
+  extension: [ utils.phone, null ],
 });

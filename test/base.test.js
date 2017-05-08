@@ -34,7 +34,6 @@ test('without args', (t) => {
   });
 });
 
-
 test('with args', (t) => {
   const base = new Base({ log: false });
   t.deepEqual(base, {

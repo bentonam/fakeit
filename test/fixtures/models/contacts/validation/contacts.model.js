@@ -20,7 +20,7 @@ module.exports = is.object({
   properties: {
     _id: utils.check('string', 'The document id', { post_build: is.func() }),
     doc_type: utils.check('string', 'The document type', { value: 'contact' }),
-    channels: utils.check('array', { build: is.func(), }),
+    channels: utils.check('array', { build: is.func() }),
     contact_id: utils.check('string', 'The contact_id', { build: is.func() }),
     created_on: utils.check('integer', 'An epoch time of when the contact was created', { build: is.func() }),
     modified_on: utils.check('integer', 'An epoch time of when the contact was last modified', { build: is.func() }),

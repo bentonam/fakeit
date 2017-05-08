@@ -12,7 +12,8 @@ module.exports = is.object({
   gender: [ 'M', 'F', null ],
   dob: [ is.date(), null ],
   created_on: is.date(),
-  children: is.array()
+  children: is
+    .array()
     .items({
       first_name: is.string(),
       gender: [ 'M', 'F', null ],

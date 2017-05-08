@@ -8,7 +8,6 @@ import ora from 'ora';
 import formatSeconds from 'format-seconds';
 import Emitter from 'events-async';
 
-
 /// @name Logger
 /// @description
 /// This is the main logger for the application
@@ -18,12 +17,15 @@ export default class Logger extends Emitter {
   constructor(options = {}) {
     super();
     this.setMaxListeners(50);
-    this.options = to.extend({
-      log: true,
-      verbose: false,
-      timestamp: true,
-      spinners: true,
-    }, options);
+    this.options = to.extend(
+      {
+        log: true,
+        verbose: false,
+        timestamp: true,
+        spinners: true,
+      },
+      options,
+    );
 
     // ensure that if `verbose` is true then `log` must also be true
     if (this.options.verbose) {
@@ -44,7 +46,7 @@ export default class Logger extends Emitter {
       success: 'green', // possibly remove
       info: 'blue',
       verbose: 'magenta',
-      log: 'gray'
+      log: 'gray',
     };
 
     this.spinners = {};
@@ -165,10 +167,7 @@ export default class Logger extends Emitter {
     spinner.originalStop = spinner.stop;
     // overwrite it to support timing
     spinner.start = function start() {
-      if (
-        !this.enabled ||
-        !self.options.spinners
-      ) {
+      if (!this.enabled || !self.options.spinners) {
         return this;
       }
       this.originalStart();
@@ -178,11 +177,7 @@ export default class Logger extends Emitter {
       return this;
     };
     spinner.stop = function stop() {
-      if (
-        !this.enabled ||
-        this.id == null ||
-        !self.options.spinners
-      ) {
+      if (!this.enabled || this.id == null || !self.options.spinners) {
         return this;
       }
 
@@ -206,11 +201,7 @@ export default class Logger extends Emitter {
     };
 
     spinner.stopAndPersist = function stopAndPersist(symbol) {
-      if (
-        !this.enabled ||
-        this.id == null ||
-        !self.options.spinners
-      ) {
+      if (!this.enabled || this.id == null || !self.options.spinners) {
         return this;
       }
       this.originalStop();

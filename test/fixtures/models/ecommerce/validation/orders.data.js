@@ -27,7 +27,8 @@ module.exports = is.object({
   shipping_method: is.string(),
   shipping_total: is.number().precision(2),
   tax: is.number().precision(2).min(2.00).max(10.99),
-  line_items: is.array()
+  line_items: is
+    .array()
     .items({
       product_id: is.string().uuid(),
       display_name: is.string(),

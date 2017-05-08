@@ -4,9 +4,7 @@ var is = require('joi');
 module.exports = is.object({
   _id: is.string().regex(/^contact_[a-z0-9-]{10,}$/),
   doc_type: 'contact',
-  channels: is.array()
-    .items('ufp-555555555')
-    .length(1),
+  channels: is.array().items('ufp-555555555').length(1),
   contact_id: is.string().guid(),
   created_on: is.date(),
   modified_on: is.date(),
@@ -20,7 +18,8 @@ module.exports = is.object({
     dob: [ is.date(), null ],
     nickname: [ is.string(), null ],
   },
-  phones: is.array()
+  phones: is
+    .array()
     .items({
       type: [ 'Home', 'Work', 'Mobile', 'Main', 'Other' ],
       phone_number: utils.phone,
@@ -29,11 +28,9 @@ module.exports = is.object({
     .min(1)
     .max(3)
     .sparse(false),
-  emails: is.array()
-    .items(is.string().email())
-    .min(1)
-    .max(3),
-  addresses: is.array()
+  emails: is.array().items(is.string().email()).min(1).max(3),
+  addresses: is
+    .array()
     .items({
       type: [ 'Home', 'Work', 'Other' ],
       address_1: is.string(),
@@ -46,7 +43,8 @@ module.exports = is.object({
     .min(1)
     .max(2)
     .sparse(false),
-  children: is.array()
+  children: is
+    .array()
     .items({
       first_name: is.string(),
       gender: [ 'M', 'F', null ],
@@ -56,9 +54,5 @@ module.exports = is.object({
     .max(8)
     .sparse(false),
   notes: is.string(),
-  tags: is.array()
-    .items(is.string())
-    .min(1)
-    .max(6)
-    .sparse(false),
+  tags: is.array().items(is.string()).min(1).max(6).sparse(false),
 });

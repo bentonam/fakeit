@@ -24,20 +24,18 @@ const models = require('./utils').models({
   // this gets the correct validation file to use on a per test basis
   validation(model) {
     return model.replace(/models(.*)\.yaml/g, 'validation$1.data.js');
-  }
+  },
 });
-
 
 test.beforeEach((t) => {
   t.context.fakeit = new Fakeit({
     root: fakeit_root,
     count: 1,
-    log: false
+    log: false,
   });
 
   t.context.defaults = to.clone(default_options);
 });
-
 
 test('without args', async (t) => {
   delete t.context.fakeit.options.count;
@@ -54,7 +52,6 @@ test('without args', async (t) => {
   t.is(to.type(t.context.fakeit.globals), 'object');
 });
 
-
 const generate = test.group('generate');
 generate('generate no models', async (t) => {
   // you can run generate an nothing will happen
@@ -66,29 +63,32 @@ generate('generate no models', async (t) => {
   }
 });
 
+generate.serial.group(
+  'console',
+  models(async (t, model) => {
+    t.context.defaults.output = 'console';
 
-generate.serial.group('console', models(async (t, model) => {
-  t.context.defaults.output = 'console';
+    const inspect = stdout.inspect();
+    await t.context.fakeit.generate(model, t.context.defaults);
+    inspect.restore();
+    const actual = to.object(stripColor(inspect.output[0].trim()))[0];
 
-  const inspect = stdout.inspect();
-  await t.context.fakeit.generate(model, t.context.defaults);
-  inspect.restore();
-  const actual = to.object(stripColor(inspect.output[0].trim()))[0];
+    return actual;
+  }),
+);
 
-  return actual;
-}));
-
-
-generate.group('return', models(async (t, model) => {
-  t.context.defaults.output = 'return';
-  let actual = await t.context.fakeit.generate(model, t.context.defaults);
-  // get the first item in the list of the tests
-  // and convert it to an object
-  actual = to.object(actual[0]);
-  // get the first item in the array to test
-  return actual[0];
-}));
-
+generate.group(
+  'return',
+  models(async (t, model) => {
+    t.context.defaults.output = 'return';
+    let actual = await t.context.fakeit.generate(model, t.context.defaults);
+    // get the first item in the list of the tests
+    // and convert it to an object
+    actual = to.object(actual[0]);
+    // get the first item in the array to test
+    return actual[0];
+  }),
+);
 
 generate.group('supports globs', (test) => {
   test('ecommerce/**/*.yaml', async (t) => {
@@ -110,33 +110,36 @@ generate.group('supports globs', (test) => {
   });
 });
 
+generate.group(
+  'folder',
+  models(async (t, model) => {
+    const root = p(folder_root, model.replace(new RegExp(path.sep, 'g'), '-').replace('.yaml', ''));
+    t.context.defaults.output = root;
+    await t.context.fakeit.generate(model, t.context.defaults);
+    const files = await globby(p(root, '**', '*'));
+    t.is(files.length, 1);
+    return fs.readJson(files[0]);
+  }),
+);
 
-generate.group('folder', models(async (t, model) => {
-  const root = p(folder_root, model.replace(new RegExp(path.sep, 'g'), '-').replace('.yaml', ''));
-  t.context.defaults.output = root;
-  await t.context.fakeit.generate(model, t.context.defaults);
-  const files = await globby(p(root, '**', '*'));
-  t.is(files.length, 1);
-  return fs.readJson(files[0]);
-}));
-
-
-generate.group('zip', models(async (t, model) => {
-  const root = p(zip_root, model.replace(new RegExp(path.sep, 'g'), '-').replace('.yaml', ''));
-  t.context.defaults.output = root;
-  t.context.defaults.archive = 'archive.zip';
-  await t.context.fakeit.generate(model, t.context.defaults);
-  const files = await globby(p(root, '**', '*'));
-  t.is(files.length, 1);
-  t.is(path.extname(files[0]), '.zip');
-  const zip = new AdmZip(files[0]);
-  t.is(zip.getEntries().length, 1);
-  const entry_file = zip.getEntries()[0].name;
-  t.is(path.extname(entry_file), '.json');
-  // read the entry_file from the zip file and convert it to an object from a json string
-  return to.object(await zip.readAsText(entry_file));
-}));
-
+generate.group(
+  'zip',
+  models(async (t, model) => {
+    const root = p(zip_root, model.replace(new RegExp(path.sep, 'g'), '-').replace('.yaml', ''));
+    t.context.defaults.output = root;
+    t.context.defaults.archive = 'archive.zip';
+    await t.context.fakeit.generate(model, t.context.defaults);
+    const files = await globby(p(root, '**', '*'));
+    t.is(files.length, 1);
+    t.is(path.extname(files[0]), '.zip');
+    const zip = new AdmZip(files[0]);
+    t.is(zip.getEntries().length, 1);
+    const entry_file = zip.getEntries()[0].name;
+    t.is(path.extname(entry_file), '.json');
+    // read the entry_file from the zip file and convert it to an object from a json string
+    return to.object(await zip.readAsText(entry_file));
+  }),
+);
 
 // couchbase and sync-gateway are too difficult to test in this way
 // since we have to use the mock equivalents of some of their inner functions
@@ -150,7 +153,6 @@ generate.group('zip', models(async (t, model) => {
 //   t.is(typeof model, 'string');
 //   t.pass();
 // }, null, models.files));
-
 
 // log all the schema keys that still need to be done
 test.after.always(() => {

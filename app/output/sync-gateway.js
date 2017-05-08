@@ -66,10 +66,7 @@ export default class SyncGateway extends Base {
       .then(([ res, body ]) => {
         body = to.object(body);
 
-        if (
-          body.ok &&
-          res.headers['set-cookie']
-        ) {
+        if (body.ok && res.headers['set-cookie']) {
           const cookie = cookieParser.parse(res);
           this.session = {
             name: cookie[0].name,
@@ -129,7 +126,6 @@ export default class SyncGateway extends Base {
     }
   }
 }
-
 
 /// @name request
 /// @description

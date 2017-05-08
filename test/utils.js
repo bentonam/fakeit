@@ -32,16 +32,19 @@ var json = require('jsondiffpatch');
 /// ```
 /// @returns {function} - function that loops over each model that was found
 module.exports.models = function(settings) {
-  settings = to.extend({
-    root: process.cwd(), // the root of the modules that are being tested
-    modules: '', // The path to the modules to test
-    // the function to get the validation file for the model
-    validation: function(model) {
-      return model.replace(/models(.*)\.yaml/g, 'validation$1.data.js');
+  settings = to.extend(
+    {
+      root: process.cwd(), // the root of the modules that are being tested
+      modules: '', // The path to the modules to test
+      // the function to get the validation file for the model
+      validation: function(model) {
+        return model.replace(/models(.*)\.yaml/g, 'validation$1.data.js');
+      },
+      match: null,
+      todo: [],
     },
-    match: null,
-    todo: [],
-  }, settings || {});
+    settings || {},
+  );
 
   settings.modules = globby.sync(settings.modules, { cwd: settings.root });
 
@@ -89,12 +92,15 @@ module.exports.models = function(settings) {
   ///#   return actual
   ///# }))
   function models(cb, match, todo, run) {
-    var options = to.arguments.apply(null, [
-      { match: null, todo: [], run: true },
-      match != null ? match : settings.match,
-      todo != null ? todo : settings.todo,
-      run != null ? run : true,
-    ].slice(0, to.array(arguments).length));
+    var options = to.arguments.apply(
+      null,
+      [
+        { match: null, todo: [], run: true },
+        match != null ? match : settings.match,
+        todo != null ? todo : settings.todo,
+        run != null ? run : true,
+      ].slice(0, to.array(arguments).length),
+    );
 
     options.todo = to.array(options.todo);
 
@@ -103,18 +109,22 @@ module.exports.models = function(settings) {
       // loop over all the globs
       settings.modules.forEach(function(model) {
         // check if there's a matching test
-        const should_test = options.match === null ? true : !!to.flatten([ options.match ]).map(function(item) { // eslint-disable-line
-          if (typeof item === 'number') {
-            item = settings.modules[item];
-          }
+        const should_test = options.match === null ?
+          true :
+          !!to
+              .flatten([ options.match ])
+              .map(function(item) {
+                // eslint-disable-line
+                if (typeof item === 'number') {
+                  item = settings.modules[item];
+                }
 
-          return !!item && item.indexOf(model) >= 0;
-        }).filter(Boolean).length;
+                return !!item && item.indexOf(model) >= 0;
+              })
+              .filter(Boolean).length;
 
         // if the model isn't in the todo list then run the tests
-        if (
-          should_test && options.todo.indexOf(model) < 0
-        ) {
+        if (should_test && options.todo.indexOf(model) < 0) {
           var schema;
           // get the schema to use for validating that the output is correct
           try {
@@ -130,7 +140,8 @@ module.exports.models = function(settings) {
             test = test.serial;
           }
 
-          test(model, function(t) { // eslint-disable-line
+          test(model, function(t) {
+            // eslint-disable-line
             // run the call back with the `t` assertion object and the current model
             var result = cb(t, model);
 
@@ -150,10 +161,9 @@ module.exports.models = function(settings) {
                 }
 
                 // find the keys that still need to be validated
-                var omitted = _.difference(to.keys(actual), schema_keys)
-                  .filter(function(key) {
-                    return [ '__key', '__name' ].indexOf(key) < 0;
-                  });
+                var omitted = _.difference(to.keys(actual), schema_keys).filter(function(key) {
+                  return [ '__key', '__name' ].indexOf(key) < 0;
+                });
                 // test the keys that exsit
                 var picked = _.pick(actual, schema_keys);
 
@@ -184,7 +194,7 @@ module.exports.models = function(settings) {
                   } else {
                     t.pass(`${model} is valid`);
                   }
-                };
+                }
                 if (schema.isJoi) {
                   schema.validate(picked, validate);
                 } else {
@@ -195,17 +205,14 @@ module.exports.models = function(settings) {
                 t.fail(err);
               });
           });
-        } else if (
-          options.match === null &&
-          options.todo.indexOf(model) > -1
-        ) {
+        } else if (options.match === null && options.todo.indexOf(model) > -1) {
           // if there's no specific match to test at they're
           // on the todo list then add that model to todo tests
           test.todo(model);
         }
       });
     };
-  };
+  }
 
   models.files = settings.modules;
   models.schemas_todo = {};
@@ -214,17 +221,21 @@ module.exports.models = function(settings) {
   // then stores it on an object by it's file name
   // this can be used so you don't have to continually read the model files
   models.getContents = function getContents() {
-    return reduce(models.files, function(prev, next) {
-      return fs.readFile(p(settings.root, next))
-        .then(function(contents) {
+    return reduce(
+      models.files,
+      function(prev, next) {
+        return fs.readFile(p(settings.root, next)).then(function(contents) {
           prev[next] = yaml.parse(to.string(contents));
           return prev;
         });
-    }, {});
+      },
+      {},
+    );
   };
 
   models.todo = function() {
-    for (var schema in models.schemas_todo) { // eslint-disable-line
+    for (var schema in models.schemas_todo) {
+      // eslint-disable-line
       for (var i = 0; i < models.schemas_todo[schema].length; i++) {
         console.log(chalk.blue('  -', schema + ':', models.schemas_todo[schema][i]).toString());
       }
@@ -234,11 +245,12 @@ module.exports.models = function(settings) {
   return models;
 };
 
-
 // this works the same as objectSearch
 /* istanbul ignore next: testing util */
 module.exports.getPaths = function getPaths(model, regex) {
-  return to.keys(model).concat(to.keys(to.flatten(model)))
+  return to
+    .keys(model)
+    .concat(to.keys(to.flatten(model)))
     .reduce((result, next) => {
       var current = '';
       for (var key of next.split('.')) {
@@ -282,7 +294,7 @@ module.exports.slug = joi.string().regex(/^[a-z][a-z-]+[a-z]$/);
 /* istanbul ignore next: testing util */
 module.exports.check = function check(type, description, data) {
   var result = {
-    type: type
+    type: type,
   };
   if (typeof description !== 'string') {
     data = description;
