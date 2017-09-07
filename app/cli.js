@@ -52,7 +52,7 @@ export default async function() {
     // global output options
     .option('-f, --format <type>', `this determines the output format to use. Supported formats: ${code('json', 'csv', 'yaml', 'yml', 'cson')}. (${dim('json')})`, 'json') // eslint-disable-line
     .option('-n, --spacing <n>', `the number of spaces to use for indention (${dim('2')})`, 2)
-    .option('-l, --limit <n>', `limit how many files are output at a time (${dim('100')})`, 100)
+    .option('-l, --limit <n>', `limit how many files are output at a time (${dim('100')})`, Number, 100)
     .option('-x, --seed <seed>', 'The global seed to use for repeatable data', (seed) => {
       const number = parseInt(seed);
 
