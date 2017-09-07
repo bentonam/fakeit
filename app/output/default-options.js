@@ -16,7 +16,7 @@ module.exports = {
 
   // limit how many files are output at a time, this is useful
   // to not overload a server or lock up your computer
-  limit: 100,
+  limit: 10,
 
   // this is used in the console output and if true it will
   // format and colorize the output

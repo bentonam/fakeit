@@ -32,7 +32,7 @@ test('without args', async (t) => {
     spacing: 2,
     archive: '',
     output: 'return',
-    limit: 100,
+    limit: 10,
     highlight: true,
     server: '127.0.0.1',
     bucket: 'default',
