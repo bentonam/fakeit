@@ -10,7 +10,7 @@ test((t) => {
     format: 'json',
     spacing: 2,
     output: 'return',
-    limit: 100,
+    limit: 10,
     highlight: true,
     archive: '',
     server: '127.0.0.1',
