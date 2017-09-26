@@ -14,7 +14,17 @@ export default class Couchbase extends Base {
   constructor(options = {}, output_options = {}) {
     super(options);
     this.output_options = extend({}, default_options, output_options);
+
     this.cluster = new couchbase.Cluster(this.output_options.server);
+
+    const { username, password } = this.output_options;
+    if (username || password) {
+      this.cluster.authenticate({
+        username: username || '',
+        password: password || ''
+      });
+    }
+
     this.prepared = false;
   }
 
@@ -42,9 +52,9 @@ export default class Couchbase extends Base {
       return this.prepare();
     }
 
-    const { server, bucket, password, timeout } = this.output_options;
+    const { server, bucket, timeout } = this.output_options;
     return new Promise((resolve, reject) => {
-      this.bucket = this.cluster.openBucket(bucket, password, (err) => {
+      this.bucket = this.cluster.openBucket(bucket, (err) => {
         /* istanbul ignore if : to hard to test since this is a third party function */
         if (err) return reject(err);
 
