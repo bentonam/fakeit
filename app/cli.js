@@ -89,6 +89,7 @@ export default async function() {
     .command('couchbase')
     .option('-s, --server [server]', `The server address (${dim('127.0.0.1')})`)
     .option('-b, --bucket [bucket]', `The bucket name (${dim('default')})`)
+    .option('-u, --username [username]', 'The username to use (optional pre-5.0)')
     .option('-p, --password [password]', 'the password for the account (optional)')
     .option('-t, --timeout [timeout]', `timeout for the servers (${dim(5000)})`)
     .description('This will output to a Couchbase Server')
