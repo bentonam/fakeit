@@ -19,9 +19,9 @@ module.exports = is.object({
     pre_run: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    user_id: utils.check('integer', 'The user_id the lookup is for', { build: is.func(), }),
-    phones: utils.check('array', 'An array of phone_ids', { build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    user_id: utils.check('integer', 'The user_id the lookup is for', { build: is.func() }),
+    phones: utils.check('array', 'An array of phone_ids', { build: is.func() }),
   },
 });

@@ -3,13 +3,7 @@
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
 import fs from 'fs-extra-promisify';
-import {
-  objectSearch,
-  findFiles,
-  readFiles,
-  pool,
-  parsers,
-} from '../dist/utils';
+import { objectSearch, findFiles, readFiles, pool, parsers } from '../dist/utils';
 import { map } from 'async-array-methods';
 import to from 'to-js';
 import AdmZip from 'adm-zip';
@@ -32,9 +26,9 @@ test.group('objectSearch', (test) => {
   const obj = {
     one: {
       two: {
-        three: 'woohoo'
-      }
-    }
+        three: 'woohoo',
+      },
+    },
   };
 
   test('no pattern', (t) => {
@@ -74,7 +68,6 @@ test.group('objectSearch', (test) => {
   });
 });
 
-
 test.group('findFiles', (test) => {
   const root = p(utils_root, 'find-files');
   const files = [
@@ -111,16 +104,30 @@ test.group('findFiles', (test) => {
   test.after.always(() => fs.remove(root));
 });
 
-
 test.group('readFiles', (test) => {
   const root = p(utils_root, 'read-files');
   /* eslint-disable max-len */
   const plain_files = [
-    { path: p('file-1.txt'), content: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloremque qui itaque assumenda expedita a unde illum facere laborum, quaerat, ipsam error facilis ipsum quasi et, id deleniti placeat pariatur quia!' },
-    { path: p('one', 'file.txt'), content: 'Et fuga in, necessitatibus ipsum tempore! Libero pariatur et nihil impedit quasi, saepe, vero facere aspernatur asperiores laudantium fugiat! Quibusdam modi, soluta assumenda, veritatis cumque dolorum tempore excepturi voluptate! Fugit?' },
-    { path: p('one', 'two', 'file.txt'), content: 'Harum asperiores, dignissimos esse, quibusdam veritatis nihil velit ipsa maiores quos natus officia enim laboriosam atque odio quod! Sed quod temporibus amet doloremque modi sequi quisquam quidem, neque debitis magnam!' },
-    { path: p('one', 'two', 'three', 'file.txt'), content: 'Blanditiis iure nihil nam. Debitis, commodi beatae. Praesentium at, blanditiis libero ipsum consectetur illo debitis odit, nemo, cupiditate modi quod veritatis aliquam accusamus facilis quos, vero dolorum adipisci quis hic.' },
-    { path: p('one', 'two', 'three', 'four', 'file.txt'), content: 'Beatae dolores porro culpa sit! Ipsam suscipit quaerat tenetur iure officiis. Asperiores optio, omnis hic exercitationem doloribus adipisci nesciunt voluptates consequuntur. Nihil veniam et, quas minima autem dolore aspernatur saepe.' },
+    {
+      path: p('file-1.txt'),
+      content: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Doloremque qui itaque assumenda expedita a unde illum facere laborum, quaerat, ipsam error facilis ipsum quasi et, id deleniti placeat pariatur quia!',
+    },
+    {
+      path: p('one', 'file.txt'),
+      content: 'Et fuga in, necessitatibus ipsum tempore! Libero pariatur et nihil impedit quasi, saepe, vero facere aspernatur asperiores laudantium fugiat! Quibusdam modi, soluta assumenda, veritatis cumque dolorum tempore excepturi voluptate! Fugit?',
+    },
+    {
+      path: p('one', 'two', 'file.txt'),
+      content: 'Harum asperiores, dignissimos esse, quibusdam veritatis nihil velit ipsa maiores quos natus officia enim laboriosam atque odio quod! Sed quod temporibus amet doloremque modi sequi quisquam quidem, neque debitis magnam!',
+    },
+    {
+      path: p('one', 'two', 'three', 'file.txt'),
+      content: 'Blanditiis iure nihil nam. Debitis, commodi beatae. Praesentium at, blanditiis libero ipsum consectetur illo debitis odit, nemo, cupiditate modi quod veritatis aliquam accusamus facilis quos, vero dolorum adipisci quis hic.',
+    },
+    {
+      path: p('one', 'two', 'three', 'four', 'file.txt'),
+      content: 'Beatae dolores porro culpa sit! Ipsam suscipit quaerat tenetur iure officiis. Asperiores optio, omnis hic exercitationem doloribus adipisci nesciunt voluptates consequuntur. Nihil veniam et, quas minima autem dolore aspernatur saepe.',
+    },
   ];
   const root_plain_files = to.clone(plain_files).map((file) => {
     file.path = p(root, file.path);
@@ -180,7 +187,6 @@ test.group('readFiles', (test) => {
   test.after.always(() => fs.remove(root));
 });
 
-
 test.serial.group('pool', async (test) => {
   const delay = (duration) => {
     duration *= 100;
@@ -232,12 +238,16 @@ test.serial.group('pool', async (test) => {
 
   test('limit 3', async (t) => {
     const inspect = stdout.inspect();
-    let result = pool(items, async (item, i, array) => {
-      t.deepEqual(array, items);
-      t.is(typeof i, 'number');
-      await delay(i);
-      return `woohoo ${item}`;
-    }, 3);
+    let result = pool(
+      items,
+      async (item, i, array) => {
+        t.deepEqual(array, items);
+        t.is(typeof i, 'number');
+        await delay(i);
+        return `woohoo ${item}`;
+      },
+      3,
+    );
     t.is(typeof result.then, 'function');
     result = await result;
     inspect.restore();
@@ -263,11 +273,10 @@ test.serial.group('pool', async (test) => {
       '900 start',
       '700 end',
       '800 end',
-      '900 end'
+      '900 end',
     ]);
   });
 });
-
 
 test.serial.group('parsers', (test) => {
   const expected = {
@@ -279,7 +288,7 @@ test.serial.group('parsers', (test) => {
     airport_name: 'Goroka',
     geo: {
       latitude: -6.081689835,
-      longitude: 145.3919983
+      longitude: 145.3919983,
     },
     elevation: 5282,
     iso_continent: 'OC',
@@ -291,7 +300,7 @@ test.serial.group('parsers', (test) => {
     airport_gps_code: 'AYGA',
     timezone_offset: 10,
     dst: 'U',
-    timezone: 'Pacific/Port_Moresby'
+    timezone: 'Pacific/Port_Moresby',
   };
 
   // stores the tests for each of the parsers
@@ -322,27 +331,27 @@ test.serial.group('parsers', (test) => {
 
   /* eslint-disable */
   tests.json = {
-    "_id": "airport_56",
-    "airport_id": 56,
-    "doc_type": "airport",
-    "airport_ident": "AYGA",
-    "airport_type": "medium_airport",
-    "airport_name": "Goroka",
-    "geo": {
-      "latitude": -6.081689835,
-      "longitude": 145.3919983
+    _id: 'airport_56',
+    airport_id: 56,
+    doc_type: 'airport',
+    airport_ident: 'AYGA',
+    airport_type: 'medium_airport',
+    airport_name: 'Goroka',
+    geo: {
+      latitude: -6.081689835,
+      longitude: 145.3919983,
     },
-    "elevation": 5282,
-    "iso_continent": "OC",
-    "iso_country": "PG",
-    "iso_region": "PG-EHG",
-    "municipality": "Goroka",
-    "airport_icao": "AYGA",
-    "airport_iata": "GKA",
-    "airport_gps_code": "AYGA",
-    "timezone_offset": 10,
-    "dst": "U",
-    "timezone": "Pacific/Port_Moresby"
+    elevation: 5282,
+    iso_continent: 'OC',
+    iso_country: 'PG',
+    iso_region: 'PG-EHG',
+    municipality: 'Goroka',
+    airport_icao: 'AYGA',
+    airport_iata: 'GKA',
+    airport_gps_code: 'AYGA',
+    timezone_offset: 10,
+    dst: 'U',
+    timezone: 'Pacific/Port_Moresby',
   };
 
   /* eslint-enable */

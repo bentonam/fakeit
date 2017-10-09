@@ -14,14 +14,9 @@ test.beforeEach((t) => {
   t.context = new Logger();
 });
 
-
 test('functions', (t) => {
-  t.deepEqual(
-    to.keys(Logger.prototype).sort(),
-    [ 'constructor', 'log', 'spinner', 'stamp', 'time', 'timeEnd' ].sort()
-  );
+  t.deepEqual(to.keys(Logger.prototype).sort(), [ 'constructor', 'log', 'spinner', 'stamp', 'time', 'timeEnd' ].sort());
 });
-
 
 test.group('options', (test) => {
   test('none', (t) => {
@@ -38,7 +33,6 @@ test.group('options', (test) => {
     t.deepEqual(logger.options, { log: true, verbose: true, spinners: true, timestamp: true });
   });
 });
-
 
 test.serial.group('log', (test) => {
   test('returns this', (t) => {
@@ -105,7 +99,6 @@ test.serial.group('log', (test) => {
   });
 });
 
-
 test.serial.group('time', (test) => {
   test('throws when no label is passed (time)', (t) => {
     const tester = () => t.context.time();
@@ -152,14 +145,13 @@ test.serial.group('time', (test) => {
         const [ number, unit ] = stripColor(actual).trim().match(/\+?([0-9\.]+)\s*([µmsn]+)?/).slice(1);
         if (number !== '0') {
           t.is(typeof unit, 'string');
-          t.truthy([ 'µs', 'ns', 'ms', 's', ].includes(unit));
+          t.truthy([ 'µs', 'ns', 'ms', 's' ].includes(unit));
         }
         t.is(typeof parseFloat(number), 'number');
       });
     });
   });
 });
-
 
 test.serial.group('spinner', (test) => {
   function getPassThroughStream() {

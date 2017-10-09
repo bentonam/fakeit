@@ -30,7 +30,7 @@ const models = utils.models({
   // this gets the correct validation file to use on a per test basis
   validation(model) {
     return model.replace(/models(.*)\.yaml/g, 'validation$1.model.js');
-  }
+  },
 });
 
 let babel_config, contents;
@@ -44,10 +44,9 @@ test.before(async () => {
 test.beforeEach((t) => {
   t.context = new Models({
     root: models_root,
-    log: false
+    log: false,
   });
 });
-
 
 test('without args', (t) => {
   t.context.options.log = true;
@@ -66,7 +65,7 @@ test('without args', (t) => {
       timestamp: true,
       count: 0,
       seed: 0,
-      babel_config: '+(.babelrc|package.json)'
+      babel_config: '+(.babelrc|package.json)',
     },
     log_types: is.object().required(),
     inputs: is.object().length(0),
@@ -83,7 +82,6 @@ test('without args', (t) => {
   }
 });
 
-
 test('prepare', async (t) => {
   t.is(t.context.prepared, false);
   t.is(t.context.preparing, undefined);
@@ -96,7 +94,6 @@ test('prepare', async (t) => {
   t.is(typeof t.context.options.babel_config, 'object');
   t.deepEqual(t.context.options.babel_config, babel_config);
 });
-
 
 test.serial.group('setup', (test) => {
   test('babel_config as a string', async (t) => {
@@ -156,7 +153,6 @@ test.serial.group('setup', (test) => {
   });
 });
 
-
 test.group('registerModels', (test) => {
   test('without args', async (t) => {
     // you can run registerModels and nothing will happen
@@ -174,69 +170,66 @@ test.group('registerModels', (test) => {
   // throws error if this isn't defined
   test.todo('without model.key value');
 
-  test.group(models(async (t, file) => {
-    const original_model = to.clone(contents[file]);
-    // min length of the models expected
-    const min = (original_model.data.dependencies || []).length;
-    // registerModel
-    await t.context.registerModels(file);
+  test.group(
+    models(async (t, file) => {
+      const original_model = to.clone(contents[file]);
+      // min length of the models expected
+      const min = (original_model.data.dependencies || []).length;
+      // registerModel
+      await t.context.registerModels(file);
 
-    // ensure that the registered_models and models length is greater
-    // than the min length. We can't check for exact length here because
-    // a dependency might depend on other dependencies
-    t.truthy(t.context.registered_models.length >= min);
-    t.truthy(t.context.models.length >= min);
-    file = t.context.resolvePaths(file)[0];
-    const actual = _.find(t.context.models, [ 'file', file ]);
-    const dependencies = _.without(t.context.models, actual);
-    t.is(actual.is_dependency, false);
-    t.is(actual.root, path.resolve(t.context.options.root, path.dirname(actual.file)));
-    // ensure the dependencies are set as dependencies
-    for (let dependency of dependencies) {
-      t.is(dependency.is_dependency, true);
-    }
+      // ensure that the registered_models and models length is greater
+      // than the min length. We can't check for exact length here because
+      // a dependency might depend on other dependencies
+      t.truthy(t.context.registered_models.length >= min);
+      t.truthy(t.context.models.length >= min);
+      file = t.context.resolvePaths(file)[0];
+      const actual = _.find(t.context.models, [ 'file', file ]);
+      const dependencies = _.without(t.context.models, actual);
+      t.is(actual.is_dependency, false);
+      t.is(actual.root, path.resolve(t.context.options.root, path.dirname(actual.file)));
+      // ensure the dependencies are set as dependencies
+      for (let dependency of dependencies) {
+        t.is(dependency.is_dependency, true);
+      }
 
+      // helper to create test
+      // for (let key in actual.properties) {
+      //   if (actual.properties.hasOwnProperty(key)) {
+      //     const property = actual.properties[key];
+      //     let obj = '';
+      //     let result = `utils.check('${property.type}', '${property.description}', `;
+      //     for (var data_key in property.data) {
+      //       if (property.data.hasOwnProperty(data_key)) {
+      //         const data_property = property.data[data_key];
+      //         let type = to.type(data_property);
+      //         if (type === 'function') {
+      //           type = 'func';
+      //         }
+      //         obj += `${data_key}: is.${type}(), `;
+      //       }
+      //     }
+      //     result += `{ ${obj.trim()} })`;
+      //     console.log(`    ${key}: ${result},`);
+      //   }
+      // }
 
-    // helper to create test
-    // for (let key in actual.properties) {
-    //   if (actual.properties.hasOwnProperty(key)) {
-    //     const property = actual.properties[key];
-    //     let obj = '';
-    //     let result = `utils.check('${property.type}', '${property.description}', `;
-    //     for (var data_key in property.data) {
-    //       if (property.data.hasOwnProperty(data_key)) {
-    //         const data_property = property.data[data_key];
-    //         let type = to.type(data_property);
-    //         if (type === 'function') {
-    //           type = 'func';
-    //         }
-    //         obj += `${data_key}: is.${type}(), `;
-    //       }
-    //     }
-    //     result += `{ ${obj.trim()} })`;
-    //     console.log(`    ${key}: ${result},`);
-    //   }
-    // }
-
-    return actual;
-  }));
+      return actual;
+    }),
+  );
 
   test.serial('fails when filepath that was passed doesn\'t exist', async (t) => {
     const inspect = stdout.inspect();
-    await t.context.registerModels('lol/i/do/not/exist.yaml')
-      .then(() => t.fail())
-      .catch(() => t.pass());
+    await t.context.registerModels('lol/i/do/not/exist.yaml').then(() => t.fail()).catch(() => t.pass());
     inspect.restore();
     t.truthy(/^\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\]\s+.\s+error:$/.test(stripColor(inspect.output[0]).trim()));
     t.truthy(/ENOENT: no such file or directory/.test(inspect.output[1]));
   });
 });
 
-
 test('parseModel', (t) => {
   t.is(typeof t.context.parseModel, 'function');
 });
-
 
 test.group('filterModelFiles', (test) => {
   test('filter none', (t) => {
@@ -252,98 +245,104 @@ test.group('filterModelFiles', (test) => {
   });
 });
 
+test.group(
+  'parseModelDependencies',
+  models(async (t, file) => {
+    const model = to.clone(contents[file]);
 
-test.group('parseModelDependencies', models(async (t, file) => {
-  const model = to.clone(contents[file]);
+    model.data.dependencies = t.context.resolvePaths(model.data.dependencies, path.resolve(t.context.options.root, path.dirname(file)));
 
-  model.data.dependencies = t.context.resolvePaths(model.data.dependencies, path.resolve(t.context.options.root, path.dirname(file)));
-
-  await t.context.parseModelDependencies(model);
-  if (model.data.dependencies.length === 0) {
-    t.plan(0);
-  } else {
-    const length = t.context.models.length;
-    t.is(length, to.unique(t.context.registered_models).length);
-  }
-
-  let count = 0;
-
-  function check(dependencies) {
-    if (count++ >= 20) {
-      t.fail('parseModelDependencies has ran too many checks');
-      return;
-    }
-
-    for (let dependency_path of dependencies) {
-      t.truthy(t.context.registered_models.includes(dependency_path));
-      const dependency = _.find(t.context.models, [ 'file', dependency_path ]);
-      if (dependency_path === file) {
-        t.falsy(dependency.is_dependency);
-      } else {
-        t.truthy(dependency.is_dependency);
-      }
-      if (dependency.data.dependencies.length) {
-        check(dependency.data.dependencies);
-      }
-    }
-  }
-
-  check(model.data.dependencies);
-}));
-
-
-test.group('parseModelInputs', models(async (t, file) => {
-  t.deepEqual(to.keys(t.context.inputs).length, 0);
-  const model = to.clone(contents[file]);
-
-  let files = model.data.inputs = t.context.resolvePaths(model.data.inputs, path.resolve(t.context.options.root, path.dirname(file)));
-  files = files.map((str) => {
-    if (!/.*\.zip/.test(str)) return str;
-    const zip = new AdmZip(str);
-    return zip.getEntries().map((entry) => {
-      if (!entry.isDirectory && !entry.entryName.match(/^(\.|__MACOSX)/)) {
-        return entry.entryName;
-      }
-    });
-  });
-  files = to.flatten(files).filter(Boolean);
-
-  const expected = files.reduce((prev, next) => {
-    prev[path.basename(next).split('.')[0]] = is.any().allow(is.array(), is.object());
-    return prev;
-  }, {});
-
-  const actual = await parseModelInputs(model);
-
-  t.is(to.type(model.data.inputs), 'array');
-
-  const tests = [ t.context.inputs, actual ];
-
-  for (let item of tests) {
-    const { error } = is.object(expected).validate(item);
-    if (error) {
-      t.fail(error);
+    await t.context.parseModelDependencies(model);
+    if (model.data.dependencies.length === 0) {
+      t.plan(0);
     } else {
-      t.pass();
+      const length = t.context.models.length;
+      t.is(length, to.unique(t.context.registered_models).length);
     }
-  }
-}));
 
+    let count = 0;
+
+    function check(dependencies) {
+      if (count++ >= 20) {
+        t.fail('parseModelDependencies has ran too many checks');
+        return;
+      }
+
+      for (let dependency_path of dependencies) {
+        t.truthy(t.context.registered_models.includes(dependency_path));
+        const dependency = _.find(t.context.models, [ 'file', dependency_path ]);
+        if (dependency_path === file) {
+          t.falsy(dependency.is_dependency);
+        } else {
+          t.truthy(dependency.is_dependency);
+        }
+        if (dependency.data.dependencies.length) {
+          check(dependency.data.dependencies);
+        }
+      }
+    }
+
+    check(model.data.dependencies);
+  }),
+);
+
+test.group(
+  'parseModelInputs',
+  models(async (t, file) => {
+    t.deepEqual(to.keys(t.context.inputs).length, 0);
+    const model = to.clone(contents[file]);
+
+    let files = model.data.inputs = t.context.resolvePaths(model.data.inputs, path.resolve(t.context.options.root, path.dirname(file)));
+    files = files.map((str) => {
+      if (!/.*\.zip/.test(str)) return str;
+      const zip = new AdmZip(str);
+      return zip.getEntries().map((entry) => {
+        if (!entry.isDirectory && !entry.entryName.match(/^(\.|__MACOSX)/)) {
+          return entry.entryName;
+        }
+      });
+    });
+    files = to.flatten(files).filter(Boolean);
+
+    const expected = files.reduce((prev, next) => {
+      prev[path.basename(next).split('.')[0]] = is.any().allow(is.array(), is.object());
+      return prev;
+    }, {});
+
+    const actual = await parseModelInputs(model);
+
+    t.is(to.type(model.data.inputs), 'array');
+
+    const tests = [ t.context.inputs, actual ];
+
+    for (let item of tests) {
+      const { error } = is.object(expected).validate(item);
+      if (error) {
+        t.fail(error);
+      } else {
+        t.pass();
+      }
+    }
+  }),
+);
 
 test.group('parseModelFunctions', (test) => {
-  test.group('ensure all `pre` and `post` instances are functions', models((t, file) => {
-    const model = to.clone(contents[file]);
-    const paths = utils.getPaths(model, /((pre|post)_run)|(pre_|post_)?build$/);
-    const obj = _.pick(model, paths);
-    parseModelFunctions(obj, babel_config);
+  test.group(
+    'ensure all `pre` and `post` instances are functions',
+    models((t, file) => {
+      const model = to.clone(contents[file]);
+      const paths = utils.getPaths(model, /((pre|post)_run)|(pre_|post_)?build$/);
+      const obj = _.pick(model, paths);
+      parseModelFunctions(obj, babel_config);
 
-    for (let str of paths) {
-      let fn = _.get(obj, str);
-      t.is(typeof fn, 'function');
-      t.is(fn.name, to.camelCase(str));
-    }
-    return obj;
-  }));
+      for (let str of paths) {
+        let fn = _.get(obj, str);
+        t.is(typeof fn, 'function');
+        t.is(fn.name, to.camelCase(str));
+      }
+      return obj;
+    }),
+  );
 
   test.group('ensure es6 support', (test) => {
     /* eslint-disable max-len, quotes */
@@ -351,17 +350,17 @@ test.group('parseModelFunctions', (test) => {
       {
         name: 'single line has a return',
         actual: '`contact_${this.contact_id}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    return \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: 'function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    return "contact_" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}',
       },
       {
-        name: 'multi line doesn\'t have automatic return',
+        name: "multi line doesn't have automatic return",
         actual: 'console.log("woohoo");\n`contact_${this.contact_id}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    console.log(\"woohoo\");\n    \"contact_\" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: 'function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    console.log("woohoo");\n    "contact_" + this.contact_id;\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}',
       },
       {
         name: 'object deconstruction',
         actual: 'const { countries } = inputs\nreturn `${this.contact_id}${countries[0]}`',
-        expected: "function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    var countries = inputs.countries;\n  \n    return \"\" + this.contact_id + countries[0];\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}",
+        expected: 'function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    var countries = inputs.countries;\n  \n    return "" + this.contact_id + countries[0];\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}',
       },
     ];
     /* eslint-enable max-len, quotes */
@@ -398,24 +397,16 @@ test.group('parseModelFunctions', (test) => {
   });
 
   test.group('functions are returning values correctly', (test) => {
-    const tests = [
-      'documents',
-      'globals',
-      'inputs',
-      'faker',
-      'chance',
-      'document_index',
-      'this',
-    ];
+    const tests = [ 'documents', 'globals', 'inputs', 'faker', 'chance', 'document_index', 'this' ];
 
     tests.forEach((name, i) => {
-      const stub = tests.map((item) => null); // eslint-disable-line
+      const stub = tests.map(item => null); // eslint-disable-line
       test(name, (t) => {
         stub[i] = name;
         const expected = `function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    return ${name} + \"[${i}]\";\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}`; // eslint-disable-line max-len
         let actual = {
           name,
-          build: `\`\$\{${name}\}[${i}]\``
+          build: `\`\$\{${name}\}[${i}]\``,
         };
         parseModelFunctions(actual, babel_config);
         actual = actual.build;
@@ -427,81 +418,86 @@ test.group('parseModelFunctions', (test) => {
   });
 });
 
+test.group(
+  'parseModelReferences',
+  models((t, file) => {
+    const model = to.clone(contents[file]);
+    const original_model = to.clone(contents[file]);
+    const pattern = /\.(schema|items).\$ref$/;
+    const paths = utils.getPaths(model, pattern);
+    parseModelReferences(model);
+    t.plan(paths.length);
+    for (let ref of paths) {
+      let set_location = ref.replace(pattern, '');
+      if (ref.includes('.items.')) {
+        set_location += '.items';
+      }
+      const get_location = _.get(original_model, ref).replace(/^#\//, '').replace('/', '.');
+      const expected = to.extend(to.clone(_.get(original_model, set_location)), _.get(original_model, get_location));
+      const actual = _.get(model, set_location);
 
-test.group('parseModelReferences', models((t, file) => {
-  const model = to.clone(contents[file]);
-  const original_model = to.clone(contents[file]);
-  const pattern = /\.(schema|items).\$ref$/;
-  const paths = utils.getPaths(model, pattern);
-  parseModelReferences(model);
-  t.plan(paths.length);
-  for (let ref of paths) {
-    let set_location = ref.replace(pattern, '');
-    if (ref.includes('.items.')) {
-      set_location += '.items';
+      const { error } = is.compile(expected).validate(actual);
+
+      if (error) {
+        t.fail(error);
+      } else {
+        t.pass();
+      }
     }
-    const get_location = _.get(original_model, ref).replace(/^#\//, '').replace('/', '.');
-    const expected = to.extend(to.clone(_.get(original_model, set_location)), _.get(original_model, get_location));
-    const actual = _.get(model, set_location);
+  }),
+);
 
-    const { error } = is.compile(expected).validate(actual);
-
-    if (error) {
-      t.fail(error);
-    } else {
-      t.pass();
+test.group(
+  'parseModelTypes',
+  models((t, file) => {
+    const model = to.clone(contents[file]);
+    const pattern = /.*properties\.[^.]+(\.items)?$/;
+    const paths = utils.getPaths(model, pattern);
+    const to_check = [];
+    for (let str of paths) {
+      if (_.get(model, str).type == null) {
+        to_check.push(str);
+      }
     }
-  }
-}));
 
+    parseModelTypes(model);
 
-test.group('parseModelTypes', models((t, file) => {
-  const model = to.clone(contents[file]);
-  const pattern = /.*properties\.[^.]+(\.items)?$/;
-  const paths = utils.getPaths(model, pattern);
-  const to_check = [];
-  for (let str of paths) {
-    if (_.get(model, str).type == null) {
-      to_check.push(str);
+    for (let str of to_check) {
+      t.is(_.get(model, str).type, 'null');
     }
-  }
+  }, models.files),
+);
 
-  parseModelTypes(model);
+test.group(
+  'parseModelDefaults',
+  models((t, file) => {
+    const test_model = to.clone(contents[file]);
+    const model = to.clone(contents[file]);
+    const pattern = /^(.*properties\.[^.]+)$/;
+    const paths = utils.getPaths(model, pattern);
+    parseModelDefaults(model);
 
-  for (let str of to_check) {
-    t.is(_.get(model, str).type, 'null');
-  }
-}, models.files));
+    test_model.data = to.extend({ min: 0, max: 0, count: 0 }, test_model.data || {});
 
+    t.deepEqual(model.data, test_model.data, 'The data should be defaulted');
+    t.is(model.data.min, test_model.data.min);
+    t.is(model.data.max, test_model.data.max);
+    t.is(model.data.count, test_model.data.count);
 
-test.group('parseModelDefaults', models((t, file) => {
-  const test_model = to.clone(contents[file]);
-  const model = to.clone(contents[file]);
-  const pattern = /^(.*properties\.[^.]+)$/;
-  const paths = utils.getPaths(model, pattern);
-  parseModelDefaults(model);
-
-  test_model.data = to.extend({ min: 0, max: 0, count: 0 }, test_model.data || {});
-
-  t.deepEqual(model.data, test_model.data, 'The data should be defaulted');
-  t.is(model.data.min, test_model.data.min);
-  t.is(model.data.max, test_model.data.max);
-  t.is(model.data.count, test_model.data.count);
-
-  for (let data_path of paths) {
-    let property = _.get(model, data_path);
-    t.is(typeof property, 'object');
-    if (property.type === 'array' && property.items) {
-      t.is(typeof property.items.data, 'object');
-      t.is(typeof property.items.data.min, 'number');
-      t.is(typeof property.items.data.max, 'number');
-      t.is(typeof property.items.data.count, 'number');
-    } else {
-      t.is(typeof property.data, 'object');
+    for (let data_path of paths) {
+      let property = _.get(model, data_path);
+      t.is(typeof property, 'object');
+      if (property.type === 'array' && property.items) {
+        t.is(typeof property.items.data, 'object');
+        t.is(typeof property.items.data.min, 'number');
+        t.is(typeof property.items.data.max, 'number');
+        t.is(typeof property.items.data.count, 'number');
+      } else {
+        t.is(typeof property.data, 'object');
+      }
     }
-  }
-}));
-
+  }),
+);
 
 test.group('parseModelCount', (test) => {
   function getContext() {
@@ -588,18 +584,19 @@ test.group('parseModelCount', (test) => {
     t.is(obj.data.count, 1);
   });
 
-  test.group(models((t, file) => {
-    const model = to.clone(contents[file]);
-    parseModelDefaults(model);
-    parseModelCount(model);
-    t.truthy(model.data.count > 0);
-    if (!!model.data.max) {
-      t.truthy(model.data.count <= model.data.max);
-      t.truthy(model.data.count >= model.data.min);
-    }
-  }));
+  test.group(
+    models((t, file) => {
+      const model = to.clone(contents[file]);
+      parseModelDefaults(model);
+      parseModelCount(model);
+      t.truthy(model.data.count > 0);
+      if (!!model.data.max) {
+        t.truthy(model.data.count <= model.data.max);
+        t.truthy(model.data.count >= model.data.min);
+      }
+    }),
+  );
 });
-
 
 test.group('parseModelSeed', (test) => {
   function toNumber(str) {
@@ -649,7 +646,6 @@ test.group('parseModelSeed', (test) => {
   });
 });
 
-
 test.group('resolveDependenciesOrder', (test) => {
   const tests = [];
 
@@ -673,96 +669,60 @@ test.group('resolveDependenciesOrder', (test) => {
 
   create('single model passed', 'one');
 
-  create(
-    'one level of dependencies already in order',
-    [
-      'one',
-      [ 'two', 'one' ],
-    ]
-  );
+  create('one level of dependencies already in order', [ 'one', [ 'two', 'one' ] ]);
 
-  create('one level of dependencies in reverse order',
+  create(
+    'one level of dependencies in reverse order',
     // actual
-    [
-      [ 'one', 'two' ],
-      [ 'two' ],
-    ],
+    [ [ 'one', 'two' ], [ 'two' ] ],
     // expected
     [ 1, 0 ],
   );
 
-  create('one level of multiple dependencies',
+  create(
+    'one level of multiple dependencies',
     // actual
-    [
-      [ 'one', 'two', 'three' ],
-      'two',
-      'three',
-    ],
+    [ [ 'one', 'two', 'three' ], 'two', 'three' ],
     // expected
     [ 1, 2, 0 ],
   );
 
-  create('multiple levels of dependencies',
+  create(
+    'multiple levels of dependencies',
     // actual
-    [
-      [ 'one', 'two' ],
-      [ 'two', 'three' ],
-      'three',
-    ],
+    [ [ 'one', 'two' ], [ 'two', 'three' ], 'three' ],
     // expected
     [ 2, 1, 0 ],
   );
 
-  create('multiple levels of multiple dependencies',
+  create(
+    'multiple levels of multiple dependencies',
     // actual
-    [
-      [ 'one', 'two', 'four' ],
-      [ 'two', 'three' ],
-      'three',
-      'four',
-    ],
+    [ [ 'one', 'two', 'four' ], [ 'two', 'three' ], 'three', 'four' ],
     // expected
     [ 2, 3, 1, 0 ],
   );
 
-  create('multiple levels of multiple dependencies reversed',
+  create(
+    'multiple levels of multiple dependencies reversed',
     // actual
-    [
-      'four',
-      'three',
-      [ 'two', 'three' ],
-      [ 'one', 'two', 'four' ],
-    ],
+    [ 'four', 'three', [ 'two', 'three' ], [ 'one', 'two', 'four' ] ],
     // expected
     [ 0, 1, 2, 3 ],
   );
 
-  create('multiple levels of multiple dependencies with same dependencies',
+  create(
+    'multiple levels of multiple dependencies with same dependencies',
     // actual
-    [
-      [ 'one', 'two', 'four' ],
-      [ 'two', 'three' ],
-      [ 'three', 'four' ],
-      [ 'four', 'five' ],
-      'five',
-      'six',
-      'seven',
-    ],
+    [ [ 'one', 'two', 'four' ], [ 'two', 'three' ], [ 'three', 'four' ], [ 'four', 'five' ], 'five', 'six', 'seven' ],
     // expected
     [ 4, 5, 6, 3, 2, 1, 0 ],
   );
 
-  create('multiple levels of multiple dependencies with same dependencies variation',
+  create(
+    'multiple levels of multiple dependencies with same dependencies variation',
     // actual
-    [
-      [ 'two', 'three' ],
-      [ 'three', 'four' ],
-      [ 'four', 'five' ],
-      'five',
-      'six',
-      'seven',
-      [ 'one', 'two', 'four' ],
-    ],
+    [ [ 'two', 'three' ], [ 'three', 'four' ], [ 'four', 'five' ], 'five', 'six', 'seven', [ 'one', 'two', 'four' ] ],
     // expected
     [ 3, 4, 5, 2, 1, 0, 6 ],
   );

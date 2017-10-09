@@ -3,7 +3,6 @@ import default_options from './default-options';
 import Base from '../base';
 import couchbase from 'couchbase-promises';
 
-
 /// @name Couchbase
 /// @page api
 /// @description This is used to output data to the Couchbase

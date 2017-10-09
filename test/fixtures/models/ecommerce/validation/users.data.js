@@ -12,7 +12,8 @@ module.exports = is.object({
   email_address: is.string().email(),
   home_phone: utils.phone,
   mobile_phone: utils.phone,
-  addresses: is.array()
+  addresses: is
+    .array()
     .items({
       type: [ 'Home', 'Work', 'Other' ],
       address_1: is.string(),

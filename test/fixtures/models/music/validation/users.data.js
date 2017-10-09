@@ -18,7 +18,8 @@ module.exports = is.object({
     street: is.string(),
     postal_code: utils.postal_code,
   },
-  phones: is.array()
+  phones: is
+    .array()
     .items({
       type: [ 'home', 'work', 'mobile', 'other', 'main' ],
       verified: is.date(),
@@ -26,10 +27,7 @@ module.exports = is.object({
     })
     .min(0)
     .max(4),
-  favoriteGenres: is.array()
-    .items(is.string())
-    .min(3)
-    .max(18),
+  favoriteGenres: is.array().items(is.string()).min(3).max(18),
   dateOfBirth: is.date(),
   status: [ 'active', 'inactive' ],
   created: is.date().iso(),

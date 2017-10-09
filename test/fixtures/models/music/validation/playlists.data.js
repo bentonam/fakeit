@@ -19,8 +19,5 @@ module.exports = is.object({
     },
     username: is.string(),
   },
-  tracks: is.array()
-    .items(is.string().regex(/^[A-Z0-9]+$/))
-    .min(1)
-    .max(6) // is normally 25 but since there can only be 6 other tracks in testing there should only ever be a max of 6
+  tracks: is.array().items(is.string().regex(/^[A-Z0-9]+$/)).min(1).max(6), // is normally 25 but since there can only be 6 other tracks in testing there should only ever be a max of 6
 });

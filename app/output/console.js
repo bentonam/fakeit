@@ -15,9 +15,13 @@ export default class Console extends Base {
   ///# @arg {object} output_options - The output options
   constructor(options = {}, output_options = {}) {
     super(options);
-    this.output_options = extend({
-      highlight: true,
-    }, default_options, output_options);
+    this.output_options = extend(
+      {
+        highlight: true,
+      },
+      default_options,
+      output_options,
+    );
 
     this.prepared = false;
   }
@@ -45,7 +49,6 @@ export default class Console extends Base {
     if (this.preparing == null) {
       return this.prepare();
     }
-
 
     return new Promise((resolve) => {
       // theres noting to setup for the Console output

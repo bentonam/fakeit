@@ -13,13 +13,16 @@ export default class Base extends Logger {
   constructor(options = {}) {
     super(options);
     const root = process.cwd();
-    this.options = to.extend({
-      root,
-      log: true,
-      verbose: false,
-      spinners: true,
-      timestamp: true,
-    }, this.options || {});
+    this.options = to.extend(
+      {
+        root,
+        log: true,
+        verbose: false,
+        spinners: true,
+        timestamp: true,
+      },
+      this.options || {},
+    );
     this.options = to.extend(this.options, options);
 
     this.options.root = path.resolve(root, this.options.root);
@@ -42,14 +45,11 @@ export default class Base extends Logger {
     if (!paths) {
       return [];
     }
-    return to.string(paths, ', ')
-      .split(/\s*(?:,| )\s*/)
-      .filter(Boolean)
-      .map((file) => {
-        if (path.isAbsolute(file)) {
-          return file;
-        }
-        return path.join(root, file);
-      });
+    return to.string(paths, ', ').split(/\s*(?:,| )\s*/).filter(Boolean).map((file) => {
+      if (path.isAbsolute(file)) {
+        return file;
+      }
+      return path.join(root, file);
+    });
   }
 }

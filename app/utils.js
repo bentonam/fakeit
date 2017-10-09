@@ -13,7 +13,6 @@ import promisify from 'es6-promisify';
 import fs from 'fs-extra-promisify';
 import PromisePool from 'es6-promise-pool';
 
-
 /// @name objectSearch
 /// @description Recursively looks through objects and finds the pattern provided
 /// @arg {object, array} data - The data to search through
@@ -30,25 +29,16 @@ export function objectSearch(data, pattern, current_path, paths = []) {
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
       const test_path = appendPath(current_path, i);
-      if (
-        test_path.match(pattern) &&
-        !paths.includes(test_path)
-      ) {
+      if (test_path.match(pattern) && !paths.includes(test_path)) {
         paths.push(test_path);
       }
       objectSearch(data[i], pattern, test_path, paths);
     }
-  } else if (
-    typeof data === 'object' &&
-    data !== null
-  ) {
+  } else if (typeof data === 'object' && data !== null) {
     for (let key in data) {
       if (data.hasOwnProperty(key)) {
         const test_path = appendPath(current_path, key);
-        if (
-          test_path.match(pattern) &&
-          !paths.includes(test_path)
-        ) {
+        if (test_path.match(pattern) && !paths.includes(test_path)) {
           paths.push(test_path);
         }
         objectSearch(data[key], pattern, test_path, paths);
@@ -81,15 +71,17 @@ export async function findFiles(globs) {
   };
 
   const find = async (items) => {
-    items = sort(await map(items, (item) => {
-      if (globby.hasMagic(item)) {
-        return globby(item);
-      } else if (!!path.extname(item)) {
-        return item;
-      }
+    items = sort(
+      await map(items, (item) => {
+        if (globby.hasMagic(item)) {
+          return globby(item);
+        } else if (!!path.extname(item)) {
+          return item;
+        }
 
-      return globby(path.join(item, '*'));
-    }));
+        return globby(path.join(item, '*'));
+      }),
+    );
     if (items.length) {
       return find(items);
     }
@@ -98,7 +90,6 @@ export async function findFiles(globs) {
   await find(to.array(globs));
   return files;
 }
-
 
 /// @name readFiles
 /// @description
@@ -169,8 +160,7 @@ export async function pool(items, fn, limit = 100) {
   const producer = () => {
     if (i < length) {
       const index = i;
-      return fn(items[index] || i, i++, items)
-      .then((result) => {
+      return fn(items[index] || i, i++, items).then((result) => {
         results[index] = result;
       });
     }
@@ -183,7 +173,6 @@ export async function pool(items, fn, limit = 100) {
   await runner.start();
   return results;
 }
-
 
 /// @name parsers
 /// @description
@@ -199,7 +188,7 @@ import csvStringify from 'csv-stringify';
 
 const csv = {
   parse: promisify(csvParse),
-  stringify: promisify(csvStringify)
+  stringify: promisify(csvStringify),
 };
 
 ///# @name parsers.yaml
@@ -219,7 +208,7 @@ parsers.yaml = parsers.yml = {
   ///# @arg {number} indent [2] The indent level
   ///# @returns {string} - The yaml string
   ///# @async
-  stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj, null, indent).trim())
+  stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj, null, indent).trim()),
 };
 
 ///# @name parsers.json
@@ -236,7 +225,7 @@ parsers.json = {
   ///# @arg {number} indent [2] The indent level
   ///# @returns {string} - The yaml string
   ///# @async
-  stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, indent))
+  stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, indent)),
 };
 
 ///# @name parsers.cson
@@ -263,7 +252,7 @@ parsers.cson = {
   ///# @arg {number} indent [2] The indent level
   ///# @returns {string} - The yaml string
   ///# @async
-  stringify: (obj, indent = 2) => Promise.resolve(cson.stringify(obj, null, indent))
+  stringify: (obj, indent = 2) => Promise.resolve(cson.stringify(obj, null, indent)),
 };
 
 ///# @name parsers.csv
@@ -285,7 +274,8 @@ parsers.csv = {
         return a;
       }
 
-      for (let k in b) { // eslint-disable-line
+      for (let k in b) {
+        // eslint-disable-line
         if (b.hasOwnProperty(k)) {
           /* istanbul ignore if : too hard to create a test case for it */
           if (is.plainObject(b[k])) {
@@ -320,7 +310,7 @@ parsers.csv = {
     options = to.extend({ header: true, quotedString: true }, options);
     const result = await csv.stringify(to.array(obj), options);
     return result.trim();
-  }
+  },
 };
 
 export { parsers };

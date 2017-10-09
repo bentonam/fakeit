@@ -8,6 +8,5 @@ module.exports = is.object({
   post_date: is.date(),
   post: is.string(),
   visibility: [ 'public', 'private' ],
-  post_access: is.array()
-    .items(is.number())
+  post_access: is.array().items(is.number()),
 });

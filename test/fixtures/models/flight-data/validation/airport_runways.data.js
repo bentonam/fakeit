@@ -5,6 +5,5 @@ module.exports = is.object({
   airport_id: is.number().min(0),
   doc_type: 'airport-runways',
   airport_ident: is.string().uppercase(),
-  runways: is.array()
-    .items(is.number()),
+  runways: is.array().items(is.number()),
 });

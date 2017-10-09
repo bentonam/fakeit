@@ -9,24 +9,12 @@ import cli, { code, dim } from '../dist/cli.js';
 import _ from 'lodash';
 const test = ava.group('cli:');
 
-
 test('cli is the default function', (t) => {
   t.is(typeof cli, 'function');
 });
 
-
 test.group('console', (test) => {
-  const expected_keys = [
-    'id',
-    'type',
-    'user_id',
-    'first_name',
-    'last_name',
-    'email_address',
-    'phone',
-    'active',
-    'created_on'
-  ];
+  const expected_keys = [ 'id', 'type', 'user_id', 'first_name', 'last_name', 'email_address', 'phone', 'active', 'created_on' ];
 
   /* eslint-disable max-len */
   const expected_abc_seed = {
@@ -34,19 +22,38 @@ test.group('console', (test) => {
     doc_type: 'contact',
     channels: [ 'ufp-555555555' ],
     contact_id: '1d54ed12-b65a-5085-a895-5c8c626f0efb',
-    details: { prefix: 'Dr.', first_name: 'Daphnee', middle_name: 'Dale', last_name: 'O\'Hara', company: 'Hackett - Effertz', job_title: null, nickname: null },
+    details: {
+      prefix: 'Dr.',
+      first_name: 'Daphnee',
+      middle_name: 'Dale',
+      last_name: 'O\'Hara',
+      company: 'Hackett - Effertz',
+      job_title: null,
+      nickname: null,
+    },
     phones: [ { type: 'Mobile', phone_number: '076-099-8620', extension: null }, { type: 'Other', phone_number: '965-618-1647', extension: null } ],
     emails: [ 'Abigale.Bashirian@gmail.com', 'Demetris12@gmail.com' ],
-    addresses: [ { type: 'Work', address_1: '96735 Caroline Fields Springs', address_2: null, locality: 'Montanastad', region: 'SD', postal_code: '11307-4822', country: 'LA' } ],
+    addresses: [
+      {
+        type: 'Work',
+        address_1: '96735 Caroline Fields Springs',
+        address_2: null,
+        locality: 'Montanastad',
+        region: 'SD',
+        postal_code: '11307-4822',
+        country: 'LA',
+      },
+    ],
     children: [ { first_name: 'Cielo', gender: null, age: 13 }, { first_name: 'Francesca', gender: null, age: 10 } ],
     notes: 'Ea debitis possimus non inventore inventore dignissimos id.',
-    tags: [ 'Soap', 'Buckinghamshire', 'Chief', 'hacking', 'Generic' ]
+    tags: [ 'Soap', 'Buckinghamshire', 'Chief', 'hacking', 'Generic' ],
   };
   /* eslint-enable max-len */
 
   /* eslint-disable quotes */
   test.cb("--count 1 'simple/models/*'", (t) => {
-    bin.clone()
+    bin
+      .clone()
       .run("console --count 1 'simple/models/*'")
       .expect(({ stdout }) => {
         const data = to.object(stdout);
@@ -58,7 +65,8 @@ test.group('console', (test) => {
   });
 
   test.cb("--count 1 'simple/models/*' --format 'csv'", (t) => {
-    bin.clone()
+    bin
+      .clone()
       .run("console --count 1 'simple/models/*' --format 'csv'")
       .expect(({ stdout }) => {
         stdout = stdout.split('\n');
@@ -72,7 +80,8 @@ test.group('console', (test) => {
   });
 
   test.cb("'simple/models/*' --format 'csv' --count 1 --no-highlight", (t) => {
-    bin.clone()
+    bin
+      .clone()
       .run("console 'simple/models/*' --format 'csv' --count 1 --no-highlight")
       .expect(({ stdout }) => {
         stdout = stdout.split('\n');
@@ -82,9 +91,9 @@ test.group('console', (test) => {
       .end(t.end);
   });
 
-
   test.cb('contacts/models/contacts.yaml --count 1 --seed abc', (t) => {
-    bin.clone()
+    bin
+      .clone()
       .run('console contacts/models/contacts.yaml --count 1 --seed abc')
       .expect(({ stdout }) => {
         stdout = to.object(stdout);
@@ -100,7 +109,8 @@ test.group('console', (test) => {
   });
 
   test.cb('contacts/models/contacts.yaml --count 1 --seed 123456789', (t) => {
-    bin.clone()
+    bin
+      .clone()
       .run('console contacts/models/contacts.yaml --count 1 --seed 123456789')
       .expect(({ stdout }) => {
         stdout = to.object(stdout);
@@ -133,22 +143,11 @@ test.group('console', (test) => {
   /* eslint-enable quotes */
 });
 
-
 test.group('directory|folder', (test) => {
   /* eslint-disable quotes */
   const root = p(__dirname, 'directory-cli-test');
   const base = nixt().cwd(root).base('../../bin/fakeit ');
-  const expected_keys = [
-    'id',
-    'type',
-    'user_id',
-    'first_name',
-    'last_name',
-    'email_address',
-    'phone',
-    'active',
-    'created_on'
-  ];
+  const expected_keys = [ 'id', 'type', 'user_id', 'first_name', 'last_name', 'email_address', 'phone', 'active', 'created_on' ];
 
   test.before(async () => {
     await fs.remove(root);
@@ -157,7 +156,8 @@ test.group('directory|folder', (test) => {
 
   test.cb('output files to directory', (t) => {
     const file = p(root, 'directory-test', 'user_0.json');
-    base.clone()
+    base
+      .clone()
       .run(`directory 'directory-test' '../fixtures/models/simple/models/users.yaml' --count 1`)
       .exist(file)
       .match(file, new RegExp(`"${expected_keys.join('|')}":`, 'g'))
@@ -165,14 +165,12 @@ test.group('directory|folder', (test) => {
   });
 
   test.cb('zip output by passing in as the file.zip', (t) => {
-    base.clone()
-      .run(`folder 'zip-test.zip' '../fixtures/models/simple/models/users.yaml' --count 1`)
-      .exist(p(root, 'zip-test.zip'))
-      .end(t.end);
+    base.clone().run(`folder 'zip-test.zip' '../fixtures/models/simple/models/users.yaml' --count 1`).exist(p(root, 'zip-test.zip')).end(t.end);
   });
 
   test.cb('zip output by passing in --archive as an option', (t) => {
-    base.clone()
+    base
+      .clone()
       .run(`folder 'zip-test' '../fixtures/models/simple/models/users.yaml' --count 1 --archive 'archive.zip'`)
       .exist(p(root, 'zip-test', 'archive.zip'))
       .end(t.end);
@@ -184,7 +182,8 @@ test.group('directory|folder', (test) => {
 
 test.cb('throws error when something goes wrong', (t) => {
   /* eslint-disable quotes */
-  bin.clone()
+  bin
+    .clone()
     .run(`folder 'error-test' 'simple/models/*' --count 1 --archive 'woohoo'`)
     .stdout(/The archive file must have a file extention of \`\.zip\`/)
     .code(1)
@@ -194,24 +193,15 @@ test.cb('throws error when something goes wrong', (t) => {
 
 test.group('help', (test) => {
   test.cb('help as argument', (t) => {
-    bin.clone()
-      .run('help')
-      .stdout(/^\s*Usage: fakeit \[command\] \[\<file\|directory\|glob\> \.\.\.\]/)
-      .end(t.end);
+    bin.clone().run('help').stdout(/^\s*Usage: fakeit \[command\] \[\<file\|directory\|glob\> \.\.\.\]/).end(t.end);
   });
 
   test.cb('no arguments were passed', (t) => {
-    bin.clone()
-      .run('')
-      .stdout(/^\s*Usage: fakeit \[command\] \[\<file\|directory\|glob\> \.\.\.\]/)
-      .end(t.end);
+    bin.clone().run('').stdout(/^\s*Usage: fakeit \[command\] \[\<file\|directory\|glob\> \.\.\.\]/).end(t.end);
   });
 
   test.cb('console action with no model arguments', (t) => {
-    bin.clone()
-      .run('console')
-      .stdout(/^.*warning.*:\s+you must pass in models to use/)
-      .end(t.end);
+    bin.clone().run('console').stdout(/^.*warning.*:\s+you must pass in models to use/).end(t.end);
   });
 });
 

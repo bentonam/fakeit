@@ -19,11 +19,11 @@ module.exports = is.object({
     pre_run: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    id: utils.check('integer', 'The id of the airline, airport, or navaid the code is for', { build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    designation: utils.check('string', 'The designation of the code, can be airline, airport, or navaid', { build: is.func(), }),
-    code_type: utils.check('string', 'The type of code, can be iata, icao, ident', { build: is.func(), }),
-    code: utils.check('string', 'The document type', { build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    id: utils.check('integer', 'The id of the airline, airport, or navaid the code is for', { build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    designation: utils.check('string', 'The designation of the code, can be airline, airport, or navaid', { build: is.func() }),
+    code_type: utils.check('string', 'The type of code, can be iata, icao, ident', { build: is.func() }),
+    code: utils.check('string', 'The document type', { build: is.func() }),
   },
 });

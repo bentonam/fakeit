@@ -10,11 +10,7 @@ module.exports = is.object({
   display_name: is.string(),
   short_description: is.string(),
   long_description: is.string(),
-  keywords: is.array()
-    .items(is.string())
-    .sparse(false)
-    .min(2)
-    .max(8),
+  keywords: is.array().items(is.string()).sparse(false).min(2).max(8),
   availability: [ 'Preorder', 'In-Stock', 'Out of Stock', 'Discontinued' ],
   availability_date: is.date(),
   product_slug: utils.slug,

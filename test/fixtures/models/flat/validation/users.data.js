@@ -13,5 +13,5 @@ module.exports = is.object({
   locality: is.string(),
   region: is.string().uppercase().length(2),
   postal_code: utils.postal_code,
-  country: is.string().uppercase().length(2)
+  country: is.string().uppercase().length(2),
 });

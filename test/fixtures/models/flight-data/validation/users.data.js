@@ -23,7 +23,8 @@ module.exports = is.object({
     dob: [ is.date(), null ],
     home_country: is.string().uppercase().length(2),
   },
-  phones: is.array()
+  phones: is
+    .array()
     .items({
       type: [ 'Home', 'Work', 'Mobile', 'Main', 'Other', 'Fax' ],
       phone_number: utils.phone,
@@ -33,16 +34,18 @@ module.exports = is.object({
     .min(1)
     .max(3)
     .sparse(false),
-  emails: is.array()
+  emails: is
+    .array()
     .items({
       type: [ 'Home', 'Work', 'Other' ],
       email_address: is.string().email(),
       primary: is.boolean(),
     })
-      .min(1)
-      .max(3)
-      .sparse(false),
-  addresses: is.array()
+    .min(1)
+    .max(3)
+    .sparse(false),
+  addresses: is
+    .array()
     .items({
       type: [ 'Home', 'Work', 'Other' ],
       address_1: is.string(),

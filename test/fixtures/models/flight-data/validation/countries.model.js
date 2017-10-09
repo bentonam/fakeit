@@ -19,10 +19,10 @@ module.exports = is.object({
     pre_run: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    country_code: utils.check('string', 'The ISO country code', { build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    country_name: utils.check('string', 'The country name', { build: is.func(), }),
-    continent_code: utils.check('string', 'The ISO continent code the country is located in', { build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    country_code: utils.check('string', 'The ISO country code', { build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    country_name: utils.check('string', 'The country name', { build: is.func() }),
+    continent_code: utils.check('string', 'The ISO continent code the country is located in', { build: is.func() }),
   },
 });

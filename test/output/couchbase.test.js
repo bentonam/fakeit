@@ -16,7 +16,6 @@ test.beforeEach((t) => {
   t.context.cluster = new couchbase.Mock.Cluster(t.context.output_options.server);
 });
 
-
 test('without args', (t) => {
   t.deepEqual(t.context.output_options, default_options);
   t.is(t.context.prepared, false);
@@ -93,13 +92,13 @@ test.group('output', (test) => {
         id: 302672,
         code: 'AD',
         name: 'Andorra',
-        continent: 'EU'
+        continent: 'EU',
       },
       {
         id: 302618,
         code: 'AE',
         name: 'United Arab Emirates',
-        continent: 'AS'
+        continent: 'AS',
       },
     ]),
     yaml: to.normalize(`
@@ -118,7 +117,7 @@ test.group('output', (test) => {
         code: AF
         name: Afghanistan
         continent: AS
-    `)
+    `),
   };
 
   for (let language of to.keys(languages)) {

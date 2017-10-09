@@ -5,8 +5,5 @@ module.exports = is.object({
   doc_type: 'chat',
   chat_id: is.string().uuid(),
   created_on: is.date(),
-  users: is.array()
-    .items(is.number().min(1).max(6))
-    .min(1)
-    .max(10),
+  users: is.array().items(is.number().min(1).max(6)).min(1).max(10),
 });

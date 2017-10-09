@@ -9,16 +9,7 @@ import chalk from 'chalk';
 export default async function() {
   // check for update and notify
   updateNotifier({ pkg }).notify();
-  const base_options = [
-    'root',
-    'babel',
-    'count',
-    'verbose',
-    'log',
-    'spinners',
-    'timestamp',
-    'seed',
-  ];
+  const base_options = [ 'root', 'babel', 'count', 'verbose', 'log', 'spinners', 'timestamp', 'seed' ];
 
   const output_options = [
     // global options
@@ -50,7 +41,11 @@ export default async function() {
     .option('-L, --no-log', 'Disables all logging except for errors', false)
     .option('-T, --no-timestamp', 'Disables timestamps from logging output', false)
     // global output options
-    .option('-f, --format <type>', `this determines the output format to use. Supported formats: ${code('json', 'csv', 'yaml', 'yml', 'cson')}. (${dim('json')})`, 'json') // eslint-disable-line
+    .option(
+      '-f, --format <type>',
+      `this determines the output format to use. Supported formats: ${code('json', 'csv', 'yaml', 'yml', 'cson')}. (${dim('json')})`,
+      'json',
+    ) // eslint-disable-line
     .option('-n, --spacing <n>', `the number of spaces to use for indention (${dim('2')})`, 2)
     .option('-l, --limit <n>', `limit how many files are output at a time (${dim('10')})`, Number, 10)
     .option('-x, --seed <seed>', 'The global seed to use for repeatable data', (seed) => {
@@ -61,7 +56,6 @@ export default async function() {
       }
       return seed;
     });
-
 
   // i.e. `fakeit console`
   commander
@@ -77,7 +71,7 @@ export default async function() {
   // helper function used for couchbase and sync-gateway below
   function runServer(output) {
     /* istanbul ignore next : too difficult to test the servers via the cli */
-    return async (...args) =>{
+    return async (...args) => {
       const options = pick(args.pop(), [ 'server', 'bucket', 'username', 'password', 'timeout' ]);
       options.output = output;
       await run(options);
@@ -124,20 +118,16 @@ export default async function() {
       await run({ archive, output });
     });
 
-
   // i.e. `fakeit help`
-  commander
-    .command('help')
-    .action(() => {
-      commander.help();
-    });
+  commander.command('help').action(() => {
+    commander.help();
+  });
 
   commander.parse(process.argv);
 
   if (!commander.args.length) {
     commander.help();
   }
-
 
   // this function is used as a helper to run the different actions
   async function run(output = {}, opts = {}) {
