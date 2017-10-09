@@ -340,7 +340,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     /* eslint-enable indent */
 
     try {
-      set(model, function_path, new Function(`return ${fn}`)()); // eslint-disable-line no-new-func
+      set(model, function_path, new Function('require', 'process', `return ${fn}`)(require, process)); // eslint-disable-line no-new-func
     } catch (e) {
       throw new Error(`Function Error in model '${model.name}', for property: ${function_path}, Reason: ${e.message}`);
     }
