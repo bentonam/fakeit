@@ -17,7 +17,7 @@ import to from 'to-js';
 ////
 
 /// @name Documents
-/// @description This class is used to generate all the documents for the passed models
+/// @description This class is used to generate all the documents for the passed models (remove me)
 export default class Documents extends Base {
   constructor(options = {}, documents = {}, globals = {}, inputs = {}) {
     super(options);
