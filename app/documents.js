@@ -172,7 +172,8 @@ export class Document extends Base {
       const doc = await this.buildDocument(model, i);
       update();
       await delay(0);
-      this.documents[model.name][doc['__key']] = doc;
+      /* eslint no-underscore-dangle: ["error", { "allow": ["__key"] }] */
+      this.documents[model.name][doc.__key] = doc;
     }, this.options.spinners ? 75 : 1000)
       .catch((err) => {
         spinner.fail(err);
