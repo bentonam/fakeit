@@ -97,7 +97,11 @@ export default class Documents extends Base {
       .then(() => {
         let result;
         if (!model.is_dependency) {
-          result = this.emit('data', Object.values(this.documents[model.name]), model);
+          var built_docs = [];
+          for(var key in this.documents[model.name]) {
+            built_docs.push(this.documents[model.name][key]);
+          }
+          result = this.emit('data', built_docs, model);
         }
         // update the total documents number
         this.total += Object.keys(this.documents[model.name]).length;
@@ -183,7 +187,11 @@ export class Document extends Base {
 
     update();
     spinner.stop();
-    return Object.values(this.documents[model.name]);
+    var built_docs = [];
+    for(var key in this.documents[model.name]) {
+      built_docs.push(this.documents[model.name][key]);
+    }
+    return built_docs;
   }
 
   ///# @name updateFakers
