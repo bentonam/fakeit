@@ -98,8 +98,10 @@ export default class Documents extends Base {
         let result;
         if (!model.is_dependency) {
           var built_docs = [];
-          for(var key in this.documents[model.name]) {
-            built_docs.push(this.documents[model.name][key]);
+          for (var key in this.documents[model.name]) {
+            if (key !== '') {
+              built_docs.push(this.documents[model.name][key]);
+            }
           }
           result = this.emit('data', built_docs, model);
         }
@@ -188,8 +190,10 @@ export class Document extends Base {
     update();
     spinner.stop();
     var built_docs = [];
-    for(var key in this.documents[model.name]) {
-      built_docs.push(this.documents[model.name][key]);
+    for (var key in this.documents[model.name]) {
+      if (key !== '') {
+        built_docs.push(this.documents[model.name][key]);
+      }
     }
     return built_docs;
   }
