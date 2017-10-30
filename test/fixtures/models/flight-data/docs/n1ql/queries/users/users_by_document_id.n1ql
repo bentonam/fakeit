@@ -1,0 +1,3 @@
+SELECT users.details.*
+FROM `flight-data` AS users
+USE KEYS ['user_197', 'user_999']

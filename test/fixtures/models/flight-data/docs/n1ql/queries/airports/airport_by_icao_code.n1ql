@@ -1,0 +1,7 @@
+SELECT airports.airport_id, airports.airport_name, airports.airport_type,
+    airports.iso_region, airports.municipality,
+    IFNULL( airports.airport_iata, airports.airport_icao, airports.airport_ident ) AS airport_code
+FROM `flight-data` AS codes
+USE KEYS 'airport_code_KICT'
+INNER JOIN `flight-data` AS airports ON KEYS 'airport_' || TOSTRING( codes.id )
+LIMIT 1

@@ -1,0 +1,6 @@
+SELECT countries.country_code, countries.country_name,
+    countries.continent_code
+FROM `flight-data` AS countries
+WHERE countries.country_code IS NOT MISSING
+    AND countries.doc_type = 'country'
+ORDER BY countries.country_name ASC

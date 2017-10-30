@@ -1,0 +1,20 @@
+SELECT u.user_id, u.first_name, u.last_name,
+    ARRAY {
+            "address_1": address.address_1,
+            "address_2": address.address_2,
+            "region": address.region,
+            "country": address.country,
+            "postal_code": address.postal_code,
+            "locality": address.locality
+        } FOR address IN IFMISSING(addresses, [])
+    END AS addresses
+FROM social AS u
+USE KEYS 'user_123'
+LEFT NEST social AS addresses ON KEYS (
+    ARRAY a.address_id FOR a IN (
+        SELECT 'address_' || address_id AS address_id
+        FROM social AS address_lookup
+        USE KEYS 'user_' || TOSTRING(u.user_id) || '_addresses'
+        UNNEST address_lookup.addresses AS address_id
+    ) END
+)

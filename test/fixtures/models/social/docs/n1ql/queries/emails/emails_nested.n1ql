@@ -1,0 +1,14 @@
+SELECT u.user_id, u.first_name, u.last_name,
+    ARRAY
+        email.email_address FOR email IN IFMISSING(emails, [])
+    END AS emails
+FROM social AS u
+USE KEYS 'user_123'
+LEFT NEST social AS emails ON KEYS (
+    ARRAY a.email_id FOR a IN (
+        SELECT 'email_' || email_id AS email_id
+        FROM social AS email_lookup
+        USE KEYS 'user_' || TOSTRING(u.user_id) || '_emails'
+        UNNEST email_lookup.emails AS email_id
+    ) END
+)

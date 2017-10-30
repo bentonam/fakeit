@@ -1,0 +1,12 @@
+SELECT regions.region_code, regions.region_name,
+    countries.country_code, countries.country_name,
+    continents.continent_code, continents.continent_name
+FROM `flight-data` AS regions
+INNER JOIN `flight-data` AS countries
+    ON KEYS 'country_' || regions.iso_country
+INNER JOIN `flight-data` AS continents
+    ON KEYS 'continent_' || regions.continent_code
+WHERE regions.iso_country = 'US'
+    AND regions.region_code IS NOT MISSING
+    AND regions.doc_type = 'region'
+ORDER BY regions.region_name ASC

@@ -1,0 +1,11 @@
+SELECT reviews.review_id, reviews.review_title, reviews.rating,
+    MILLIS_TO_STR( reviews.review_date, 'yyyy-mm-dd' ) AS review_date,
+    users.user_id,
+    users.details.first_name || IFNULL( ' ' || SUBSTR( users.details.last_name, 0, 1 ) || '.', '' ) AS reviewer_name
+FROM `flight-data` AS reviews
+INNER JOIN `flight-data` AS users
+    ON KEYS 'user_' || TOSTRING( reviews.user_id )
+WHERE reviews.airline_code = 'AA'
+    AND reviews.rating IS NOT NULL
+    AND reviews.doc_type = 'airline-review'
+ORDER BY reviews.review_date DESC

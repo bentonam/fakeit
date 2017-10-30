@@ -1,0 +1,10 @@
+SELECT users.user_id,
+    users.first_name || IFNULL(' ' || users.last_name, '') AS friend
+FROM social AS user_friends
+USE KEYS 'user_100_friends'
+INNER JOIN social AS users ON KEYS
+    ARRAY 'user_' || TOSTRING( friend.user_id )
+        FOR friend IN user_friends.friends
+    END
+ORDER BY users.first_name ASC,
+    users.last_name ASC

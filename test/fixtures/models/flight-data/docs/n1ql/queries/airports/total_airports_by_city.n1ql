@@ -1,0 +1,5 @@
+SELECT COUNT(1) AS matches
+FROM `flight-data` AS a
+WHERE a.iso_country = 'US'
+    AND a.municipality LIKE 'San%'
+    AND a.doc_type = 'airport'

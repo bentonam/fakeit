@@ -1,0 +1,9 @@
+SELECT frequencies.frequency_id, frequencies.description, frequencies.frequency_mhz, frequencies.type
+FROM `flight-data` AS airport_codes
+USE KEYS 'airport_code_KSLN'
+INNER JOIN `flight-data` AS airport_frequencies
+    ON KEYS 'airport_' || TOSTRING( airport_codes.id ) || '_frequencies'
+UNNEST airport_frequencies.frequencies AS frequencies_lookup
+INNER JOIN `flight-data` AS frequencies
+    ON KEYS 'frequency_' || TOSTRING( frequencies_lookup )
+ORDER BY frequencies.type ASC

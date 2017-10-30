@@ -10,3 +10,4 @@ thumbs.db
 node_modules/
 .nyc*
 coverage
+test/fixtures/models/*/output

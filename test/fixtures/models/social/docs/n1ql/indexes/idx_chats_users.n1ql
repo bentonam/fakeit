@@ -1,0 +1,8 @@
+CREATE INDEX idx_chats_users ON social(
+    DISTINCT ARRAY user_id
+        FOR user_id IN users
+        WHEN user_id IS NOT NULL
+    END,
+    doc_type
+)
+WHERE doc_type = 'chat'

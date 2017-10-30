@@ -1,0 +1,8 @@
+SELECT airports.airport_id, airports.airport_name, airports.airport_type,
+    airports.iso_region, airports.municipality,
+    IFNULL( airports.airport_iata, airports.airport_icao, airports.airport_ident ) AS airport_code
+FROM `flight-data` AS airports
+WHERE airports.iso_country = 'US'
+    AND airports.iso_region = 'US-VT'
+    AND airports.doc_type = 'airport'
+ORDER BY airports.airport_name ASC

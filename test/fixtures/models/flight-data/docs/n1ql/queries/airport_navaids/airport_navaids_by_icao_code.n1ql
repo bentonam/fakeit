@@ -1,0 +1,10 @@
+SELECT navaids.navaid_id, navaids.navaid_ident, navaids.navaid_name, navaids.type,
+    navaids.frequency_khz, navaids.geo, navaids.elevation, navaids.usage_type
+FROM `flight-data` AS airport_codes
+USE KEYS 'airport_code_KSLN'
+INNER JOIN `flight-data` AS airport_navaids
+    ON KEYS 'airport_' || TOSTRING( airport_codes.id ) || '_navaids'
+UNNEST airport_navaids.navaids AS navaids_lookup
+INNER JOIN `flight-data` AS navaids
+    ON KEYS 'navaid_' || TOSTRING( navaids_lookup )
+ORDER BY navaids.navaid_name ASC

@@ -1,0 +1,7 @@
+EXPLAIN
+SELECT COUNT(1) AS total_routes
+FROM `flight-data` AS routes
+WHERE routes.source_airport_code = 'ATL'
+    AND routes.destination_airport_code IS NOT NULL
+    AND routes.doc_type = 'route'
+    AND routes.active = true

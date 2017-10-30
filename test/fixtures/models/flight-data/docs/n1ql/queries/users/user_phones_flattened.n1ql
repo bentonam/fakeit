@@ -1,0 +1,4 @@
+SELECT flattened_phones.*
+FROM `flight-data` AS users
+USE KEYS 'user_197'
+UNNEST users.phones AS flattened_phones

@@ -1,0 +1,2 @@
+CREATE INDEX idx_messages_chat_id ON social( chat_id, doc_type )
+WHERE doc_type = 'chat-message'

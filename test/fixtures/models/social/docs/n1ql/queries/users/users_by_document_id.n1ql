@@ -1,0 +1,7 @@
+SELECT users.*
+FROM social AS users
+USE KEYS [
+    'user_453',
+    'user_267',
+    'user_621'
+]

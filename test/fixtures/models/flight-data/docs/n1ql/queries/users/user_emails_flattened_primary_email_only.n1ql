@@ -1,0 +1,5 @@
+SELECT emails.email_address AS email
+FROM `flight-data` AS users
+USE KEYS 'user_1997'
+UNNEST users.emails AS emails
+WHERE emails.`primary` = true

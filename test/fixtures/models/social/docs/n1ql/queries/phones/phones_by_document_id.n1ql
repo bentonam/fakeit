@@ -1,0 +1,6 @@
+SELECT phones.*
+FROM social AS phones
+USE KEYS [
+    'phone_cd10cb46-6274-5d57-8411-ed4c32432f42',
+    'phone_898a93fa-a021-5335-be11-cd19dc49b9c2'
+]

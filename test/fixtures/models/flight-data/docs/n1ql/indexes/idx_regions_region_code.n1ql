@@ -1,0 +1,5 @@
+CREATE INDEX idx_regions_region_code ON `flight-data`( iso_country, region_code )
+WHERE doc_type = 'region'
+    AND iso_country IS NOT MISSING
+    AND region_code IS NOT MISSING
+USING GSI

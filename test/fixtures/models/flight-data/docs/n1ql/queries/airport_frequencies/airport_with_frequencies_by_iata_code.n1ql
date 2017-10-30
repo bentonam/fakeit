@@ -1,0 +1,22 @@
+SELECT airports.airport_id, airports.airport_name, airports.airport_type,
+    airports.iso_region, airports.municipality,
+    IFNULL( airports.airport_iata, airports.airport_icao, airports.airport_ident ) AS airport_code,
+    ARRAY
+        {
+          "frequencies_mhz": frequency.frequency_mhz,
+          "type": frequency.`type`
+        }
+        FOR frequency IN IFMISSING(frequencies, [])
+    END AS frequencies
+FROM `flight-data` AS codes
+USE KEYS 'airport_code_ICT'
+INNER JOIN `flight-data` AS airports ON KEYS 'airport_' || TOSTRING( codes.id )
+LEFT NEST `flight-data` AS frequencies ON KEYS (
+    ARRAY frequency.frequency_id FOR frequency IN (
+        SELECT 'frequency_' || TOSTRING( frequency_id ) AS frequency_id
+        FROM `flight-data` AS frequencies_lookup
+        USE KEYS
+            'airport_' || TOSTRING(codes.id) || '_frequencies'
+        UNNEST frequencies_lookup.frequencies AS frequency_id
+    ) END
+)

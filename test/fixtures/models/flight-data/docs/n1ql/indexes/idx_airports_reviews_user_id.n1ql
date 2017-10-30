@@ -1,0 +1,3 @@
+CREATE INDEX idx_airports_reviews_user_id ON `flight-data`( user_id, airport_code, doc_type )
+WHERE doc_type = 'airport-review'
+USING GSI

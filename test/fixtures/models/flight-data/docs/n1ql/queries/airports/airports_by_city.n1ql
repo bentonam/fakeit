@@ -1,0 +1,8 @@
+SELECT a.municipality AS city,
+    IFNULL( a.airport_iata, a.airport_icao, a.airport_ident ) AS airport_code
+FROM `flight-data` AS a
+WHERE a.iso_country = 'US'
+    AND a.municipality LIKE 'San%'
+    AND a.doc_type = 'airport'
+ORDER BY a.municipality ASC, a.airport_name ASC
+LIMIT 5

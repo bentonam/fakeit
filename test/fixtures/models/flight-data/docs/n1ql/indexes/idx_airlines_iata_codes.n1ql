@@ -1,0 +1,4 @@
+CREATE INDEX idx_airlines_iata_codes ON `flight-data`( airline_iata, doc_type )
+WHERE airline_iata IS NOT NULL
+    AND doc_type = 'airline'
+USING GSI

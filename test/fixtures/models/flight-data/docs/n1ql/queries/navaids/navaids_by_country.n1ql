@@ -1,0 +1,6 @@
+SELECT navaids.navaid_id, navaids.navaid_ident, navaids.navaid_name, navaids.type,
+    navaids.frequency_khz, navaids.geo, navaids.elevation, navaids.usage_type
+FROM `flight-data` AS navaids
+WHERE navaids.doc_type = 'navaid'
+    AND navaids.iso_country = 'DE'
+ORDER BY navaids.navaid_name ASC

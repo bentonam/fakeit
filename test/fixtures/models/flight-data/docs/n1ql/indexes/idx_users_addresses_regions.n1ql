@@ -1,0 +1,7 @@
+CREATE INDEX idx_users_addresses_region ON `flight-data`(
+    DISTINCT ARRAY address.iso_region
+        FOR address IN addresses
+            WHEN address.iso_region IS NOT NULL
+        END
+)
+WHERE doc_type = 'user';
