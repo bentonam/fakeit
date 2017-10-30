@@ -1,0 +1,9 @@
+SELECT COUNT( 1 ) AS total_reviews,
+    ROUND( AVG( reviews.rating ), 2 ) AS avg_rating,
+    MIN( reviews.rating ) AS worst_rating,
+    MAX( reviews.rating ) AS best_rating
+FROM `flight-data` AS reviews
+WHERE reviews.airline_code = 'AE'
+    AND reviews.rating IS NOT NULL
+    AND reviews.doc_type = 'airline-review'
+GROUP BY reviews.airline_id

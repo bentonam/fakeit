@@ -1,0 +1,15 @@
+SELECT u.user_id, u.first_name, u.last_name,
+    ARRAY
+        phone.phone_number || IFNULL(' x' || phone.extension, '')
+        FOR phone IN IFMISSING(phones, [])
+    END AS phones
+FROM social AS u
+USE KEYS 'user_419'
+LEFT NEST social AS phones ON KEYS (
+    ARRAY a.phone_id FOR a IN (
+        SELECT 'phone_' || phone_id AS phone_id
+        FROM social AS phone_lookup
+        USE KEYS 'user_' || TOSTRING(u.user_id) || '_phones'
+        UNNEST phone_lookup.phones AS phone_id
+    ) END
+)

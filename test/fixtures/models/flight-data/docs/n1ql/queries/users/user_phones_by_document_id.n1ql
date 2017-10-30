@@ -1,0 +1,3 @@
+SELECT users.phones
+FROM `flight-data` AS users
+USE KEYS 'user_197'

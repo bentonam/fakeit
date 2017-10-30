@@ -1,0 +1,7 @@
+SELECT addresses.*
+FROM social AS addresses
+USE KEYS [
+    'address_675a5d4c-9e79-5a9f-a9c5-6c9b8cca7dbc',
+    'address_bccbed78-04da-5485-8a95-1fd5f2d5c3d4',
+    'address_0a45a305-fddd-5799-a6b2-542eb4d110f5'
+]

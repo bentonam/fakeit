@@ -1,0 +1,4 @@
+SELECT countries.*
+FROM `flight-data` AS countries
+WHERE countries.country_code = 'US'
+    AND countries.doc_type = 'country'

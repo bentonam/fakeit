@@ -1,0 +1,20 @@
+SELECT airports.airport_id, airports.airport_name, airports.airport_type,
+    airports.iso_region, airports.municipality,
+    IFNULL( airports.airport_iata, airports.airport_icao, airports.airport_ident ) AS airport_code,
+    ARRAY
+        runway.low_bearing.ident || IFNULL('/' || runway.high_bearing.ident, '')
+        FOR runway IN IFMISSING(runways, [])
+        WHEN runway.closed = false
+    END AS runways
+FROM `flight-data` AS codes
+USE KEYS 'airport_code_ICT'
+INNER JOIN `flight-data` AS airports ON KEYS 'airport_' || TOSTRING( codes.id )
+LEFT NEST `flight-data` AS runways ON KEYS (
+    ARRAY runway.runway_id FOR runway IN (
+        SELECT 'runway_' || TOSTRING( runway_id ) AS runway_id
+        FROM `flight-data` AS runway_lookup
+        USE KEYS
+            'airport_' || TOSTRING(codes.id) || '_runways'
+        UNNEST runway_lookup.runways AS runway_id
+    ) END
+)

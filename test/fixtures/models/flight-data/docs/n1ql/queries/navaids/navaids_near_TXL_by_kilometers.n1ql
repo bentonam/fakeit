@@ -1,0 +1,24 @@
+SELECT results.navaid_ident, results.navaid_code, results.type, results.frequency_khz, results.usage_type,
+    results.associated_airport_code, ROUND( results.distance, 2 ) AS distance
+FROM (
+    SELECT navaids.navaid_ident AS navaid_code, navaids.type, navaids.frequency_khz, navaids.usage_type,
+        navaids.associated_airport_icao_code AS associated_airport_code,
+        111.045 * DEGREES(ACOS(COS(RADIANS( 52.55970001 ))
+        * COS(RADIANS( navaids.geo.latitude ))
+        * COS(RADIANS( 13.2876997 ) - RADIANS( navaids.geo.longitude ))
+        + SIN(RADIANS( 52.55970001 ))
+        * SIN(RADIANS( navaids.geo.latitude )))) AS distance
+    FROM `flight-data` AS navaids
+    WHERE navaids.iso_country = 'DE'
+        AND navaids.geo.latitude BETWEEN
+            52.55970001 - ( 75 / 111.045 )
+            AND
+            52.55970001 + ( 75 / 111.045 )
+        AND navaids.geo.longitude BETWEEN
+            13.2876997 - ( 75 / ( 111.045 * COS(RADIANS( 52.55970001 ))))
+            AND
+            13.2876997 + ( 75 / ( 111.045 * COS(RADIANS( 52.55970001 ))))
+        AND navaids.doc_type = 'navaid'
+    ) AS results
+WHERE results.distance <= 75
+ORDER BY results.distance ASC

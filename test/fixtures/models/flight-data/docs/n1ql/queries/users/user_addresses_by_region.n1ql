@@ -1,0 +1,23 @@
+SELECT users.details.first_name ||
+    IFNULL(' ' ||  users.details.last_name, '') AS name,
+    (
+        ARRAY {
+            "address_1": address.address_1,
+            "address_2": address.address_2,
+            "iso_region": address.iso_region,
+            "iso_country": address.iso_country,
+            "postal_code": address.postal_code,
+            "locality": address.locality
+        } FOR address IN users.addresses END
+    ) AS addresses
+FROM `flight-data` AS users
+WHERE users.doc_type = 'user'
+    AND (
+        ANY address IN users.addresses
+            SATISFIES address.iso_region IN [
+                'US-AK', 'US-MN', 'US-NC'
+            ]
+        END
+    )
+ORDER BY users.addresses[*].iso_region DESC,
+    users.addresses[*].`primary` DESC

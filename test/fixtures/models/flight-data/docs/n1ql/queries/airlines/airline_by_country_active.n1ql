@@ -1,0 +1,6 @@
+SELECT airlines.*
+FROM `flight-data` AS airlines
+WHERE airlines.iso_country = 'FI'
+    AND airlines.doc_type = 'airline'
+    AND airlines.active = true
+LIMIT 1

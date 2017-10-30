@@ -1,0 +1,43 @@
+SELECT
+    {
+      "airline": {
+          "airline_code": IFNULL(
+              airlines.airline_iata,
+              airlines.airline_icao
+          ),
+          "airline_name": airlines.airline_name
+      },
+      "source_airport": {
+          "airport_name": source_airports.airport_name,
+          "iso_country": source_airports.iso_country,
+          "iso_region": source_airports.iso_region,
+          "airport_code": IFNULL(
+              source_airports.airport_iata,
+              source_airports.airport_icao,
+              source_airports.airport_ident
+          )
+      },
+      "distance": ROUND(69 * DEGREES(ACOS(COS(RADIANS( source_airports.geo.latitude ))
+      * COS(RADIANS( destination_airports.geo.latitude ))
+      * COS(RADIANS( source_airports.geo.longitude ) - RADIANS( destination_airports.geo.longitude ))
+      + SIN(RADIANS( source_airports.geo.latitude ))
+      * SIN(RADIANS( destination_airports.geo.latitude )))), 2)
+    }.*
+FROM `flight-data` AS routes
+INNER JOIN `flight-data` AS airport_codes
+    ON KEYS 'airport_code_' || routes.source_airport_code
+INNER JOIN `flight-data` AS source_airports
+    ON KEYS 'airport_' || TOSTRING( airport_codes.id )
+INNER JOIN `flight-data` AS destination_airport_codes
+    ON KEYS 'airport_code_' || routes.destination_airport_code
+INNER JOIN `flight-data` AS destination_airports
+    ON KEYS 'airport_' || TOSTRING(  destination_airport_codes.id  )
+INNER JOIN `flight-data` AS airline_codes
+    ON KEYS 'airline_code_' || routes.airline_code
+INNER JOIN `flight-data` AS airlines
+    ON KEYS 'airline_' || TOSTRING( airline_codes.id )
+WHERE routes.destination_airport_code = 'MRY'
+    AND routes.source_airport_code IS NOT NULL
+    AND routes.doc_type = 'route'
+    AND routes.active = true
+ORDER BY source_airports.airport_name ASC

@@ -1,0 +1,6 @@
+SELECT navaids.navaid_id, navaids.navaid_ident, navaids.navaid_name, navaids.type,
+    navaids.frequency_khz, navaids.geo, navaids.elevation, navaids.usage_type
+FROM `flight-data` AS codes
+USE KEYS 'navaid_code_ATL'
+INNER JOIN `flight-data` AS navaids ON KEYS 'navaid_' || TOSTRING( codes.id )
+LIMIT 1

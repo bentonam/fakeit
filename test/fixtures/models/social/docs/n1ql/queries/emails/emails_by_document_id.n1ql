@@ -1,0 +1,8 @@
+SELECT emails.*
+FROM social AS emails
+USE KEYS [
+    'email_3dffcff4-fd4f-5e92-8f97-ea8bd3d71a5b',
+    'email_effa49ab-25e0-553a-a934-da5cc7654ef1',
+    'email_6c9c825a-981d-56fc-a15c-770dfa773c3b',
+    'email_46b81f00-dd2b-5d77-9405-5be152833536'
+]

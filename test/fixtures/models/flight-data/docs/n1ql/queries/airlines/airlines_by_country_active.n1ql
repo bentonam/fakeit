@@ -1,0 +1,7 @@
+SELECT airlines.airline_id, airlines.airline_name,
+    IFNULL( airlines.airline_iata, airlines.airline_icao ) AS airline_code
+FROM `flight-data` AS airlines
+WHERE airlines.iso_country = 'AE'
+    AND airlines.doc_type = 'airline'
+    AND airlines.active = true
+ORDER BY airlines.airline_name ASC

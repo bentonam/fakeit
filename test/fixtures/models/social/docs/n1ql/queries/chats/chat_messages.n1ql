@@ -1,0 +1,8 @@
+SELECT messages.message_id, messages.message,
+    MILLIS_TO_STR(messages.message_date) AS message_date,
+    users.user_id, users.first_name, users.last_name
+FROM social AS messages
+INNER JOIN social AS users ON KEYS 'user_' || TOSTRING( messages.user_id )
+WHERE messages.chat_id = '98509a2e-4ef5-543a-ae8a-61bf583b2cd0'
+    AND messages.doc_type = 'chat-message'
+ORDER BY messages.message_date DESC

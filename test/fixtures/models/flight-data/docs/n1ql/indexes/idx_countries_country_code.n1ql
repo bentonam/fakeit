@@ -1,0 +1,4 @@
+CREATE INDEX idx_countries_country_code ON `flight-data`( country_code )
+WHERE doc_type = 'country'
+    AND country_code IS NOT MISSING
+USING GSI

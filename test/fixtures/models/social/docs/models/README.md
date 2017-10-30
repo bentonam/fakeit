@@ -1,0 +1,15 @@
+# Social Models
+
+- [Addresses](/social/docs/models/addresses.md)
+- [Auth](/social/docs/models/auth.md)
+- [Chat Messages](/social/docs/models/chat_messages.md)
+- [Chats](/social/docs/models/chats.md)
+- [Emails](/social/docs/models/emails.md)
+- [Friends](/social/docs/models/friends.md)
+- [Likes](/social/docs/models/likes.md)
+- [Phones](/social/docs/models/phones.md)
+- [Posts](/social/docs/models/posts.md)
+- [User Addresses](/social/docs/models/user_addresses.md)
+- [User Emails](/social/docs/models/user_emails.md)
+- [User Phones](/social/docs/models/user_phones.md)
+- [Users](/social/docs/models/users.md)

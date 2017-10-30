@@ -1,0 +1,3 @@
+SELECT addresses.*
+FROM social AS addresses
+USE KEYS 'address_00074370-4c19-5020-8437-c7d4301626fa'

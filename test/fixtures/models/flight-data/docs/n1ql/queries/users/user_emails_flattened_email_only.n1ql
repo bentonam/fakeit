@@ -1,0 +1,4 @@
+SELECT email
+FROM `flight-data` AS users
+USE KEYS 'user_1997'
+UNNEST users.emails[*].email_address AS email

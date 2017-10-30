@@ -1,0 +1,3 @@
+SELECT countries
+FROM `flight-data` AS countries
+USE KEYS 'country_FI'

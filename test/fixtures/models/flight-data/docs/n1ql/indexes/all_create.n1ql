@@ -1,0 +1,163 @@
+CREATE INDEX idx_airlines_codes ON `flight-data`( airline_iata, airline_icao, doc_type )
+WHERE (
+        airline_iata IS NOT NULL
+        OR
+        airline_icao IS NOT NULL
+    )
+    AND doc_type = 'airline'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airlines_iata_codes ON `flight-data`( airline_iata, doc_type )
+WHERE airline_iata IS NOT NULL
+    AND doc_type = 'airline'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airlines_icao_codes ON `flight-data`( airline_icao )
+WHERE airline_icao IS NOT NULL
+    AND doc_type = 'airline'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airlines_iso_country ON `flight-data`( iso_country )
+WHERE doc_type = 'airline'
+    AND iso_country IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airlines_reviews_airline_code ON `flight-data`( airline_code, rating )
+WHERE doc_type = 'airline-review'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airlines_reviews_user_id ON `flight-data`( user_id, airline_code )
+WHERE doc_type = 'airline-review'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airports_cities ON `flight-data`( iso_country, municipality )
+WHERE doc_type = 'airport'
+    AND iso_country IS NOT NULL
+    AND municipality IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airports_iso_country ON `flight-data`( iso_country )
+WHERE doc_type = 'airport'
+    AND iso_country IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airports_distance ON `flight-data`( iso_country, geo.latitude, geo.longitude )
+WHERE doc_type = 'airport'
+    AND iso_country IS NOT NULL
+    AND geo.latitude IS NOT NULL
+    AND geo.longitude IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airports_iso_country_region ON `flight-data`( iso_country, iso_region )
+WHERE doc_type = 'airport'
+    AND iso_country IS NOT NULL
+    AND iso_region IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airports_reviews_airport_code ON `flight-data`( airport_code, rating )
+WHERE doc_type = 'airport-review'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_airports_reviews_user_id ON `flight-data`( user_id, airport_code )
+WHERE doc_type = 'airport-review'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_codes ON `flight-data`( code, designation, doc_type )
+WHERE doc_type = 'code'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_countries_country_code ON `flight-data`( country_code )
+WHERE doc_type = 'country'
+    AND country_code IS NOT MISSING
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_navaids_distance ON `flight-data`( iso_country, geo.latitude, geo.longitude )
+WHERE doc_type = 'navaid'
+    AND iso_country IS NOT NULL
+    AND geo.latitude IS NOT NULL
+    AND geo.longitude IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_navaids_iso_country ON `flight-data`( iso_country )
+WHERE doc_type = 'navaid'
+    AND iso_country IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_regions_region_code ON `flight-data`( iso_country, region_code )
+WHERE doc_type = 'region'
+    AND iso_country IS NOT MISSING
+    AND region_code IS NOT MISSING
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_routes_destination_airport_codes_AtoM ON `flight-data`( destination_airport_code, source_airport_code )
+WHERE doc_type = 'route'
+    AND destination_airport_code > 'A'
+    AND destination_airport_code < 'N'
+    AND source_airport_code IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_routes_destination_airport_codes_NtoZ ON `flight-data`( destination_airport_code, source_airport_code )
+WHERE doc_type = 'route'
+    AND destination_airport_code > 'N'
+    AND source_airport_code IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_routes_source_airport_codes_AtoM ON `flight-data`(source_airport_code, destination_airport_code)
+WHERE doc_type = 'route'
+    AND source_airport_code > 'A'
+    AND source_airport_code < 'N'
+    AND destination_airport_code IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_routes_source_airport_codes_NtoZ ON `flight-data`(source_airport_code, destination_airport_code)
+WHERE doc_type = 'route'
+    AND source_airport_code > 'N'
+    AND destination_airport_code IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_routes_source_airport_codes ON `flight-data`( source_airport_code, destination_airport_code )
+WHERE doc_type = 'route'
+    AND source_airport_code IS NOT NULL
+    AND destination_airport_code IS NOT NULL
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_users_username_password ON `flight-data`( account.username, account.`password` )
+WHERE doc_type = 'user'
+USING GSI
+WITH { "defer_build": true }
+
+CREATE INDEX idx_users_addresses_region ON `flight-data`(
+    DISTINCT ARRAY address.iso_region
+        FOR address IN addresses
+            WHEN address.iso_region IS NOT NULL
+        END
+)
+WHERE doc_type = 'user'
+WITH { "defer_build": true }
+
+CREATE INDEX idx_users_username ON `flight-data`( account.username )
+WHERE doc_type = 'user'
+USING GSI
+WITH { "defer_build": true }

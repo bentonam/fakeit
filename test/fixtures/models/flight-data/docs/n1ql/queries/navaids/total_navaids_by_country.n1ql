@@ -1,0 +1,4 @@
+SELECT COUNT(1) AS total_navaids
+FROM `flight-data` AS navaids
+WHERE navaids.iso_country = 'DE'
+    AND navaids.doc_type = 'navaid'

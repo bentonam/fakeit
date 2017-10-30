@@ -1,0 +1,1 @@
+DROP INDEX `flight-data`.idx_routes_source_airport_codes

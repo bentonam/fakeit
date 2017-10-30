@@ -1,0 +1,24 @@
+SELECT results.airport_name, results.airport_code, ROUND( results.distance, 2 ) AS distance
+FROM (
+    SELECT airports.airport_name,
+        IFNULL( airports.airport_iata, airports.airport_icao, airports.airport_ident ) AS airport_code,
+        111.045 * DEGREES(ACOS(COS(RADIANS( 52.55970001 ))
+        * COS(RADIANS( airports.geo.latitude ))
+        * COS(RADIANS( 13.2876997 ) - RADIANS( airports.geo.longitude ))
+        + SIN(RADIANS( 52.55970001 ))
+        * SIN(RADIANS( airports.geo.latitude )))) AS distance
+    FROM `flight-data` AS airports
+    WHERE airports.iso_country = 'DE'
+        AND airports.geo.latitude BETWEEN
+            52.55970001 - ( 75 / 111.045 )
+            AND
+            52.55970001 + ( 75 / 111.045 )
+        AND airports.geo.longitude BETWEEN
+            13.2876997 - ( 75 / ( 111.045 * COS(RADIANS( 52.55970001 ))))
+            AND
+            13.2876997 + ( 75 / ( 111.045 * COS(RADIANS( 52.55970001 ))))
+        AND airports.doc_type = 'airport'
+    ) AS results
+WHERE results.distance > 0
+    AND results.distance <= 75
+ORDER BY results.distance ASC

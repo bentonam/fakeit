@@ -1,0 +1,17 @@
+SELECT results.airline_code, results.airline_name, COUNT(1) AS routes
+FROM (
+    SELECT IFNULL( airlines.airline_iata, airlines.airline_icao ) AS airline_code,
+        airlines.airline_name
+    FROM `flight-data` AS routes
+    INNER JOIN `flight-data` AS airline_codes
+        ON KEYS 'airline_code_' || routes.airline_code
+    INNER JOIN `flight-data` AS airlines
+        ON KEYS 'airline_' || TOSTRING( airline_codes.id )
+    WHERE routes.destination_airport_code = 'GSO'
+        AND routes.source_airport_code IS NOT NULL
+        AND routes.doc_type = 'route'
+        AND routes.active = true
+) AS results
+GROUP BY results.airline_code, results.airline_name
+HAVING COUNT(1) > 2
+ORDER BY COUNT(1) DESC, results.airline_code ASC

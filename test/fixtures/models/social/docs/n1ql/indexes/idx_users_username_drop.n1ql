@@ -1,0 +1,1 @@
+DROP INDEX social.idx_users_username

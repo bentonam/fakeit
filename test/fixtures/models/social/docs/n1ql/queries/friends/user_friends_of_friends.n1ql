@@ -1,0 +1,22 @@
+SELECT users.user_id, users.first_name, users.last_name, COUNT(1) AS friends_with
+FROM social AS user_friends
+USE KEYS 'user_100_friends'
+INNER JOIN social AS friends_of_friends ON KEYS (
+    ARRAY 'user_' || TOSTRING( friend.user_id ) || '_friends'
+        FOR friend IN user_friends.friends
+        WHEN DATE_DIFF_MILLIS(CLOCK_MILLIS(), friend.date_friended, 'year') >= 1
+    END
+)
+INNER JOIN social AS users ON KEYS (
+    ARRAY 'user_' || TOSTRING( friend.user_id )
+        FOR friend IN friends_of_friends.friends
+    END
+)
+WHERE users.user_id NOT IN ARRAY_PREPEND(100,
+    (ARRAY friend.user_id
+        FOR friend IN user_friends.friends
+    END)
+)
+GROUP BY users.user_id, users.first_name, users.last_name
+HAVING COUNT(1) >= 5
+ORDER BY COUNT(1) DESC

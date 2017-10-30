@@ -1,0 +1,8 @@
+SELECT countries.country_code, countries.country_name,
+    countries.continent_code, continents.continent_name
+FROM `flight-data` AS countries
+INNER JOIN `flight-data` AS continents
+    ON KEYS 'continent_' || countries.continent_code
+WHERE countries.country_code IS NOT MISSING
+    AND countries.doc_type = 'country'
+ORDER BY countries.country_name ASC

@@ -1,0 +1,13 @@
+SELECT users.account.*, users.details.*,
+    primary_email.email_address,
+    primary_address.address_1, primary_address.address_2, primary_address.iso_country,
+    primary_address.iso_region, primary_address.locality, primary_address.postal_code,
+    primary_phone.phone_number, primary_phone.extension AS phone_extension
+FROM `flight-data` AS users
+USE KEYS 'user_1997'
+UNNEST users.emails AS primary_email
+UNNEST users.addresses AS primary_address
+UNNEST users.phones AS primary_phone
+WHERE primary_email.`primary` = true
+    AND primary_address.`primary` = true
+    AND primary_phone.`primary` = true
