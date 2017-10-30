@@ -65,8 +65,7 @@ Below is a variety of commands that can be used on this data model, all of the e
 Generate JSON files and output them to a `output/` directory
 
 ```bash
-[contacts]$ fakeit -m models/ -d output/
-Generating 56 documents for Contacts model
+[contacts]$ fakeit directory output models/*
 [contacts]$ ls output | awk '{print "\011",$NF}'                                       
 	 contact_2040b03c-db18-5c85-95b0-37544a2804b1.json
 	 contact_239c719f-950e-5411-afd8-dd964c3446bf.json
@@ -80,8 +79,7 @@ Generating 56 documents for Contacts model
 Generate YAML files and output them to a `output/` directory
 
 ```bash
-[contacts]$ fakeit -m models/ -d output/ -o yaml
-Generating 77 documents for Contacts model
+[contacts]$ fakeit directory --format yaml output models/*
 [contacts]$ ls output | awk '{print "\011",$NF}'                                       
 	 contact_6bf50f4a-95bc-444b-a80b-ad63c651800c.yaml
 	 contact_09a1c89b-d61a-4129-81c9-c9fb47b12452.yaml
@@ -95,8 +93,7 @@ Generating 77 documents for Contacts model
 Generate CSON files and output them to a `output/` directory
 
 ```bash
-[contacts]$ fakeit -m models/ -d output/ -o cson
-Generating 77 documents for Contacts model
+[contacts]$ fakeit directory --format cson output models/*
 [contacts]$ ls output | awk '{print "\011",$NF}'                                       
 	 contact_146643aa-7ccd-447a-bde2-bf12ddfd42c8.cson
 	 contact_cebf6298-c99d-4df6-b5db-fd4014336a97.cson
@@ -110,8 +107,7 @@ Generating 77 documents for Contacts model
 Generate JSON files, save them to a zip archive named `export.zip` and output the zip file to the output directory
 
 ```bash
-[contacts]$ fakeit -m models/ -d output/ -a export.zip
-Generating 72 documents for Contacts model
+[contacts]$ fakeit directory --format json output/export.zip models/*
 [contacts]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -121,8 +117,7 @@ Generating 72 documents for Contacts model
 Generate a CSV file for the contacts model and save it to the output directory
 
 ```bash
-[contacts]$ fakeit -m models/ -d output/ -o csv
-Generating 64 documents for Contacts model
+[contacts]$ fakeit directory --format csv output models/*
 [contacts]$ ls output | awk '{print "\011",$NF}'
 	 Contacts.csv
 ```
@@ -132,8 +127,7 @@ Generating 64 documents for Contacts model
 Generate a CSV file for the contacts model and save it to a zip archived named `export.zip` and output the zip file to the output directory
 
 ```bash
-[contacts]$ fakeit -m models/ -d output/ -o csv -a export.zip
-Generating 88 documents for Contacts model
+[contacts]$ fakeit directory --format csv output/export.zip models/*
 [contacts]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -143,8 +137,7 @@ Generating 88 documents for Contacts model
 Generate JSON documents and output them to a Couchbase Server using the defaults of a server running at `127.0.0.1` in the bucket `default`
 
 ```bash
-[contacts]$ fakeit -m models/ -d couchbase
-Generating 93 documents for Contacts model
+[contacts]$ fakeit couchbase models/*
 ```
 
 ---
@@ -152,8 +145,7 @@ Generating 93 documents for Contacts model
 Generate JSON documents and output them to Couchbase Server running at `192.168.1.101` in the bucket `contacts` with the password of `secret`
 
 ```bash
-[contacts]$ fakeit -m models/ -d couchbase -s 192.168.1.101 -b contacts -p secret
-Generating 87 documents for Contacts model
+[contacts]$ fakeit couchbase --server 192.168.1.101 --bucket contacts --password secret models/*
 ```
 
 ---
@@ -161,8 +153,7 @@ Generating 87 documents for Contacts model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost` into a `contacts` bucket with guest access enabled.
 
 ```bash
-[contacts]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b contacts
-Generating 63 documents for Contacts model
+[contacts]$ fakeit sync-gateway --server http://localhost:4984 --bucket contacts models/*
 ```
 
 ---
@@ -170,6 +161,5 @@ Generating 63 documents for Contacts model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost:4984` into a `contacts` bucket using [Custom (Indirect) Authentication](http://developer.couchbase.com/documentation/mobile/current/develop/guides/sync-gateway/administering-sync-gateway/authenticating-users/index.html).
 
 ```bash
-[contacts]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b contacts -g http://localhost:4985 -u jdoe -p supersecret
-Generating 97 documents for Contacts model
+[contacts]$ fakeit sync-gateway --server http://localhost:4984 --bucket contacts  --username jdoe --password supersecret models/*
 ```

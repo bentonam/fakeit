@@ -185,11 +185,7 @@ Below is a variety of commands that can be used on this data model, all of the e
 Generate JSON files and output them to a `output/` directory
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d output/
-Generating 258 documents for Products model
-Generating 393 documents for Users model
-Generating 354 documents for Orders model
-Generating 956 documents for Reviews model
+[ecommerce]$ fakeit directory output models/*
 [ecommerce]$ ls output | awk '{print "\011",$NF}'
 	 user_1.json
 	 product_239c719f-950e-5411-afd8-dd964c3446bf.json
@@ -202,11 +198,7 @@ Generating 956 documents for Reviews model
 Generate YAML files and output them to a `output/` directory
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d output/ -o yaml
-Generating 433 documents for Products model
-Generating 483 documents for Users model
-Generating 426 documents for Orders model
-Generating 806 documents for Reviews model
+[ecommerce]$ fakeit directory --format yaml output models/*
 [ecommerce]$ ls output | awk '{print "\011",$NF}'
 	 user_1.yaml
 	 product_764482e2-218c-4ac2-8761-57fe1ab3b528.yaml
@@ -219,11 +211,7 @@ Generating 806 documents for Reviews model
 Generate CSON files and output them to a `output/` directory
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d output/ -o cson
-Generating 326 documents for Products model
-Generating 409 documents for Users model
-Generating 477 documents for Orders model
-Generating 706 documents for Reviews model
+[ecommerce]$ fakeit directory --format cson output models/*
 [ecommerce]$ ls output | awk '{print "\011",$NF}'
 	 user_1.cson
 	 product_cebf6298-c99d-4df6-b5db-fd4014336a97.cson
@@ -236,11 +224,7 @@ Generating 706 documents for Reviews model
 Generate JSON files, save them to a zip archive named `export.zip` and output the zip file to the output directory
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d output/ -a export.zip
-Generating 356 documents for Products model
-Generating 417 documents for Users model
-Generating 543 documents for Orders model
-Generating 732 documents for Reviews model
+[ecommerce]$ fakeit directory --format json output/export.zip models/*
 [ecommerce]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -250,11 +234,7 @@ Generating 732 documents for Reviews model
 Generate a CSV file for the ecommerce model and save it to the output directory
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d output/ -o csv
-Generating 456 documents for Products model
-Generating 245 documents for Users model
-Generating 675 documents for Orders model
-Generating 831 documents for Reviews model
+[ecommerce]$ fakeit directory --format csv output models/*
 [ecommerce]$ ls output | awk '{print "\011",$NF}'
 	 Orders.csv
 	 Products.csv
@@ -267,11 +247,7 @@ Generating 831 documents for Reviews model
 Generate a CSV file for the ecommerce model and save it to a zip archived named `export.zip` and output the zip file to the output directory
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d output/ -o csv -a export.zip
-Generating 365 documents for Products model
-Generating 292 documents for Users model
-Generating 545 documents for Orders model
-Generating 746 documents for Reviews model
+[ecommerce]$ fakeit directory --format csv output/export.zip models/*
 [ecommerce]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -281,11 +257,7 @@ Generating 746 documents for Reviews model
 Generate JSON documents and output them to a Couchbase Server using the defaults of a server running at `127.0.0.1` in the bucket `default`
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d couchbase
-Generating 434 documents for Products model
-Generating 277 documents for Users model
-Generating 732 documents for Orders model
-Generating 821 documents for Reviews model
+[ecommerce]$ fakeit couchbase models/*
 ```
 
 ---
@@ -293,11 +265,7 @@ Generating 821 documents for Reviews model
 Generate JSON documents and output them to Couchbase Server running at `192.168.1.101` in the bucket `ecommerce` with the password of `secret`
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d couchbase -s 192.168.1.101 -b ecommerce -p secret
-Generating 317 documents for Products model
-Generating 239 documents for Users model
-Generating 643 documents for Orders model
-Generating 713 documents for Reviews model
+[ecommerce]$ fakeit couchbase --server 192.168.1.101 --bucket ecommerce --password secret models/*
 ```
 
 ---
@@ -305,11 +273,7 @@ Generating 713 documents for Reviews model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost` into a `ecommerce` bucket with guest access enabled.
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b ecommerce
-Generating 274 documents for Products model
-Generating 389 documents for Users model
-Generating 605 documents for Orders model
-Generating 929 documents for Reviews model
+[ecommerce]$ fakeit sync-gateway --server http://localhost:4984 --bucket contacts models/*
 ```
 
 ---
@@ -317,9 +281,5 @@ Generating 929 documents for Reviews model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost:4984` into a `ecommerce` bucket using [Custom (Indirect) Authentication](http://developer.couchbase.com/documentation/mobile/current/develop/guides/sync-gateway/administering-sync-gateway/authenticating-users/index.html).
 
 ```bash
-[ecommerce]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b ecommerce -g http://localhost:4985 -u jdoe -p supersecret
-Generating 322 documents for Products model
-Generating 250 documents for Users model
-Generating 604 documents for Orders model
-Generating 737 documents for Reviews model
+[ecommerce]$ fakeit sync-gateway --server http://localhost:4984 --bucket ecommerce  --username jdoe --password supersecret models/
 ```

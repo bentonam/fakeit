@@ -60,9 +60,7 @@ Below is a variety of commands that can be used on this data model, all of the e
 Generate JSON files and output them to a `output/` directory
 
 ```bash
-[flat]$ fakeit -m models/ -d output/
-Generating 155 documents for Products model
-Generating 241 documents for Users model
+[flat]$ fakeit directory output models/*
 [flat]$ ls output | awk '{print "\011",$NF}'
 	 1.json
 	 product_239c719f-950e-5411-afd8-dd964c3446bf.json
@@ -73,9 +71,7 @@ Generating 241 documents for Users model
 Generate YAML files and output them to a `output/` directory
 
 ```bash
-[flat]$ fakeit -m models/ -d output/ -o yaml
-Generating 233 documents for Products model
-Generating 383 documents for Users model
+[flat]$ fakeit directory --format yaml output models/*
 [flat]$ ls output | awk '{print "\011",$NF}'
 	 1.yaml
 	 product_764482e2-218c-4ac2-8761-57fe1ab3b528.yaml
@@ -86,9 +82,7 @@ Generating 383 documents for Users model
 ---Generate CSON files and output them to a `output/` directory
 
 ```bash
-[flat]$ fakeit -m models/ -d output/ -o cson
-Generating 326 documents for Products model
-Generating 209 documents for Users model
+[flat]$ fakeit directory --format cson output models/*
 [flat]$ ls output | awk '{print "\011",$NF}'
 	 1.cson
 	 product_cebf6298-c99d-4df6-b5db-fd4014336a97.cson
@@ -99,9 +93,7 @@ Generating 209 documents for Users model
 Generate JSON files, save them to a zip archive named `export.zip` and output the zip file to the output directory
 
 ```bash
-[flat]$ fakeit -m models/ -d output/ -a export.zip
-Generating 356 documents for Products model
-Generating 217 documents for Users model
+[flat]$ fakeit directory --format json output/export.zip models/*
 [flat]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -111,9 +103,7 @@ Generating 217 documents for Users model
 Generate a CSV file for the flat model and save it to the output directory
 
 ```bash
-[flat]$ fakeit -m models/ -d output/ -o csv
-Generating 456 documents for Products model
-Generating 245 documents for Users model
+[flat]$ fakeit directory --format csv output models/*
 [flat]$ ls output | awk '{print "\011",$NF}'
 	 Products.csv
 	 Users.csv
@@ -124,9 +114,7 @@ Generating 245 documents for Users model
 Generate a CSV file for the flat model and save it to a zip archived named `export.zip` and output the zip file to the output directory
 
 ```bash
-[flat]$ fakeit -m models/ -d output/ -o csv -a export.zip
-Generating 365 documents for Products model
-Generating 292 documents for Users model
+[flat]$ fakeit directory --format csv output/export.zip models/*
 [flat]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -136,9 +124,7 @@ Generating 292 documents for Users model
 Generate JSON documents and output them to a Couchbase Server using the defaults of a server running at `127.0.0.1` in the bucket `default`
 
 ```bash
-[flat]$ fakeit -m models/ -d couchbase
-Generating 434 documents for Products model
-Generating 277 documents for Users model
+[flat]$ fakeit couchbase models/*
 ```
 
 ---
@@ -146,9 +132,7 @@ Generating 277 documents for Users model
 Generate JSON documents and output them to Couchbase Server running at `192.168.1.101` in the bucket `flat` with the password of `secret`
 
 ```bash
-[flat]$ fakeit -m models/ -d couchbase -s 192.168.1.101 -b flat -p secret
-Generating 317 documents for Products model
-Generating 239 documents for Users model
+[flat]$ fakeit couchbase --server 192.168.1.101 --bucket flat --password secret models/*
 ```
 
 ---
@@ -156,9 +140,7 @@ Generating 239 documents for Users model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost` into a `flat` bucket with guest access enabled.
 
 ```bash
-[flat]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b flat
-Generating 274 documents for Products model
-Generating 389 documents for Users model
+[flat]$ fakeit sync-gateway --server http://localhost:4984 --bucket contacts models/*
 ```
 
 ---
@@ -166,7 +148,5 @@ Generating 389 documents for Users model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost:4984` into a `flat` bucket using [Custom (Indirect) Authentication](http://developer.couchbase.com/documentation/mobile/current/develop/guides/sync-gateway/administering-sync-gateway/authenticating-users/index.html).
 
 ```bash
-[flat]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b flat -g http://localhost:4985 -u jdoe -p supersecret
-Generating 322 documents for Products model
-Generating 250 documents for Users model
+[flat]$ fakeit sync-gateway --server http://localhost:4984 --bucket contacts  --username jdoe --password supersecret models/*
 ```
