@@ -97,10 +97,16 @@ export default class Documents extends Base {
       .then(() => {
         let result;
         if (!model.is_dependency) {
-          result = this.emit('data', this.documents[model.name], model);
+          var built_docs = [];
+          for (var key in this.documents[model.name]) {
+            if (key !== '') {
+              built_docs.push(this.documents[model.name][key]);
+            }
+          }
+          result = this.emit('data', built_docs, model);
         }
         // update the total documents number
-        this.total += this.documents[model.name].length;
+        this.total += Object.keys(this.documents[model.name]).length;
         model.complete = true;
         this.emit('run');
         return result;
@@ -138,7 +144,7 @@ export class Document extends Base {
   ///# @returns {array} - The array of documents that were generated
   async build(model) {
     if (!this.documents[model.name]) {
-      this.documents[model.name] = [];
+      this.documents[model.name] = {};
     }
 
     this.updateFakers(model.seed);
@@ -150,7 +156,7 @@ export class Document extends Base {
     const spinner = this.spinner(`Documents ${model.name}`);
     spinner.text = `${model.name}`;
     const update = () => {
-      spinner.text = `${model.name} documents (${this.documents[model.name].length}/${model.data.count})`;
+      spinner.text = `${model.name} documents (${Object.keys(this.documents[model.name]).length}/${model.data.count})`;
     };
 
     // if there is a pre_run function call it
@@ -172,7 +178,8 @@ export class Document extends Base {
       const doc = await this.buildDocument(model, i);
       update();
       await delay(0);
-      this.documents[model.name].push(doc);
+      /* eslint no-underscore-dangle: ["error", { "allow": ["__name", "__key"] }] */
+      this.documents[model.name][doc.__name + doc.__key] = doc;
     }, this.options.spinners ? 75 : 1000)
       .catch((err) => {
         spinner.fail(err);
@@ -182,7 +189,13 @@ export class Document extends Base {
 
     update();
     spinner.stop();
-    return this.documents[model.name];
+    var built_docs = [];
+    for (var key in this.documents[model.name]) {
+      if (key !== '') {
+        built_docs.push(this.documents[model.name][key]);
+      }
+    }
+    return built_docs;
   }
 
   ///# @name updateFakers
