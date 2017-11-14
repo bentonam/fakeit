@@ -174,7 +174,8 @@ export class Document extends Base {
       update();
       await delay(0);
       // only push the document if the key is not already taken
-      if (built_docs_map[doc.__key] === undefined) {
+      /* eslint no-underscore-dangle: ["error", { "allow": ["__name", "__key"] }] */
+      if (!built_docs_map[doc.__key]) {
         built_docs_map[doc.__key] = doc;
         this.documents[model.name].push(doc);
       }
