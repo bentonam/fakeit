@@ -236,7 +236,7 @@ parsers.json = {
   ///# @arg {number} indent [2] The indent level
   ///# @returns {string} - The yaml string
   ///# @async
-  stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, indent))
+  stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, !parseInt(indent) ? null : indent))
 };
 
 ///# @name parsers.cson
