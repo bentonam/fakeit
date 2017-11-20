@@ -163,6 +163,7 @@ export class Document extends Base {
 
     spinner.start();
     const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
+    let built_docs_map = {};
     await pool(model.data.count, async (i) => { // loop over each model and execute in order of dependency
       // don't anymore if the program should exit
       if (exit) return;
@@ -172,8 +173,16 @@ export class Document extends Base {
       const doc = await this.buildDocument(model, i);
       update();
       await delay(0);
-      this.documents[model.name].push(doc);
+      // only push the document if the key is not already taken
+      /* eslint no-underscore-dangle: ["error", { "allow": ["__key"] }] */
+      if (!built_docs_map[doc.__key]) {
+        built_docs_map[doc.__key] = true;
+        this.documents[model.name].push(doc);
+      }
     }, this.options.spinners ? 75 : 1000)
+      .then(() => {
+        built_docs_map = {};
+      })
       .catch((err) => {
         spinner.fail(err);
       });
