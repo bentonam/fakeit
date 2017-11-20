@@ -163,7 +163,7 @@ export class Document extends Base {
 
     spinner.start();
     const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
-    var built_docs_map = {};
+    let built_docs_map = {};
     await pool(model.data.count, async (i) => { // loop over each model and execute in order of dependency
       // don't anymore if the program should exit
       if (exit) return;
