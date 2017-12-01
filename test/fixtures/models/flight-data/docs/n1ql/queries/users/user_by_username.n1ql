@@ -1,0 +1,5 @@
+SELECT users.user_id, users.details.first_name, users.details.last_name
+FROM `flight-data` AS users
+WHERE users.account.username = 'Eudora43'
+    AND users.doc_type = 'user'
+LIMIT 1

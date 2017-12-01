@@ -1,0 +1,26 @@
+SELECT airports.airport_id, airports.airport_name, airports.airport_type,
+    airports.iso_region, airports.municipality,
+    IFNULL( airports.airport_iata, airports.airport_icao, airports.airport_ident ) AS airport_code,
+    ARRAY
+        {
+          "elevation": navaid.elevation,
+          "frequency_khz": navaid.frequency_khz,
+          "geo": navaid.geo,
+          "navaid_ident": navaid.navaid_ident,
+          "type": navaid.`type`,
+          "usage_type": navaid.usage_type
+        }
+        FOR navaid IN IFMISSING(navaids, [])
+    END AS navaids
+FROM `flight-data` AS codes
+USE KEYS 'airport_code_ICT'
+INNER JOIN `flight-data` AS airports ON KEYS 'airport_' || TOSTRING( codes.id )
+LEFT NEST `flight-data` AS navaids ON KEYS (
+    ARRAY navaid.navaid_id FOR navaid IN (
+        SELECT 'navaid_' || TOSTRING( navaid_id ) AS navaid_id
+        FROM `flight-data` AS navaids_lookup
+        USE KEYS
+            'airport_' || TOSTRING(codes.id) || '_navaids'
+        UNNEST navaids_lookup.navaids AS navaid_id
+    ) END
+)

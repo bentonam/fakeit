@@ -23,3 +23,4 @@ There are 13 types of models that will be generated
 - Users
 
 If you would like to see further examples of how to query this data set using the [N1QL](http://www.couchbase.com/n1ql) query language from [Couchbase](http://www.couchbase.com/) checkout the [Examples](docs/n1ql/).
+

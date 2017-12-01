@@ -1,0 +1,21 @@
+SELECT chats.chat_id, MILLIS_TO_STR(chats.created_on) AS created_on,
+    ARRAY
+        {
+          "user_id": `user`.user_id,
+          "first_name": `user`.first_name,
+          "last_name": `user`.last_name
+        }
+        FOR `user` IN users
+    END AS users
+FROM social AS chats
+INNER NEST social AS users ON KEYS (
+    ARRAY 'user_' || TOSTRING ( user_id )
+    FOR user_id IN chats.users
+        WHEN user_id <> 100
+    END
+)
+WHERE ANY user_id IN chats.users
+        SATISFIES user_id = 100
+    END
+    AND chats.doc_type = 'chat'
+ORDER BY chats.created_on DESC

@@ -1,0 +1,12 @@
+SELECT flattened_addresses.address_1, flattened_addresses.address_2, flattened_addresses.locality,
+    flattened_addresses.postal_code, flattened_addresses.type,
+    flattened_addresses.iso_country, countries.country_name,
+    flattened_addresses.iso_region, regions.region_name
+FROM `flight-data` AS users
+USE KEYS 'user_197'
+UNNEST users.addresses AS flattened_addresses
+INNER JOIN `flight-data` AS countries
+    ON KEYS 'country_' || flattened_addresses.iso_country
+INNER JOIN `flight-data` AS regions
+    ON KEYS 'region_' || flattened_addresses.iso_region
+WHERE flattened_addresses.`primary` = true

@@ -1,0 +1,9 @@
+SELECT runways.low_bearing.ident || '/' || runways.high_bearing.ident AS runway
+FROM `flight-data` AS airport_codes
+USE KEYS 'airport_code_ICT'
+INNER JOIN `flight-data` AS airport_runways
+    ON KEYS 'airport_' || TOSTRING( airport_codes.id ) || '_runways'
+UNNEST airport_runways.runways AS runways_lookup
+INNER JOIN `flight-data` AS runways
+    ON KEYS 'runway_' || TOSTRING( runways_lookup )
+WHERE runways.closed = false

@@ -1,0 +1,4 @@
+SELECT flattened_addresses.*
+FROM `flight-data` AS users
+USE KEYS 'user_197'
+UNNEST users.addresses AS flattened_addresses

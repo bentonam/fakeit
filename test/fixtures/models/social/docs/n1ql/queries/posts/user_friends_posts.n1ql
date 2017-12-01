@@ -1,0 +1,17 @@
+SELECT posts.post_id, posts.post, posts.visibility, MILLIS_TO_STR(posts.post_date) AS post_date
+FROM social AS posts
+WHERE posts.user_id IN (
+        ARRAY friend.user_id
+            FOR friend IN (
+                SELECT friends.user_id
+                FROM social AS user_friends
+                USE KEYS 'user_100_friends'
+                UNNEST user_friends.friends AS friends
+            )
+        END
+    )
+    AND
+    posts.visibility = 'public' AND
+    posts.doc_type = 'post'
+ORDER BY posts.post_date DESC
+LIMIT 10

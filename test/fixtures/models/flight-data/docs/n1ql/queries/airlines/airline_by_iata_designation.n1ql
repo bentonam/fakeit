@@ -1,0 +1,8 @@
+SELECT airlines.airline_id, airlines.airline_name, airlines.airline_iata, airlines.airline_icao
+FROM `flight-data` AS codes
+INNER JOIN `flight-data` AS airlines
+    ON KEYS 'airline_' || TOSTRING( codes.id )
+WHERE codes.code = 'DL'
+     AND codes.designation = 'airline'
+     AND codes.doc_type = 'code'
+LIMIT 1

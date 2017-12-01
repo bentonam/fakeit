@@ -1,0 +1,5 @@
+SELECT regions.region_code, regions.region_name
+FROM `flight-data` AS regions
+WHERE regions.iso_country = 'US'
+    AND regions.region_code IN ['US-KS', 'US-NC', 'US-MN']
+    AND regions.doc_type = 'region'

@@ -1,0 +1,1 @@
+DROP INDEX `flight-data`.idx_airlines_codes

@@ -1,0 +1,22 @@
+BUILD INDEX
+    ON `flight-data`(
+      idx_airlines_iso_country,
+      idx_airlines_reviews_airline_code,
+      idx_airlines_reviews_user_id,
+      idx_airports_cities,
+      idx_airports_distance,
+      idx_airports_iso_country_region,
+      idx_airports_reviews_airport_code,
+      idx_airports_reviews_user_id,
+      idx_countries_country_code,
+      idx_navaids_distance,
+      idx_navaids_iso_country,
+      idx_regions_region_code,
+      idx_routes_destination_airport_codes_AtoM,
+      idx_routes_destination_airport_codes_NtoZ,
+      idx_routes_source_airport_codes_AtoM,
+      idx_routes_source_airport_codes_NtoZ,
+      idx_users_username_password,
+      idx_users_addresses_region
+    )
+USING GSI

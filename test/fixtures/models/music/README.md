@@ -161,11 +161,7 @@ Below is a variety of commands that can be used on this data model, all of the e
 Generate JSON files and output them to a `output/` directory
 
 ```bash
-[music]$ fakeit -m models/ -d output/
-Generating 264 documents for Countries model
-Generating 498 documents for Users model
-Generating 522 documents for Tracks model
-Generating 878 documents for Playlists model
+[music]$ fakeit directory output models/*
 [music]$ ls output | awk '{print "\011",$NF}'
 	 country_US.json
 	 playlist_1f65aaf1-fc8d-4cf0-b20f-33bbb911ae66.json
@@ -178,11 +174,7 @@ Generating 878 documents for Playlists model
 Generate YAML files and output them to a `output/` directory
 
 ```bash
-[music]$ fakeit -m models/ -d output/ -o yaml
-Generating 264 documents for Countries model
-Generating 584 documents for Users model
-Generating 624 documents for Tracks model
-Generating 858 documents for Playlists model
+[music]$ fakeit directory --format yaml output models/*
 [music]$ ls output | awk '{print "\011",$NF}'
 	 country_CA.cson
 	 playlist_00e377c6-2673-48ef-b63e-c625a5f367a8.yaml
@@ -195,11 +187,7 @@ Generating 858 documents for Playlists model
 Generate CSON files and output them to a `output/` directory
 
 ```bash
-[music]$ fakeit -m models/ -d output/ -o cson
-Generating 264 documents for Countries model
-Generating 429 documents for Users model
-Generating 712 documents for Tracks model
-Generating 866 documents for Playlists model
+[music]$ fakeit directory --format cson output models/*
 [music]$ ls output | awk '{print "\011",$NF}'
 	 country_AU.cson
 	 playlist_0ccc9d20-6c86-4266-8733-81718f417619.cson
@@ -212,11 +200,7 @@ Generating 866 documents for Playlists model
 Generate JSON files, save them to a zip archive named `export.zip` and output the zip file to the output directory
 
 ```bash
-[music]$ fakeit -m models/ -d output/ -a export.zip
-Generating 264 documents for Countries model
-Generating 409 documents for Users model
-Generating 534 documents for Tracks model
-Generating 789 documents for Playlists model
+[music]$ fakeit directory --format json output/export.zip models/*
 [music]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -226,11 +210,7 @@ Generating 789 documents for Playlists model
 Generate a CSV file for the music model and save it to the output directory
 
 ```bash
-[music]$ fakeit -m models/ -d output/ -o csv
-Generating 264 documents for Countries model
-Generating 416 documents for Users model
-Generating 794 documents for Tracks model
-Generating 609 documents for Playlists model
+[music]$ fakeit directory --format csv output models/*
 [music]$ ls output | awk '{print "\011",$NF}'
 	 Countries.csv
 	 Playlists.csv
@@ -243,11 +223,7 @@ Generating 609 documents for Playlists model
 Generate a CSV file for the music model and save it to a zip archived named `export.zip` and output the zip file to the output directory
 
 ```bash
-[music]$ fakeit -m models/ -d output/ -o csv -a export.zip
-Generating 264 documents for Countries model
-Generating 510 documents for Users model
-Generating 594 documents for Tracks model
-Generating 879 documents for Playlists model
+[music]$ fakeit directory --format csv output/export.zip models/*
 [music]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -257,11 +233,7 @@ Generating 879 documents for Playlists model
 Generate JSON documents and output them to a Couchbase Server using the defaults of a server running at `127.0.0.1` in the bucket `default`
 
 ```bash
-[music]$ fakeit -m models/ -d couchbase
-Generating 264 documents for Countries model
-Generating 415 documents for Users model
-Generating 751 documents for Tracks model
-Generating 687 documents for Playlists model®
+[music]$ fakeit couchbase models/*
 ```
 
 ---
@@ -269,11 +241,7 @@ Generating 687 documents for Playlists model®
 Generate JSON documents and output them to Couchbase Server running at `192.168.1.101` in the bucket `music` with the password of `secret`
 
 ```bash
-[music]$ fakeit -m models/ -d couchbase -s 192.168.1.101 -b music -p secret
-Generating 264 documents for Countries model
-Generating 598 documents for Users model
-Generating 632 documents for Tracks model
-Generating 747 documents for Playlists model
+[music]$ fakeit couchbase --server 192.168.1.101 --bucket music --password secret models/*
 ```
 
 ---
@@ -281,11 +249,7 @@ Generating 747 documents for Playlists model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost` into a `music` bucket with guest access enabled.
 
 ```bash
-[music]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b music
-Generating 264 documents for Countries model
-Generating 494 documents for Users model
-Generating 557 documents for Tracks model
-Generating 847 documents for Playlists model
+[music]$ fakeit sync-gateway --server http://localhost:4984 --bucket music models/*
 ```
 
 ---
@@ -293,9 +257,5 @@ Generating 847 documents for Playlists model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost:4984` into a `music` bucket using [Custom (Indirect) Authentication](http://developer.couchbase.com/documentation/mobile/current/develop/guides/sync-gateway/administering-sync-gateway/authenticating-users/index.html).
 
 ```bash
-[music]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b music -g http://localhost:4985 -u jdoe -p supersecret
-Generating 264 documents for Countries model
-Generating 509 documents for Users model
-Generating 723 documents for Tracks model
-Generating 834 documents for Playlists model
+[music]$ fakeit sync-gateway --server http://localhost:4984 --bucket music  --username jdoe --password supersecret models/*
 ```

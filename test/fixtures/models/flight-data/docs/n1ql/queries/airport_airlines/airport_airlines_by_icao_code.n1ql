@@ -1,0 +1,11 @@
+SELECT airlines.airline_id, airlines.airline_iata, airlines.airline_icao, airlines.airline_name
+FROM `flight-data` AS airport_codes
+USE KEYS 'airport_code_KGSO'
+INNER JOIN `flight-data` AS airport_airlines
+    ON KEYS 'airport_' || TOSTRING( airport_codes.id ) || '_airlines'
+UNNEST airport_airlines.airlines AS airlines_lookup
+INNER JOIN `flight-data` AS airline_codes
+    ON KEYS 'airline_code_' || TOSTRING( airlines_lookup )
+INNER JOIN `flight-data` AS airlines
+    ON KEYS 'airline_' || TOSTRING( airline_codes.id )
+ORDER BY airlines.airline_name ASC

@@ -77,7 +77,7 @@ export default async function() {
   // helper function used for couchbase and sync-gateway below
   function runServer(output) {
     /* istanbul ignore next : too difficult to test the servers via the cli */
-    return async (...args) =>{
+    return async (...args) => {
       const options = pick(args.pop(), [ 'server', 'bucket', 'username', 'password', 'timeout' ]);
       options.output = output;
       await run(options);
@@ -91,7 +91,7 @@ export default async function() {
     .option('-b, --bucket [bucket]', `The bucket name (${dim('default')})`)
     .option('-u, --username [username]', 'The username to use (optional pre-5.0)')
     .option('-p, --password [password]', 'the password for the account (optional)')
-    .option('-t, --timeout [timeout]', `timeout for the servers (${dim(5000)})`)
+    .option('-t, --timeout [timeout]', `timeout for the servers (${dim(5000)})`, Number)
     .description('This will output to a Couchbase Server')
     .action(runServer('couchbase'));
 

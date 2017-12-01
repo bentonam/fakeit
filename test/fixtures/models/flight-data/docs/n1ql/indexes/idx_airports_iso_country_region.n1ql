@@ -1,0 +1,5 @@
+CREATE INDEX idx_airports_iso_country_region ON `flight-data`( iso_country, iso_region )
+WHERE doc_type = 'airport'
+    AND iso_country IS NOT NULL
+    AND iso_region IS NOT NULL
+USING GSI

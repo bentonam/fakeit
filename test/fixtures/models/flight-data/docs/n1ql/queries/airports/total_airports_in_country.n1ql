@@ -1,0 +1,4 @@
+SELECT COUNT(1) AS total_airports
+FROM `flight-data` AS airports
+WHERE airports.iso_country = 'FI'
+    AND airports.doc_type = 'airport'

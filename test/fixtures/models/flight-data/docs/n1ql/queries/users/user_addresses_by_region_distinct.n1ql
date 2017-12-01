@@ -1,0 +1,14 @@
+SELECT users.details.first_name ||
+    IFNULL(' ' ||  users.details.last_name, '') AS name,
+    ARRAY_LENGTH(users.addresses) AS addresses,
+    ARRAY_DISTINCT(
+        ARRAY address.iso_region FOR address IN users.addresses END
+    ) AS regions
+FROM `flight-data` AS users
+WHERE users.doc_type = 'user'
+    AND (
+        ANY address IN users.addresses
+            SATISFIES address.iso_region IN ['US-SC']
+        END
+    )
+ORDER BY users.addresses[*].iso_region DESC

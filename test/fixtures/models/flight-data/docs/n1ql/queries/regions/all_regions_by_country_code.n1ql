@@ -1,0 +1,6 @@
+SELECT regions.region_code, regions.region_name
+FROM `flight-data` AS regions
+WHERE regions.iso_country = 'US'
+    AND regions.region_code IS NOT MISSING
+    AND regions.doc_type = 'region'
+ORDER BY regions.region_name ASC

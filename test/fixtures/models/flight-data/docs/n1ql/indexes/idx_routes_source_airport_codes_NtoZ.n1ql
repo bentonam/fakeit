@@ -1,0 +1,5 @@
+CREATE INDEX idx_routes_source_airport_codes_NtoZ ON `flight-data`(source_airport_code, destination_airport_code)
+WHERE doc_type = 'route'
+    AND source_airport_code > 'N'
+    AND destination_airport_code IS NOT NULL
+USING GSI

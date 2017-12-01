@@ -1,0 +1,5 @@
+SELECT navaids.*
+FROM `flight-data` AS navaids
+WHERE navaids.iso_country = 'DE'
+    AND navaids.doc_type = 'navaid'
+LIMIT 1

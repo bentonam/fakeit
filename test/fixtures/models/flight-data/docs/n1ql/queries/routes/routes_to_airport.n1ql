@@ -1,0 +1,27 @@
+SELECT airlines.airline_name,
+    IFNULL(
+        airlines.airline_iata,
+        airlines.airline_icao
+    ) AS airline_code,
+    source_airports.airport_name,
+    source_airports.iso_country,
+    source_airports.iso_region,
+    IFNULL(
+        source_airports.airport_iata,
+        source_airports.airport_icao,
+        source_airports.airport_ident
+    ) AS airport_code
+FROM `flight-data` AS routes
+INNER JOIN `flight-data` AS airport_codes
+    ON KEYS 'airport_code_' || routes.source_airport_code
+INNER JOIN `flight-data` AS source_airports
+    ON KEYS 'airport_' || TOSTRING( airport_codes.id )
+INNER JOIN `flight-data` AS airline_codes
+    ON KEYS 'airline_code_' || routes.airline_code
+INNER JOIN `flight-data` AS airlines
+    ON KEYS 'airline_' || TOSTRING( airline_codes.id )
+WHERE routes.destination_airport_code = 'MRY'
+    AND routes.source_airport_code IS NOT NULL
+    AND routes.doc_type = 'route'
+    AND routes.active = true
+ORDER BY source_airports.airport_name ASC

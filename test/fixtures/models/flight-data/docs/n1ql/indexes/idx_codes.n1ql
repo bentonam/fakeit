@@ -1,0 +1,3 @@
+CREATE INDEX idx_codes ON `flight-data`( code, designation, doc_type )
+WHERE doc_type = 'code'
+USING GSI

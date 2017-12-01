@@ -54,153 +54,111 @@ If you would like to see further examples of how to query this data set using th
 Below is a variety of commands that can be used on this data model, all of the examples assume that you are in the `flight-data/` directory.  While all of the `fakeit` options will work, for this example we will only demonstrate how adding the data to Couchbase.  Please be aware that this may take several minutes to complete.
 
 ```bash
-[flight-data]$ fakeit -m models -i input -d couchbase -b flight-data
-Generating 6922 documents for Airports model
-Generating 7 documents for Continents model
-Generating 17137 documents for Frequencies model
-Generating 10314 documents for Navaids model
-Generating 3999 documents for Regions model
-Generating 247 documents for Countries model
-Generating 8813 documents for Runways model
-Generating 67065 documents for Routes model
-Generating 10000 documents for Users model
-Generating 5911 documents for Airlines model
-Generating 6922 documents for AirportFrequencies model
-Generating 29555 documents for AirlineReviews model
-Generating 6922 documents for AirportAirlines model
-Generating 6922 documents for AirportNavaids model
-Generating 34610 documents for AirportReviews model
-Generating 6922 documents for AirportRunways model
-Generating 30419 documents for Codes model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/*
 ```
 
-If you wanted to generated the models separately and add them to Couchbase use the following commands.  *Note some models may have to be generated more than once but can be excluded from output
+If you wanted to generated the models separately and add them to Couchbase use the following commands.  *Note some models may have to be generated more than once but are excluded from output
 
 #### Continents
 
 ```bash
-[flight-data]$ fakeit -m models/continents.yaml -i input/continents.csv -d couchbase -s 127.0.0.1 -b flight-data
-Generating 7 documents for Continents model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/continents.yaml
 ```
 
 #### Countries
 
 ```bash
-[flight-data]$ fakeit -m models/countries.yaml -i input/countries.csv -d couchbase -s 127.0.0.1 -b flight-data
-Generating 247 documents for Countries model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/countries.yaml
 ```
 
 #### Regions
 
 ```bash
-[flight-data]$ fakeit -m models/regions.yaml -i input/regions.csv -d couchbase -s 127.0.0.1 -b flight-data
-Generating 3999 documents for Regions model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/regions.yaml
 ```
 
 #### Users
 
 ```bash
-[flight-data]$ fakeit -m models/regions.yaml,models/users.yaml -i input/regions.csv -d couchbase -s 127.0.0.1 -b flight-data -e Regions
-Generating 3999 documents for Regions model
-Generating 10000 documents for Regions model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/users.yaml
 ```
 
 #### Airports
 
 ```bash
-[flight-data]$ fakeit -m models/airports.yaml -i input/airports.csv -d couchbase -s 127.0.0.1 -b flight-data
-Generating 6922 documents for Airports model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/airports.yaml
 ```
 
 #### Frequencies
 
 ```bash
-[flight-data]$ fakeit -m models/frequencies.yaml -i input/frequencies.csv -d couchbase -s 127.0.0.1 -b flight-data
-Saving 17137 documents for Frequencies model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/frequencies.yaml
 ```
 
 #### Navaids
 
 ```bash
-[flight-data]$ fakeit -m models/navaids.yaml -i input/navaids.csv -d couchbase -s 127.0.0.1 -b flight-data
-Generating 10314 documents for Navaids model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/navaids.yaml
 ```
 
 #### Routes
 
 ```bash
-[flight-data]$ fakeit -m models/routes.yaml -i input/routes.csv -d couchbase -s 127.0.0.1 -b flight-data
-Generating 67065 documents for Routes model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/routes.yaml
 ```
 
 #### Runways
 
 ```bash
-[flight-data]$ fakeit -m models/runways.yaml -i input/runways.csv -d couchbase -s 127.0.0.1 -b flight-data
-Generating 10314 documents for Navaids model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/runways.yaml
 ```
 
 #### Airlines
 
 ```bash
-[flight-data]$ fakeit -m models/airlines.yaml,models/countries.yaml -i input/airlines.csv,input/countries.csv -d couchbase -s 127.0.0.1 -b flight-data -e Countries
-Generating 5912 documents for Airlines model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/airlines.yaml
 ```
 
 #### Airline Reviews
 
 ```bash
-[flight-data]$ fakeit -m models/airlines.yaml,models/countries.yaml,models/regions.yaml,models/users.yaml,models/airline_reviews.yaml -i input/airlines.csv,input/countries.csv,input/regions.csv -d couchbase -s 127.0.0.1 -b flight-data -e Countries,Regions,Users,Airlines
-Generating 247 documents for Countries model
-Generating 3999 documents for Regions model
-Generating 5912 documents for Airlines model
-Generating 10000 documents for Users model
-Generating 29560 documents for AirlinesReviews model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/airline_reviews.yaml
 ```
 
 #### Airport Airlines
 
 ```bash
-[flight-data]$ fakeit -m models/airport_airlines.yaml,models/airports.yaml,models/routes.yaml,models/airlines.yaml,models/countries.yaml -i input/airlines.csv,input/airports.csv,input/routes.csv,input/countries.csv -d couchbase -s 127.0.0.1 -b flight-data -e Countries,Airports,Routes,Airlines
-Saving 6922 documents for AirportAirlines model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/airport_airlines.yaml
 ```
 
 #### Airport Frequencies
 
 ```bash
-[flight-data]$ fakeit -m models/airport_frequencies.yaml,models/airports.yaml,models/frequencies.yaml -i input/airports.csv,input/frequencies.csv -d couchbase -s 127.0.0.1 -b flight-data -e Airports,Frequencies
-Generating 6922 documents for AirportFrequencies model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/airport_frequencies.yaml
 ```
 
 #### Airport Navaids
 
 ```bash
-[flight-data]$ fakeit -m models/airport_navaids.yaml,models/airports.yaml,models/navaids.yaml -i input/airports.csv,input/navaids.csv -d couchbase -s 127.0.0.1 -b flight-data -e Airports,Navaids
-Generating 6922 documents for AirportNavaids model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/airport_navaids.yaml
 ```
 
 #### Airport Reviews
 
 ```bash
-[flight-data]$ fakeit -m models/airports.yaml,models/regions.yaml,models/users.yaml,models/airport_reviews.yaml -i input/airports.csv,input/regions.csv -d couchbase -s 127.0.0.1 -b flight-data -e Airports,Regions,Users
-Generating 3999 documents for Regions model
-Generating 6922 documents for Airports model
-Generating 10000 documents for Users model
-Generating 34610 documents for AirportReviews model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/airport_reviews.yaml
 ```
 
 #### Airport Runways
 
 ```bash
-[flight-data]$ fakeit -m models/airport_runways.yaml,models/airports.yaml,models/runways.yaml -i input/airports.csv,input/runways.csv -d couchbase -s 127.0.0.1 -b flight-data -e Airports,Runways
-Generating 6922 documents for AirportRunways model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/airport_runways.yaml
 ```
 
 #### Codes
 
 ```bash
-[flight-data]$ fakeit -m models/airports.yaml,models/airlines.yaml,models/countries.yaml,models/navaids.yaml,models/codes.yaml -i input/airports.csv,input/airlines.csv,input/countries.csv,input/navaids.csv -d couchbase -s 127.0.0.1 -b flight-data -e Airports,Airlines,Navaids,Countries
-Generating 36944 documents for Codes model
+fakeit couchbase --server 127.0.0.1 --bucket flight-data models/codes.yaml
 ```
 
 If you want to generate each of the models as JSON files in separate ZIP archives use the following commands.
@@ -208,95 +166,95 @@ If you want to generate each of the models as JSON files in separate ZIP archive
 #### Continents
 
 ```bash
-fakeit -m models/continents.yaml -i input/continents.csv -d output -a continents.zip -f 0
+fakeit directory --spacing 0 output/continents.zip models/continents.yaml
 ```
 
 #### Countries
 
 ```bash
-fakeit -m models/countries.yaml -i input/countries.csv -d output -a countries.zip -f 0
+fakeit directory --spacing 0 output/continents.zip models/countries.yaml
 ```
 
 #### Regions
 
 ```bash
-fakeit -m models/regions.yaml -i input/regions.csv -d output -a regions.zip -f 0
+fakeit directory --spacing 0 output/regions.zip models/regions.yaml
 ```
 
 #### Airports
 
 ```bash
-fakeit -m models/airports.yaml -i input/airports.csv -d output -a airports.zip -f 0
+fakeit directory --spacing 0 output/airports.zip models/airports.yaml
 ```
 
 #### Frequencies
 
 ```bash
-fakeit -m models/frequencies.yaml -i input/frequencies.csv -d output -a frequencies.zip -f 0
+fakeit directory --spacing 0 output/frequencies.zip models/frequencies.yaml
 ```
 
 #### Navaids
 
 ```bash
-fakeit -m models/navaids.yaml -i input/navaids.csv -d output -a navaids.zip -f 0
+fakeit directory --spacing 0 output/navaids.zip models/navaids.yaml
 ```
 
 #### Routes
 
 ```bash
-fakeit -m models/routes.yaml -i input/routes.csv -d output -a routes.zip -f 0
+fakeit directory --spacing 0 output/routes.zip models/routes.yaml
 ```
 
 #### Runways
 
 ```bash
-fakeit -m models/runways.yaml -i input/runways.csv -d output -a runways.zip -f 0
+fakeit directory --spacing 0 output/runways.zip models/runways.yaml
 ```
 
 #### Airlines
 
 ```bash
-fakeit -m models/airlines.yaml,models/countries.yaml -i input/airlines.csv,input/countries.csv -d output -a airlines.zip -f 0 -e Countries
+fakeit directory --spacing 0 output/airlines.zip models/airlines.yaml
 ```
 
 #### Airline Reviews
 
 ```bash
-[flight-data]$ fakeit -m models/airlines.yaml,models/countries.yaml,models/regions.yaml,models/users.yaml,models/airline_reviews.yaml -i input/airlines.csv,input/countries.csv,input/regions.csv -d output -a airline_reviews.zip -e Countries,Regions,Users -f 0
+fakeit directory --spacing 0 output/airline_reviews.zip models/airline_reviews.yaml
 ```
 
 #### Airport Airlines
 
 ```bash
-fakeit -m models/airport_airlines.yaml,models/airports.yaml,models/routes.yaml,models/airlines.yaml,models/countries.yaml -i input/airlines.csv,input/airports.csv,input/routes.csv,input/countries.csv -d output -a airport_airlines.zip -f 0 -e Countries,Airports,Routes,Airlines
+fakeit directory --spacing 0 output/airport_airlines.zip models/airport_airlines.yaml
 ```
 
 #### Airport Frequencies
 
 ```bash
-fakeit -m models/airport_frequencies.yaml,models/airports.yaml,models/frequencies.yaml -i input/airports.csv,input/frequencies.csv -d output -a airport_frequencies.zip -f 0 -e Airports,Frequencies
+fakeit directory --spacing 0 output/airport_frequencies.zip models/airport_frequencies.yaml
 ```
 
 #### Airport Navaids
 
 ```bash
-fakeit -m models/airport_navaids.yaml,models/airports.yaml,models/navaids.yaml -i input/airports.csv,input/navaids.csv -d output -a airport_navaids.zip -f 0 -e Airports,Navaids
+fakeit directory --spacing 0 output/airport_navaids.zip models/airport_navaids.yaml
 ```
 
 #### Airport Reviews
 
 ```bash
-[flight-data]$ fakeit -m models/airports.yaml,models/regions.yaml,models/users.yaml,models/airport_reviews.yaml -i input/airports.csv,input/regions.csv -d output -a airport_reviews.zip -e Airports,Regions,Users -f 0
+fakeit directory --spacing 0 output/airport_reviews.zip models/airport_reviews.yaml
 ```
 
 #### Airport Runways
 
 ```bash
-fakeit -m models/airport_runways.yaml,models/airports.yaml,models/runways.yaml -i input/airports.csv,input/runways.csv -d output -a airport_runways.zip -f 0 -e Airports,Runways
+fakeit directory --spacing 0 output/airport_runways.zip models/airport_runways.yaml
 ```
 
 #### Codes
 
 ```bash
-fakeit -m models/airports.yaml,models/airlines.yaml,models/countries.yaml,models/navaids.yaml,models/codes.yaml -i input/airports.csv,input/airlines.csv,input/countries.csv,input/navaids.csv -d output -a codes.zip -f 0 -e Airports,Airlines,Navaids,Countries
+fakeit directory --spacing 0 output/codes.zip models/codes.yaml
 ```

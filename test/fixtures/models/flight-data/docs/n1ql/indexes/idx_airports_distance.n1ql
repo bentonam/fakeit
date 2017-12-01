@@ -1,0 +1,6 @@
+CREATE INDEX idx_airports_distance ON `flight-data`( iso_country, geo.latitude, geo.longitude )
+WHERE doc_type = 'airport'
+    AND iso_country IS NOT NULL
+    AND geo.latitude IS NOT NULL
+    AND geo.longitude IS NOT NULL
+USING GSI

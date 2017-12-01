@@ -1,0 +1,7 @@
+SELECT chats.chat_id, MILLIS_TO_STR(chats.created_on) AS created_on
+FROM social AS chats
+WHERE ANY user_id IN chats.users
+        SATISFIES user_id = 100
+    END
+    AND chats.doc_type = 'chat'
+ORDER BY chats.created_on DESC

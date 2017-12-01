@@ -1,0 +1,4 @@
+CREATE INDEX idx_navaids_iso_country ON `flight-data`( iso_country )
+WHERE doc_type = 'navaid'
+    AND iso_country IS NOT NULL
+USING GSI

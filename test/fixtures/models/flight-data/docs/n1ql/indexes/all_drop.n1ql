@@ -1,0 +1,37 @@
+DROP INDEX `flight-data`.idx_airlines_codes
+
+DROP INDEX `flight-data`.idx_airlines_iso_country
+
+DROP INDEX `flight-data`.idx_airlines_reviews_airline_code
+
+DROP INDEX `flight-data`.idx_airlines_reviews_user_id
+
+DROP INDEX `flight-data`.idx_airports_cities
+
+DROP INDEX `flight-data`.idx_airports_distance
+
+DROP INDEX `flight-data`.idx_airports_iso_country_region
+
+DROP INDEX `flight-data`.idx_airports_reviews_airport_code
+
+DROP INDEX `flight-data`.idx_airports_reviews_user_id
+
+DROP INDEX `flight-data`.idx_countries_country_code
+
+DROP INDEX `flight-data`.idx_navaids_distance
+
+DROP INDEX `flight-data`.idx_navaids_iso_country
+
+DROP INDEX `flight-data`.idx_regions_region_code
+
+DROP INDEX `flight-data`.idx_routes_destination_airport_codes_AtoM
+
+DROP INDEX `flight-data`.idx_routes_destination_airport_codes_NtoZ
+
+DROP INDEX `flight-data`.idx_routes_source_airport_codes_AtoM
+
+DROP INDEX `flight-data`.idx_routes_source_airport_codes_NtoZ
+
+DROP INDEX `flight-data`.idx_users_username_password
+
+DROP INDEX `flight-data`.idx_users_addresses_region

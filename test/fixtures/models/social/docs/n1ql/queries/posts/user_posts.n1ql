@@ -1,0 +1,5 @@
+SELECT posts.post_id, posts.post, posts.visibility,
+    MILLIS_TO_STR(posts.post_date) AS post_date
+FROM social AS posts
+WHERE posts.user_id = 100 AND visibility IS NOT NULL AND posts.doc_type = 'post'
+ORDER BY posts.post_date DESC

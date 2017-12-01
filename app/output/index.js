@@ -226,6 +226,9 @@ export const validate = {
   ///# @arg {number} option - The option to validate against
   ///# @throws {error} - If the spacing option that was pass was invalid
   spacing(option) {
+    if (option === '0' || option === 'null') {
+      option = 0;
+    }
     if (!is.number(option)) {
       throw new Error('The spacing option must be a number');
     }

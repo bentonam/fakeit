@@ -32,8 +32,7 @@ Below is a variety of commands that can be used on this data model, all of the e
 Generate JSON files and output them to a `output/` directory
 
 ```bash
-[simple]$ fakeit -m models/ -d output/
-Generating 58 documents for Users model
+[simple]$ fakeit directory output models/*
 [simple]$ ls output | awk '{print "\011",$NF}'
 	 0.json
 ```
@@ -43,8 +42,7 @@ Generating 58 documents for Users model
 Generate YAML files and output them to a `output/` directory
 
 ```bash
-[simple]$ fakeit -m models/ -d output/ -o yaml
-Generating 83 documents for Users model
+[simple]$ fakeit directory --format yaml output models/*
 [simple]$ ls output | awk '{print "\011",$NF}'
 	 0.yaml
 ```
@@ -54,8 +52,7 @@ Generating 83 documents for Users model
 Generate CSON files and output them to a `output/` directory
 
 ```bash
-[simple]$ fakeit -m models/ -d output/ -o cson
-Generating 59 documents for Users model
+[simple]$ fakeit directory --format cson output models/*
 [simple]$ ls output | awk '{print "\011",$NF}'
 	 0.cson
 ```
@@ -65,8 +62,7 @@ Generating 59 documents for Users model
 Generate a single JSON document and output it to the console
 
 ```bash
-[simple]$ fakeit -m models/ -d console -n 1
-Generating 1 documents for Users model
+[simple]$ fakeit console --count 1 models/*
 {
   "id": "user_0",
   "type": "user",
@@ -85,8 +81,7 @@ Generating 1 documents for Users model
 Generate JSON files, save them to a zip archive named `export.zip` and output the zip file to the output directory
 
 ```bash
-[simple]$ fakeit -m models/ -d output/ -a export.zip
-Generating 56 documents for Users model
+[simple]$ fakeit directory --format json output/export.zip models/*
 [simple]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -96,8 +91,7 @@ Generating 56 documents for Users model
 Generate a CSV file for the simple model and save it to the output directory
 
 ```bash
-[simple]$ fakeit -m models/ -d output/ -o csv
-Generating 85 documents for Users model
+[simple]$ fakeit directory --format csv output models/*
 [simple]$ ls output | awk '{print "\011",$NF}'
 	 Users.csv
 ```
@@ -107,8 +101,7 @@ Generating 85 documents for Users model
 Generate a CSV file for the simple model and save it to a zip archived named `export.zip` and output the zip file to the output directory
 
 ```bash
-[simple]$ fakeit -m models/ -d output/ -o csv -a export.zip
-Generating 92 documents for Users model
+[simple]$ fakeit directory --format csv output/export.zip models/*
 [simple]$ ls output | awk '{print "\011",$NF}'
 	 export.zip
 ```
@@ -118,8 +111,7 @@ Generating 92 documents for Users model
 Generate JSON documents and output them to a Couchbase Server using the defaults of a server running at `127.0.0.1` in the bucket `default`
 
 ```bash
-[simple]$ fakeit -m models/ -d couchbase
-Generating 67 documents for Users model
+[simple]$ fakeit couchbase models/*
 ```
 
 ---
@@ -127,8 +119,7 @@ Generating 67 documents for Users model
 Generate JSON documents and output them to Couchbase Server running at `192.168.1.101` in the bucket `simple` with the password of `secret`
 
 ```bash
-[simple]$ fakeit -m models/ -d couchbase -s 192.168.1.101 -b simple -p secret
-Generating 89 documents for Users model
+[simple]$ fakeit couchbase --server 192.168.1.101 --bucket simple --password secret models/*
 ```
 
 ---
@@ -136,8 +127,7 @@ Generating 89 documents for Users model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost` into a `simple` bucket with guest access enabled.
 
 ```bash
-[simple]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b simple
-Generating 92 documents for Users model
+[simple]$ fakeit sync-gateway --server http://localhost:4984 --bucket simple models/*
 ```
 
 ---
@@ -145,6 +135,5 @@ Generating 92 documents for Users model
 Generate JSON documents and output them to a Couchbase Sync Gateway running at `localhost:4984` into a `simple` bucket using [Custom (Indirect) Authentication](http://developer.couchbase.com/documentation/mobile/current/develop/guides/sync-gateway/administering-sync-gateway/authenticating-users/index.html).
 
 ```bash
-[simple]$ fakeit -m models/ -d sync-gateway -s http://localhost:4984 -b simple -g http://localhost:4985 -u jdoe -p supersecret
-Generating 50 documents for Users model
+[simple]$ fakeit sync-gateway --server http://localhost:4984 --bucket simple  --username jdoe --password supersecret models/*
 ```
