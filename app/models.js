@@ -126,7 +126,7 @@ export default class Models extends Base {
 
     // if no modle files are found
     if (!files.length) {
-      // If the models being registered aren't dependecies then throw an error
+      // If the models being registered aren't dependencies then throw an error
       if (!dependency) {
         throw new Error('No valid model files found.');
       }
@@ -155,7 +155,7 @@ export default class Models extends Base {
       // sets the root of the model so that we can resolve inputs and dependencies later
       model.root = path.resolve(this.options.root, path.dirname(model.file));
 
-      // used to determin if something is a dependency or not.
+      // used to determine if something is a dependency or not.
       if (model.is_dependency == null) {
         model.is_dependency = dependency;
       }
