@@ -56,41 +56,29 @@ export default class Fakeit extends Base {
     await model.registerModels(models);
     // calculate the total # of dependencies, if it is 0 and we're using Couchbase,
     // we can leverage streams to output the data.
-    let total_dependants = 0;
-    model.models.forEach((value) => {
+    let total_dependants = model.models.forEach((value) => {
       total_dependants += value.dependants.length;
     });
     await output.preparing;
-
-    // @todo add additional check for cli argument, as using streams as it could introduce unexpected behavior
-    // and some features might not be available
-    if (output_options.output === 'couchbase' && !total_dependants) { // we're outtputting to couchbase and there aren't any dependants use streams
-      const documents = new DocumentsStream(
-        this.options,
-        this.globals,
-        model.inputs,
-        output,
-      );
-      delete model.inputs;
-      let result = await documents.build(model.models);
-      await output.finalize();
-      const time = this.timeEnd(label);
-      if (this.options.verbose) {
-        console.log(`${success} Finished generating ${documents.total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')} documents in ${time}`);
-      }
-      return result;
+    let result, documents;
+    // only use streams if outputting to couchbase, the user has asked for it and there aren't any dependants
+    if (
+      output_options.output === 'couchbase' &&
+      output_options.useStreams &&
+      !total_dependants
+    ) { // we're outtputting to couchbase and there aren't any dependants use streams
+      documents = new DocumentsStream(this.options, this.globals, model.inputs, output);
     } else {
-      const documents = new Documents(this.options, this.documents, this.globals, model.inputs);
-      delete model.inputs;
-      let result = documents.build(model.models);
+      documents = new Documents(this.options, this.documents, this.globals, model.inputs);
       documents.on('data', (data) => output.output(data));
-      result = await result;
-      await output.finalize();
-      const time = this.timeEnd(label);
-      if (this.options.verbose) {
-        console.log(`${success} Finished generating ${documents.total} documents in ${time}`);
-      }
-      return result;
     }
+    result = await documents.build(model.models);
+    delete model.inputs;
+    await output.finalize();
+    const time = this.timeEnd(label);
+    if (this.options.verbose) {
+      console.log(`${success} Finished generating ${documents.total} documents in ${time}`);
+    }
+    return result;
   }
 }
