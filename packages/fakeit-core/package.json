@@ -21,6 +21,19 @@
     "debug": "^3.1.0"
   },
   "dependencies": {
-    "relieve": "^2.2.1"
-  }
+    "chance": "^1.0.13",
+    "faker": "^4.1.0",
+    "relieve": "^2.2.1",
+    "yamljs": "^0.3.0"
+  },
+  "plugins": [
+    "@fakeit/console",
+    "@fakeit/couchbase",
+    "@fakeit/csv",
+    "@fakeit/directory",
+    "@fakeit/file",
+    "@fakeit/http",
+    "@fakeit/sync-gateway",
+    "@fakeit/zip"
+  ]
 }

@@ -18,6 +18,24 @@
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
     "@fakeit/core": "1.0.0",
-    "ink": "^0.3.1"
+    "@fakeit/console": "1.0.0",
+    "@fakeit/couchbase": "1.0.0",
+    "@fakeit/csv": "1.0.0",
+    "@fakeit/directory": "1.0.0",
+    "@fakeit/http": "1.0.0",
+    "@fakeit/sync-gateway": "1.0.0",
+    "@fakeit/zip": "1.0.0",
+    "chalk": "^2.3.0",
+    "commander": "^2.13.0",
+    "globby": "^7.1.1"
+  },
+  "optionalDependencies": {
+    "@fakeit/console": "1.0.0",
+    "@fakeit/couchbase": "1.0.0",
+    "@fakeit/csv": "1.0.0",
+    "@fakeit/directory": "1.0.0",
+    "@fakeit/http": "1.0.0",
+    "@fakeit/sync-gateway": "1.0.0",
+    "@fakeit/zip": "1.0.0"
   }
 }
