@@ -1,0 +1,23 @@
+{
+  "name": "@fakeit/cli",
+  "description": "FakeIt cli",
+  "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
+  "contributors": [
+    "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
+  ],
+  "version": "1.0.0",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-console",
+  "bugs": {
+    "url": "https://github.com/bentonam/fakeit/issues"
+  },
+  "bin": {
+    "fakeit": "bin/fakeit"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "homepage": "https://github.com/bentonam/fakeit#readme",
+  "dependencies": {
+    "@fakeit/core": "1.0.0",
+    "ink": "^0.3.1"
+  }
+}

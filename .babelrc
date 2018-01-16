@@ -1,0 +1,13 @@
+{
+  "presets": ["env"],
+  "plugins": [
+    "external-helpers",
+    "transform-runtime",
+    [
+      "transform-react-jsx",
+      {
+        "pragma": "h"
+      }
+    ]
+  ]
+}

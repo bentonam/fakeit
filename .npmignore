@@ -1,0 +1,13 @@
+assets/
+**/*.js.map
+app/
+.git*
+examples
+test
+.eslint*
+Makefile
+.nyc*
+coverage
+.babelrc
+.travis.yaml
+docsfile.js

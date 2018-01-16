@@ -1,0 +1,54 @@
+{
+  "name": "fakeit",
+  "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
+  "contributors": [
+    "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
+  ],
+  "version": "1.2.1",
+  "description": "Command-line utility that generates fake data which can be output as JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
+  "scripts": {
+    "start": "NODE_ENV=development npm run watch",
+    "test": "ava --coverage --verbose",
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna exec --parallel -- babel src -d dist",
+    "watch": "lerna exec --parallel -- babel src -d dist --watch",
+    "publish": "lerna publish --skip-git --skip-npm",
+    "prepublish": "npm run build",
+    "precommit": "npm test",
+    "postinstall": "npm run bootstrap"
+  },
+  "bin": {
+    "fakeit": "bin/fakeit"
+  },
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bentonam/fakeit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bentonam/fakeit/issues"
+  },
+  "engines": {
+    "node": ">=4"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "homepage": "https://github.com/bentonam/fakeit#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.1",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.15.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "lerna": "^2.7.0",
+    "prettier": "^1.10.2"
+  },
+  "dependencies": {
+    "babel-runtime": "^6.26.0"
+  }
+}

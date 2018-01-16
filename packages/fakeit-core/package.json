@@ -1,0 +1,26 @@
+{
+  "name": "@fakeit/core",
+  "description": "FakeIt core",
+  "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
+  "contributors": [
+    "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
+  ],
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-core",
+  "bugs": {
+    "url": "https://github.com/bentonam/fakeit/issues"
+  },
+  "engines": {
+    "node": ">=4"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "homepage": "https://github.com/bentonam/fakeit#readme",
+  "devDependencies": {
+    "debug": "^3.1.0"
+  },
+  "dependencies": {
+    "relieve": "^2.2.1"
+  }
+}
