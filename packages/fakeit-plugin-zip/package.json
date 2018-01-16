@@ -1,13 +1,13 @@
 {
-  "name": "@fakeit/file",
-  "description": "FakeIt plugin file",
+  "name": "@fakeit/plugin-zip",
+  "description": "FakeIt plugin zip",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-file",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-plugin-zip",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },

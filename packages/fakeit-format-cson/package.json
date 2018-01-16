@@ -1,13 +1,13 @@
 {
-  "name": "@fakeit/couchbase",
-  "description": "FakeIt plugin Couchbase",
+  "name": "@fakeit/format-cson",
+  "description": "FakeIt format CSON",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-couchbase",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-format-cson",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },
@@ -15,7 +15,6 @@
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
-    "@fakeit/core": "1.0.0",
-    "couchbase": "^2.4.3"
+    "@fakeit/core": "1.0.0"
   }
 }

@@ -1,13 +1,13 @@
 {
-  "name": "@fakeit/sync-gateway",
-  "description": "FakeIt plugin sync-gateway",
+  "name": "@fakeit/plugin-http",
+  "description": "FakeIt plugin http",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-sync-gateway",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-plugin-http",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },

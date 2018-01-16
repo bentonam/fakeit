@@ -1,13 +1,13 @@
 {
-  "name": "@fakeit/csv",
-  "description": "FakeIt plugin csv",
+  "name": "@fakeit/format-json",
+  "description": "FakeIt format JSON",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-csv",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-format-json",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },

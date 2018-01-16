@@ -1,13 +1,13 @@
 {
-  "name": "@fakeit/zip",
-  "description": "FakeIt plugin zip",
+  "name": "@fakeit/format-csv",
+  "description": "FakeIt format csv",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-zip",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-format-csv",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },

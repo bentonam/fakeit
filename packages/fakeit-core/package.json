@@ -27,13 +27,17 @@
     "yamljs": "^0.3.0"
   },
   "plugins": [
-    "@fakeit/console",
-    "@fakeit/couchbase",
-    "@fakeit/csv",
-    "@fakeit/directory",
-    "@fakeit/file",
-    "@fakeit/http",
-    "@fakeit/sync-gateway",
-    "@fakeit/zip"
+    "@fakeit/format-csv",
+    "@fakeit/format-cson",
+    "@fakeit/format-js",
+    "@fakeit/format-json",
+    "@fakeit/format-yaml",
+    "@fakeit/plugin-console",
+    "@fakeit/plugin-couchbase",
+    "@fakeit/plugin-directory",
+    "@fakeit/plugin-file",
+    "@fakeit/plugin-http",
+    "@fakeit/plugin-sync-gateway",
+    "@fakeit/plugin-zip"
   ]
 }

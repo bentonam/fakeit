@@ -1,13 +1,13 @@
 {
-  "name": "@fakeit/directory",
-  "description": "FakeIt plugin directory",
+  "name": "@fakeit/plugin-console",
+  "description": "FakeIt plugin console",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-directory",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-plugin-console",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },

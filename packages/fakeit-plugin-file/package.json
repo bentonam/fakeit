@@ -1,13 +1,13 @@
 {
-  "name": "@fakeit/http",
-  "description": "FakeIt plugin http",
+  "name": "@fakeit/plugin-file",
+  "description": "FakeIt plugin file",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-http",
+  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-plugin-file",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },
