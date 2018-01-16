@@ -18,22 +18,9 @@
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
     "@fakeit/core": "1.0.0",
-    "@fakeit/plugin-console": "1.0.0",
-    "@fakeit/plugin-couchbase": "1.0.0",
-    "@fakeit/plugin-directory": "1.0.0",
-    "@fakeit/plugin-http": "1.0.0",
-    "@fakeit/plugin-sync-gateway": "1.0.0",
-    "@fakeit/plugin-zip": "1.0.0",
     "chalk": "^2.3.0",
-    "commander": "^2.13.0",
-    "globby": "^7.1.1"
-  },
-  "optionalDependencies": {
-    "@fakeit/plugin-console": "1.0.0",
-    "@fakeit/plugin-couchbase": "1.0.0",
-    "@fakeit/plugin-directory": "1.0.0",
-    "@fakeit/plugin-http": "1.0.0",
-    "@fakeit/plugin-sync-gateway": "1.0.0",
-    "@fakeit/plugin-zip": "1.0.0"
+    "commander": "~2.13.0",
+    "globby": "^7.1.1",
+    "lodash": "~4.17.4"
   }
 }

@@ -1,32 +1,156 @@
 {
-  "extends": "airbnb",
-  "plugins": [
-    "prettier"
-  ],
+  "extends": "airbnb-base",
+  "plugins": ["fat-arrow-same-line"],
   "rules": {
     "curly": ["error", "multi-line"],
-    "prettier/prettier": "error",
-    "no-case-declarations": "error"
+    "no-case-declarations": "error",
+    "accessor-pairs": ["error", { "getWithoutSet": true }],
+    "complexity": ["error", 11],
+    "no-param-reassign": "off",
+    "no-unmodified-loop-condition": "error",
+    "no-useless-call": "error",
+    "no-warning-comments": [
+      "warn",
+      {
+        "terms": ["@todo", "@fix", "@fixme"],
+        "location": "start"
+      }
+    ],
+    "require-await": "error",
+    "yield-star-spacing": ["error", "before"],
+    "arrow-body-style": "off",
+    "arrow-parens": ["error", "always"],
+    "fat-arrow-same-line/fat-arrow-same-line": "error",
+    "generator-star-spacing": "error",
+    "handle-callback-err": ["error", "^(e|err|error|.+Erro?r?)$"],
+    "no-sync": "error",
+    "array-bracket-newline": [
+      "error",
+      {
+        "multiline": true,
+        "minItems": 4
+      }
+    ],
+    "array-element-newline": [
+      "error",
+      {
+        "multiline": true,
+        "minItems": 4
+      }
+    ],
+    "array-bracket-spacing": ["error", "always"],
+    "camelcase": "off",
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "ForInStatement",
+        "message":
+          "for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array."
+      },
+      {
+        "selector": "FunctionDeclaration[generator=true]",
+        "message":
+          "In 99.9% of cases you should be using async/await instead of a generator function"
+      },
+      {
+        "selector": "LabeledStatement",
+        "message":
+          "Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand."
+      },
+      {
+        "selector": "WithStatement",
+        "message":
+          "`with` is disallowed in strict mode because it makes code impossible to predict and optimize."
+      }
+    ],
+    "id-length": [
+      "warn",
+      {
+        "min": 2,
+        "max": 50,
+        "properties": "always",
+        "exceptions": ["_", "$", "e", "i", "n", "a", "b"]
+      }
+    ],
+    "id-match": [
+      "error",
+      "^(?:[a-z]{2,}([A-Z]{1}[a-z]+)*$)|([a-z_$]+$)|(sha1)"
+    ],
+    "line-comment-position": [
+      "off",
+      {
+        "position": "above",
+        "ignorePattern": ".{0,50}",
+        "applyDefaultPatterns": true
+      }
+    ],
+    "max-lines": [
+      "error",
+      {
+        "max": 300,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ],
+    "max-params": ["warn", 3],
+    "max-statements-per-line": [
+      "error",
+      {
+        "max": 1
+      }
+    ],
+    "multiline-ternary": ["error", "never"],
+    "newline-per-chained-call": [
+      "error",
+      {
+        "ignoreChainWithDepth": 1
+      }
+    ],
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 3,
+        "maxEOF": 1
+      }
+    ],
+    "semi": ["error", "never"],
+    "spaced-comment": [
+      "error",
+      "always",
+      {
+        "line": {
+          "markers": ["/", "#", "/#", "-", "+"],
+          "exceptions": ["-", "+", "/", "#"]
+        },
+        "block": {
+          "markers": ["!", "*#"],
+          "exceptions": ["*", "#", "=", "!"],
+          "balanced": true
+        }
+      }
+    ],
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "always",
+        "named": "always",
+        "asyncArrow": "always"
+      }
+    ],
+    "no-undefined": "error",
+    "consistent-return": "off",
+    "import/extensions": "off"
   },
   "env": {
     "node": true
   },
   "overrides": [
     {
-      "files": [
-        "packages/*/src/**/*.js",
-      ],
+      "files": ["packages/*/test/**/*.test.js"],
       "rules": {
-        "no-undefined-identifier": "error"
-      }
-    },
-    {
-      "files": [
-        "packages/*/test/**/*.js",
-        "test/**/*.js"
-      ],
-      "env": {
-        "mocha": true
+        "import/no-extraneous-dependencies": "off",
+        "id-length": "off",
+        "no-shadow": "off"
       }
     }
   ]

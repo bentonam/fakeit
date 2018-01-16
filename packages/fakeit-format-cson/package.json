@@ -7,7 +7,8 @@
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-format-cson",
+  "repository":
+    "https://github.com/bentonam/fakeit/tree/master/packages/fakeit-format-cson",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },
@@ -15,6 +16,6 @@
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
-    "@fakeit/core": "1.0.0"
+    "cson": "~4.1.0"
   }
 }

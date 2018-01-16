@@ -5,17 +5,12 @@
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.2.1",
-  "description": "Command-line utility that generates fake data which can be output as JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
+  "description":
+    "Command-line utility that generates fake data which can be output as JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
   "scripts": {
-    "start": "NODE_ENV=development npm run watch",
-    "test": "ava --coverage --verbose",
-    "bootstrap": "lerna bootstrap",
-    "build": "lerna exec --parallel -- babel src -d dist",
-    "watch": "lerna exec --parallel -- babel src -d dist --watch",
     "publish": "lerna publish --skip-git --skip-npm",
-    "prepublish": "npm run build",
-    "precommit": "npm test",
-    "postinstall": "npm run bootstrap"
+    "prepublish": "make build",
+    "precommit": "lint-staged"
   },
   "bin": {
     "fakeit": "bin/fakeit"
@@ -35,19 +30,44 @@
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "devDependencies": {
+    "ava": "~0.24.0",
+    "ava-spec": "~1.1.1",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
-    "babel-eslint": "^8.2.1",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
-    "eslint": "^4.15.0",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.8.0",
+    "babel-register": "~6.26.0",
+    "chalk": "~2.3.0",
+    "eslint": "~4.15.0",
+    "eslint-config-airbnb-base": "~12.1.0",
+    "eslint-plugin-fat-arrow-same-line": "~0.1.0",
+    "eslint-plugin-import": "~2.8.0",
+    "gulp-babel": "~7.0.0",
+    "gulp-changed": "~3.2.0",
+    "gulp-cli": "~2.0.0",
+    "gulp-load-plugins": "~1.5.0",
+    "gulp-plumber": "~1.2.0",
+    "gulp-util": "~3.0.8",
+    "gulp-watch": "~5.0.0",
+    "husky": "~0.14.3",
     "lerna": "^2.7.0",
-    "prettier": "^1.10.2"
+    "lint-staged": "~6.0.0",
+    "prettier": "^1.10.2",
+    "prettier-eslint-cli": "~4.7.0",
+    "through2": "~2.0.3"
+  },
+  "lint-staged": {
+    "*.js": ["prettier-eslint --write", "eslint --fix", "git add"],
+    "*.scss": [
+      "prettier --parser scss --single-quote --write",
+      "stylelint --fix",
+      "git add"
+    ],
+    "*.md": ["prettier --parser markdown --single-quote --write", "git add"],
+    "*.json": ["prettier --parser json --write", "git add"]
   },
   "dependencies": {
-    "babel-runtime": "^6.26.0"
+    "gulp": "github:gulpjs/gulp#4.0"
   }
 }

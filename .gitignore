@@ -11,3 +11,4 @@ node_modules
 .nyc*
 coverage
 test/fixtures/models/*/output
+.eslintcache

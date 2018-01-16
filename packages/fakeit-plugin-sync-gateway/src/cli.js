@@ -1,5 +1,6 @@
-// this is not a function that is to be called by anything other than the `bin/fakeit` file in the project
-export default async function(commander) {
+// this is not a function that is to be called by
+// anything other than the `bin/fakeit` file in the project
+export default function (commander, { dim }) {
   // i.e. `fakeit sync-gateway`
   commander
     .command('sync-gateway')
@@ -9,7 +10,7 @@ export default async function(commander) {
     .option('-p, --password [password]', 'the password for the account (optional)')
     .option('-t, --timeout [timeout]', 'timeout for the servers')
     .description('This will output to a Couchbase Sync-Gateway Server')
-    .action(async (...args) => {
+    .action(() => {
       console.log('@fakeit/sync-gateway plugin specific logic')
-    });
+    })
 }

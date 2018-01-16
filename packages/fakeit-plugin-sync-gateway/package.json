@@ -7,7 +7,8 @@
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-plugin-sync-gateway",
+  "repository":
+    "https://github.com/bentonam/fakeit/tree/master/packages/fakeit-plugin-sync-gateway",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },

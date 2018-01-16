@@ -1,4 +1,3 @@
-import cli from './cli';
-export {
-  cli
-};
+import cli from './cli'
+
+export default { cli }

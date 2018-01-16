@@ -1,1 +1,1 @@
-export { plugins, version } from "./../package.json";
+export { plugins, version } from './../package.json'

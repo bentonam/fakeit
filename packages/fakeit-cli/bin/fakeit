@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-'use strict';
 
-require('../dist/fakeit').default();
+require('../dist/index.js')
+  .default()

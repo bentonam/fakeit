@@ -7,7 +7,8 @@
   ],
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "repository": "https://github.com/bentonam/fakeit/packages/fakeit-format-json",
+  "repository":
+    "https://github.com/bentonam/fakeit/tree/master/packages/fakeit-format-json",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },
