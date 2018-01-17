@@ -123,3 +123,9 @@ docker-restart:
 
 docker-up:
 	@docker-compose up -d
+
+flow-start:
+	@flow
+
+flow-stop:
+	@flow stop
