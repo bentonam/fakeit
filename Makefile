@@ -105,3 +105,27 @@ publish release:
 	# rebuild project without sourcemaps
 	make build
 	np --no-cleanup --yolo $(args)
+
+docker-build:
+	@docker-compose up -d --build
+
+docker-destroy:
+	@docker-compose down -v
+
+docker-down:
+	@docker-compose down
+
+docker-rebuild:
+	@make docker-destroy docker-build
+
+docker-restart:
+	@make docker-down docker-up
+
+docker-up:
+	@docker-compose up -d
+
+flow-start:
+	@flow
+
+flow-stop:
+	@flow stop
