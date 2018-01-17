@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "chance": "^1.0.13",
+    "debug": "^3.1.0",
     "faker": "^4.1.0",
     "relieve": "^2.2.1",
     "yamljs": "^0.3.0"
