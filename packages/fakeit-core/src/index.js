@@ -1,10 +1,12 @@
 // @flow
-import InputWorker from './input'
+import Input from '@fakeit/input'
 
-const debug = require('debug')('fakeit/core:input:worker')
+const debug = require('debug')('fakeit/core')
 
 export { plugins, version } from './../package.json'
 
+// this is just simulating loading of files from the core, nothing is actually loading
+// we're just setting up the structure
 const input_files = [
   'some/directory/file1.json',
   'some/directory/file2.js',
@@ -17,14 +19,14 @@ const input_files = [
   'some/directory/file9.zip',
   'some/directory/file10.cson',
 ]
-const input = new InputWorker()
+const input = new Input()
 
 // run the input
 input.run()
   .then(() => {
     debug('InputWorker is ready')
     // send all of the files to the parser
-    input.parseFiles(input_files)
+    input.loadFiles(input_files)
       .then((results: Object) => {
         debug(results)
       })
