@@ -16,11 +16,6 @@ properties:
     description: The document type
     data:
       value: "contact"
-  channels:
-    type: array
-    data:
-      build: |
-        return [ 'ufp-555555555' ];
   contact_id:
     type: string
     description: The contact_id
