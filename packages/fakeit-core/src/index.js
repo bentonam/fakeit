@@ -22,12 +22,13 @@ const input_files = [
 const input = new Input()
 
 // run the input
-input.run()
+input
+  .run()
   .then(() => {
-    debug('InputWorker is ready')
-    // send all of the files to the parser
-    input.loadFiles(input_files)
-      .then((results: Object) => {
-        debug(results)
-      })
+    debug('Input is ready')
+  })
+  .then((): Object => input.loadFiles(input_files)) // send all of the files to the parser
+  .then((results: Object) => {
+    debug('Loaded Files')
+    debug(results)
   })
