@@ -10,6 +10,7 @@ all: build test
 install:
 	@npm install
 	@lerna bootstrap
+	@flow-typed install
 
 # remove the build and log folders
 clean:
@@ -18,8 +19,8 @@ clean:
 # remove all files that are ignored by git
 deep-clean:
 	@make clean
-	@find . -type d -name 'node_modules' -exec rm -r {} + &> /dev/null
-	@find . -type d -name 'dist' -exec rm -r {} + &> /dev/null
+	@find . -type d -name 'node_modules' -exec rm -r {} + 2> /dev/null
+	@find . -type d -name 'dist' -exec rm -r {} + 2> /dev/null
 	@rm -rf .nyc_output/ npm-debug.log yarn-error.log
 
 # reinstall the node_modules and start with a fresh node build

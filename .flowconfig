@@ -1,6 +1,7 @@
 [ignore]
 <PROJECT_ROOT>/gulpfile.babel.js
 ./gulpfile\.babel\.js
+<PROJECT_ROOT>/flow-typed
 .*/packages/.*/dist
 .*/packages/.*/test
 
