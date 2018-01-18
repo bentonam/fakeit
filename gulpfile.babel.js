@@ -1,3 +1,4 @@
+// @flow fuck off
 import gulp from 'gulp'
 import through from 'through2'
 import chalk from 'chalk'
@@ -12,7 +13,7 @@ function swapSrcWithDist (src) {
 const packages = './packages/*/src/**/*.js'
 
 gulp.task('build', () => {
-  const base = path.join(__dirname, 'pacakges')
+  const base = path.join(__dirname, 'packages')
 
   return gulp
     .src(packages, { base })

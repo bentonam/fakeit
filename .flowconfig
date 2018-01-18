@@ -1,11 +1,19 @@
 [ignore]
+<PROJECT_ROOT>/gulpfile.babel.js
+./gulpfile\.babel\.js
+.*/packages/.*/dist
+.*/packages/.*/test
 
 [include]
+packages/*/src
 
 [libs]
 
 [lints]
 
 [options]
+emoji=true
+esproposal.export_star_as=enable
+include_warnings=true
 
 [strict]
