@@ -1,7 +1,10 @@
 {
-  "presets": ["env", "flow"],
+  "presets": ["env", "flow", "stage-0"],
   "plugins": [
     "external-helpers",
-    "transform-runtime"
+    "transform-runtime",
+    ["transform-private", {
+      "pattern": "^_"
+    }]
   ]
 }

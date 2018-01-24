@@ -19,12 +19,13 @@
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
+    "@fakeit/input": "^1.0.0",
+    "callable-instance": "~1.0.0",
     "chance": "^1.0.13",
     "debug": "^3.1.0",
     "faker": "^4.1.0",
-    "relieve": "^2.2.1",
-    "yamljs": "^0.3.0",
-    "@fakeit/input": "^1.0.0"
+    "lodash": "~4.17.4",
+    "relieve": "^2.2.1"
   },
   "optionalDependencies": {
     "@fakeit/input": "^1.0.0"

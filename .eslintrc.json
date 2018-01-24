@@ -163,7 +163,8 @@
     ],
     "no-undefined": "error",
     "consistent-return": "off",
-    "import/extensions": "off"
+    "import/extensions": "off",
+    "no-underscore-dangle": "off"
   },
   "env": {
     "node": true
@@ -174,7 +175,32 @@
       "rules": {
         "import/no-extraneous-dependencies": "off",
         "id-length": "off",
-        "no-shadow": "off"
+        "no-shadow": "off",
+        "flowtype/boolean-style": "off",
+        "flowtype/define-flow-type": "off",
+        "flowtype/delimiter-dangle": "off",
+        "flowtype/generic-spacing": "off",
+        "flowtype/no-primitive-constructor-types": "off",
+        "flowtype/no-types-missing-file-annotation": "off",
+        "flowtype/no-weak-types": "off",
+        "flowtype/object-type-delimiter": "off",
+        "flowtype/require-parameter-type": "off",
+        "flowtype/require-return-type": "off",
+        "flowtype/require-valid-file-annotation": "off",
+        "flowtype/semi": "off",
+        "flowtype/space-after-type-colon": "off",
+        "flowtype/space-before-generic-bracket": "off",
+        "flowtype/space-before-type-colon": "off",
+        "flowtype/type-id-match": "off",
+        "flowtype/union-intersection-spacing": "off",
+        "flowtype/use-flow-type": "off",
+        "flowtype/valid-syntax": "off",
+        "newline-per-chained-call": [
+          "error",
+          {
+            "ignoreChainWithDepth": 3
+          }
+        ]
       }
     }
   ]
