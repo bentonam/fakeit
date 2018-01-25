@@ -32,7 +32,6 @@ test.group('console', (test) => {
   const expected_abc_seed = {
     _id: 'contact_1d54ed12-b65a-5085-a895-5c8c626f0efb',
     doc_type: 'contact',
-    channels: [ 'ufp-555555555' ],
     contact_id: '1d54ed12-b65a-5085-a895-5c8c626f0efb',
     details: { prefix: 'Dr.', first_name: 'Daphnee', middle_name: 'Dale', last_name: 'O\'Hara', company: 'Hackett - Effertz', job_title: null, nickname: null },
     phones: [ { type: 'Mobile', phone_number: '076-099-8620', extension: null }, { type: 'Other', phone_number: '965-618-1647', extension: null } ],

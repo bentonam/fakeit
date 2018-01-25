@@ -33,6 +33,8 @@ export default async function() {
     'username',
     'password',
     'timeout',
+    'useStreams',
+    'highWaterMark',
     // gets set based off the command that's used
     'output',
   ];
@@ -78,7 +80,7 @@ export default async function() {
   function runServer(output) {
     /* istanbul ignore next : too difficult to test the servers via the cli */
     return async (...args) => {
-      const options = pick(args.pop(), [ 'server', 'bucket', 'username', 'password', 'timeout' ]);
+      const options = pick(args.pop(), [ 'server', 'bucket', 'username', 'password', 'timeout', 'useStreams', 'highWaterMark' ]);
       options.output = output;
       await run(options);
     };
@@ -92,6 +94,11 @@ export default async function() {
     .option('-u, --username [username]', 'The username to use (optional pre-5.0)')
     .option('-p, --password [password]', 'the password for the account (optional)')
     .option('-t, --timeout [timeout]', `timeout for the servers (${dim(5000)})`, Number)
+    .option('-r, --use-streams [useStreams]', `${chalk.red('**experimental**')}
+                                      Whether or not to use node streams. Used for high output
+                                      documents and can only be used when there are no dependencies (${dim(false)})`, Boolean)
+    .option('-w, --high-water-mark [highWaterMark]', `${chalk.red('**experimental**')}
+                                        The # of objects to process through the stream at a time (${dim(16)})`, Number)
     .description('This will output to a Couchbase Server')
     .action(runServer('couchbase'));
 
@@ -149,6 +156,7 @@ export default async function() {
     delete opts.babel;
     // get the output options
     output = extend(pick(commander, output_options), pick(output, output_options));
+
     // get the output path
     const output_path = path.join(output.output, output.archive || '');
     // get the model files that have been passed into fakeit
