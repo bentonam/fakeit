@@ -124,7 +124,8 @@
   "nyc": {
     "exclude": [
       "test/**/*",
-      "dist/index.js"
+      "dist/index.js",
+      "dist/documents-stream.js"
     ]
   }
 }
