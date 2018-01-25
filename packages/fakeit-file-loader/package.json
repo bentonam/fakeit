@@ -1,6 +1,6 @@
 {
-  "name": "@fakeit/plugin-sync-gateway",
-  "description": "FakeIt plugin sync-gateway",
+  "name": "@fakeit/file-loader",
+  "description": "FakeIt File Loader",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
@@ -8,18 +8,20 @@
   "version": "1.0.0",
   "main": "./dist/index.js",
   "repository":
-    "https://github.com/bentonam/fakeit/tree/master/packages/fakeit-plugin-sync-gateway",
+    "https://github.com/bentonam/fakeit/tree/master/packages/fakeit-file-loader",
   "bugs": {
     "url": "https://github.com/bentonam/fakeit/issues"
   },
   "keywords": [],
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
-  "dependencies": {
-    "@fakeit/core": "1.0.0",
-    "@fakeit/plugin-http": "1.0.0"
-  },
+  "dependencies": {},
   "peerDependencies": {
-    "debug": "^3.1.0"
+    "debug": "^3.1.0",
+    "relieve": "^2.2.1"
+  },
+  "devDependencies": {
+    "debug": "^3.1.0",
+    "relieve": "^2.2.1"
   }
 }

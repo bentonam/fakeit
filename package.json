@@ -47,6 +47,7 @@
     "eslint-plugin-flowtype": "^2.41.0",
     "eslint-plugin-import": "~2.8.0",
     "flow-bin": "^0.63.1",
+    "flow-typed": "2.2.3",
     "gulp-babel": "~7.0.0",
     "gulp-changed": "~3.2.0",
     "gulp-cli": "~2.0.0",

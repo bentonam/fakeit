@@ -12,3 +12,5 @@ node_modules
 coverage
 test/fixtures/models/*/output
 .eslintcache
+.ideas
+flow-typed/npm

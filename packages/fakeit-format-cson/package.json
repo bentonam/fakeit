@@ -17,5 +17,8 @@
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
     "cson": "~4.1.0"
+  },
+  "peerDependencies": {
+    "debug": "^3.1.0"
   }
 }

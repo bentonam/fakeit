@@ -18,14 +18,12 @@
   "keywords": [],
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
-  "devDependencies": {
-    "debug": "^3.1.0"
-  },
   "dependencies": {
     "chance": "^1.0.13",
+    "debug": "^3.1.0",
     "faker": "^4.1.0",
     "relieve": "^2.2.1",
-    "yamljs": "^0.3.0"
+    "@fakeit/file-loader": "^1.0.0"
   },
   "plugins": [
     "@fakeit/format-csv",
