@@ -352,6 +352,26 @@ export const validate = {
       throw new Error('The timeout option must be a number');
     }
   },
+
+  ///# @name useStreams
+  ///# @description Used to validate the useStreams option
+  ///# @arg {boolean} option - The option to validate against
+  ///# @throws {error} - If the useStreams option that was pass was invalid
+  useStreams(option) {
+    if (!is.boolean(option)) {
+      throw new Error('The useStreams option must be a boolean');
+    }
+  },
+
+  ///# @name highWaterMark
+  ///# @description Used to validate the highWaterMark option
+  ///# @arg {number} option - The option to validate against
+  ///# @throws {error} - If the highWaterMark option that was pass was invalid
+  highWaterMark(option) {
+    if (!is.number(option)) {
+      throw new Error('The highWaterMark option must be a number');
+    }
+  },
 };
 
 
