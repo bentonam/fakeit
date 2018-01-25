@@ -1,17 +1,4 @@
 {
   "parser": "flow",
-  "trailingComma": "es5",
-  "overrides": [
-    {
-      "files": [
-        "**/codemods/*/src/**/*.js",
-        "**/codemods/*/test/**/*.js",
-        "**/packages/*/src/**/*.js",
-        "**/packages/*/test/**/*.js"
-      ],
-      "options": {
-        "trailingComma": "all"
-      }
-    }
-  ]
+  "trailingComma": "all"
 }

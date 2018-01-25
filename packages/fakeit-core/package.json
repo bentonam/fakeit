@@ -25,13 +25,8 @@
     "debug": "^3.1.0",
     "faker": "^4.1.0",
     "lodash": "~4.17.4",
-    "relieve": "^2.2.1"
-  },
-  "optionalDependencies": {
-    "@fakeit/input": "^1.0.0"
-  },
-  "devDependencies": {
-    "@fakeit/input": "^1.0.0"
+    "relieve": "^2.2.1",
+    "@fakeit/file-loader": "^1.0.0"
   },
   "plugins": [
     "@fakeit/format-csv",

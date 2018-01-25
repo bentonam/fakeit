@@ -1,5 +1,5 @@
 // @flow
-import Input from '@fakeit/input'
+import Input from './input'
 
 const debug = require('debug')('fakeit/core')
 
