@@ -4,10 +4,13 @@
 *.DS_Store
 *.bak
 .TemporaryItems
-dist/
+dist
 Thumbs.db
 thumbs.db
-node_modules/
+node_modules
 .nyc*
 coverage
 test/fixtures/models/*/output
+.eslintcache
+.ideas
+flow-typed/npm

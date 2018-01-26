@@ -1,0 +1,25 @@
+{
+  "name": "@fakeit/plugin-sync-gateway",
+  "description": "FakeIt plugin sync-gateway",
+  "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
+  "contributors": [
+    "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
+  ],
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "repository":
+    "https://github.com/bentonam/fakeit/tree/master/packages/fakeit-plugin-sync-gateway",
+  "bugs": {
+    "url": "https://github.com/bentonam/fakeit/issues"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "homepage": "https://github.com/bentonam/fakeit#readme",
+  "dependencies": {
+    "@fakeit/core": "1.0.0",
+    "@fakeit/plugin-http": "1.0.0"
+  },
+  "peerDependencies": {
+    "debug": "^3.1.0"
+  }
+}

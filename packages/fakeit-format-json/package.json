@@ -1,0 +1,24 @@
+{
+  "name": "@fakeit/format-json",
+  "description": "FakeIt format JSON",
+  "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
+  "contributors": [
+    "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
+  ],
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "repository":
+    "https://github.com/bentonam/fakeit/tree/master/packages/fakeit-format-json",
+  "bugs": {
+    "url": "https://github.com/bentonam/fakeit/issues"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "homepage": "https://github.com/bentonam/fakeit#readme",
+  "dependencies": {
+    "@fakeit/core": "1.0.0"
+  },
+  "peerDependencies": {
+    "debug": "^3.1.0"
+  }
+}

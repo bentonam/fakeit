@@ -8,58 +8,73 @@ args = $(filter-out $@, $(MAKECMDGOALS))
 all: build test
 
 install:
-	npm install
+	@npm install
+	@lerna bootstrap
+	@flow-typed install
 
 # remove the build and log folders
 clean:
-	rm -rf dist logs
+	@rm -rf dist logs
 
 # remove all files that are ignored by git
 deep-clean:
-	make clean
-	rm -rf node_modules/ dist/ .nyc_output/ npm-debug.log yarn-error.log
+	@make clean
+	@rm -rf \
+		node_modules packages/*/node_modules \
+		dist packages/*/dist \
+		.nyc_output \
+		npm-debug.log \
+		yarn-error.log
+	@rm -rf .nyc_output/ npm-debug.log yarn-error.log
 
 # reinstall the node_modules and start with a fresh node build
-reinstall setup:
-	make deep-clean
-	make install
+reinstall:
+	@make deep-clean install
 
 # build the source files
-build compile:
-	make clean
-	babel app --out-dir dist $(args)
-
-# makes it easier to build files with source maps without errors
-# from other make commands
-build-source-maps compile-source-maps:
-	make clean
-	babel app --out-dir dist --source-maps $(args)
+build:
+	@make clean
+	@gulp build
 
 # start the server for the documentation
 docs docs-server:
-	docs server
+	@docs server
 
 # compile the documentation
 docs-build docs-compile:
-	docs compile docs-public
+	@docs compile docs-public
 
 # When watching for changes we can assume it's a development env
 # so build files with source maps
 watch:
-	make build-source-maps -- --watch $(args)
+	@make clean
+	@gulp watch
 
-# lint test files
+# formats and lints all the files
 lint:
-	command -v eslint >/dev/null 2>&1 && eslint 'app' 'test' || ./node_modules/lint-rules/node_modules/.bin/eslint 'app' 'test';
+	@make lint-js lint-json lint-md --jobs
+
+# formats your js code with prettier, then lints them with eslint
+lint-js:
+	@prettier-eslint 'packages/*/+(src|app|test)/**/*.js' '*.js' --list-different --single-quote --trailing-comma all --write
+	@eslint --cache 'packages/*/+(src|app|test)/**/*.js' '*.js'
+
+# formats your markdown files with prettier
+lint-md:
+	@prettier 'packages/*/+(src|app|test)/**/*.md' 'packages/*/*.md' '*.md' --parser markdown --single-quote --trailing-comma all --write
+
+# formats your json files with prettier
+lint-json:
+	@prettier 'packages/*/+(src|app|test)/**/*.json' 'packages/*/*.json' '*.json' --parser json --write
 
 # run unit tests
 test:
-	ava $(args)
+	@ava --verbose $(args)
 
 # run coverage for the tests
 coverage test-coverage code-coverage:
 	# if there's no instance source maps files then build the files with source maps
-	@[ -f ./dist/index.js.map ] || (echo "building files with source maps" && make build-source-maps)
+	@[ -f ./dist/index.js.map ] || (echo "building files with source maps" && make build)
 	NODE_ENV="test" nyc --silent -- ava --verbose --no-cache
 
 
@@ -95,3 +110,27 @@ publish release:
 	# rebuild project without sourcemaps
 	make build
 	np --no-cleanup --yolo $(args)
+
+docker-build:
+	@docker-compose up -d --build
+
+docker-destroy:
+	@docker-compose down -v
+
+docker-down:
+	@docker-compose down
+
+docker-rebuild:
+	@make docker-destroy docker-build
+
+docker-restart:
+	@make docker-down docker-up
+
+docker-up:
+	@docker-compose up -d
+
+flow-start:
+	@flow
+
+flow-stop:
+	@flow stop

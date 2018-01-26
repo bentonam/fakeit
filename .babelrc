@@ -1,11 +1,7 @@
 {
-  "presets": [
-    "latest",
-    "stage-0"
-  ],
+  "presets": ["env", "flow"],
   "plugins": [
-    "transform-runtime",
     "external-helpers",
-    "array-includes"
+    "transform-runtime"
   ]
 }
