@@ -4,9 +4,6 @@ var is = require('joi');
 module.exports = is.object({
   _id: is.string().regex(/^contact_[a-z0-9-]{10,}$/),
   doc_type: 'contact',
-  channels: is.array()
-    .items('ufp-555555555')
-    .length(1),
   contact_id: is.string().guid(),
   created_on: is.date(),
   modified_on: is.date(),
