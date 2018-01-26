@@ -50,11 +50,13 @@
     "eslint-plugin-import": "~2.8.0",
     "flow-bin": "^0.63.1",
     "flow-typed": "2.2.3",
+    "gulp": "github:gulpjs/gulp#4.0",
     "gulp-babel": "~7.0.0",
     "gulp-changed": "~3.2.0",
     "gulp-cli": "~2.0.0",
     "gulp-load-plugins": "~1.5.0",
     "gulp-plumber": "~1.2.0",
+    "gulp-sourcemaps": "~1.12.1",
     "gulp-util": "~3.0.8",
     "gulp-watch": "~5.0.0",
     "husky": "~0.14.3",
@@ -79,7 +81,5 @@
     "*.md": ["prettier --parser markdown --single-quote --write", "git add"],
     "*.json": ["prettier --parser json --write", "git add"]
   },
-  "dependencies": {
-    "gulp": "github:gulpjs/gulp#4.0"
-  }
+  "dependencies": {}
 }
