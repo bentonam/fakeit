@@ -17,12 +17,13 @@ gulp.task('build', () => {
 
   return gulp
     .src(packages, { base })
+    .pipe($.sourcemaps.init())
     .pipe($.plumber({
       errorHandler (err) {
         $.util.log(err.stack)
       },
     }))
-    .pipe($.changed('dist', {
+    .pipe($.changed(base, {
       transformPath: swapSrcWithDist,
     }))
     .pipe(through.obj((file, enc, callback) => {
@@ -36,6 +37,7 @@ gulp.task('build', () => {
       file.path = path.resolve(file.base, swapSrcWithDist(file.relative))
       callback(null, file)
     }))
+    .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest(base))
 })
 
