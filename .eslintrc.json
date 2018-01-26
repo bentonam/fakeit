@@ -200,6 +200,14 @@
           {
             "ignoreChainWithDepth": 3
           }
+        ],
+        "max-lines": [
+          "error",
+          {
+            "max": 600,
+            "skipBlankLines": true,
+            "skipComments": true
+          }
         ]
       }
     }
