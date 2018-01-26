@@ -63,6 +63,7 @@
     "lerna": "^2.7.0",
     "lint-staged": "~6.0.0",
     "lodash": "~4.17.4",
+    "nyc": "~11.4.1",
     "prettier": "^1.10.2",
     "prettier-eslint-cli": "~4.7.0",
     "through2": "~2.0.3"
@@ -81,5 +82,13 @@
     "*.md": ["prettier --parser markdown --single-quote --write", "git add"],
     "*.json": ["prettier --parser json --write", "git add"]
   },
-  "dependencies": {}
+  "dependencies": {},
+  "ava": {
+    "files": ["packages/*/test/**/*.test.js"],
+    "source": [
+      "packages/*/dist/**/*",
+      "packages/*/test/fixtures/**/*",
+      "packages/*/test/utils.js"
+    ]
+  }
 }
