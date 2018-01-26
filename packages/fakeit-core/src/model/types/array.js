@@ -1,13 +1,18 @@
 // @flow
+/* eslint-disable newline-per-chained-call */
 
 import _ from 'lodash'
+import joi from 'joi'
 
+import { validate } from '../../utils'
 import Base from './base'
 
+/// @name Array
+/// @page fakeit-core/types
+/// @description This is used to create arrays of fake data
 export default class FakeitArray extends Base {
   constructor () {
     super()
-    this._type = 'FakeitArray'
     ///# @name inner.options.min
     ///# @description This is the min number of documents that can potentially get created
     ///# @type {number, function}
@@ -38,10 +43,16 @@ export default class FakeitArray extends Base {
     this.inner.value = []
   }
 
+  // eslint-disable-next-line
+  get schema(): string {
+    return 'array'
+  }
+
   ///# @name items
   ///# @description This is used to create the fake items in the array
   ///# @arg {*} ...schemas - you can pass in data types to items, as well
   ///# as a `fakeit` specific function, like `fakeit.object`, `fakeit.build`, etc
+  ///# @chainable
   ///# @markup Example
   ///# // you can pass in a fakeit build function
   ///# fakeit.array()
@@ -64,6 +75,7 @@ export default class FakeitArray extends Base {
   ///#   .min(2)
   ///#   .max(6)
   items (...schemas: Array<mixed>): Class<FakeitArray> {
+    schemas = validate(schemas, joi.array().items(joi.array().min(1)))
     const obj = this.clone()
     for (const schema of _.flattenDeep(schemas)) {
       obj.inner.value.push(schema)
@@ -79,7 +91,13 @@ export default class FakeitArray extends Base {
   min (min: number): Class<FakeitArray> {
     const obj = this.clone()
     if (obj.inner.options.length == null) {
+      min = validate(min, joi.number().min(0), `min must be a number, you passed in "${min}"`)
       obj.inner.options.min = min
+
+      // ensure that the max value is never less than or equal to the min
+      if (min >= obj.inner.options.max) {
+        obj.inner.options.max = min + 100
+      }
     }
     return obj
   }
@@ -92,7 +110,11 @@ export default class FakeitArray extends Base {
   max (max: number): Class<FakeitArray> {
     const obj = this.clone()
     if (obj.inner.options.length == null) {
-      obj.inner.options.max = max
+      obj.inner.options.max = validate(
+        max,
+        joi.number().min(obj.inner.options.min + 1),
+        `max must be a number, you passed in "${max}"`,
+      )
     }
     return obj
   }
@@ -105,22 +127,31 @@ export default class FakeitArray extends Base {
     const obj = this.clone()
     obj.inner.options.min = null
     obj.inner.options.max = null
-    obj.inner.options.length = length
+    obj.inner.options.length = validate(
+      length,
+      joi.alternatives().try(null, joi.number(), joi.func()),
+      `length must be a number or a function, you passed in "${length.toString()}"`,
+    )
     return obj
   }
 
   ///# @name unique
   ///# @description This will convert the array that was generated into a unique array
-  ///# @arg {undefined, number, function} unique - The same arguments that
+  ///# @arg {null, string, function} unique - The same arguments that
   ///# are passed into [_.uniqBy](https://lodash.com/docs/4.17.4#uniqBy) from lodash starting
   ///# with the second argument
   ///# @chainable
-  unique (unique: string | Function | void): Class<FakeitArray> {
+  unique (unique: string | Function | null = null): Class<FakeitArray> {
     const obj = this.clone()
+    unique = validate(
+      unique,
+      joi.alternatives().try(null, joi.func(), joi.string()),
+      'unique must be null, function, or string. It uses lodash `uniq` or `uniqBy` behind the scenes',
+    )
     let fn
     if (unique == null) {
       fn = _.uniq
-    } else if (_.isString(unique) || _.isFunction(unique)) {
+    } else {
       fn = (list: Array<mixed>): Array<mixed> => _.uniqBy(list, unique)
     }
 
@@ -141,15 +172,22 @@ export default class FakeitArray extends Base {
   ///#     t.value = _.filter(t.value, (item) => item != null || !Number.isNaN(filter))
   ///#   })
   ///# ```
-  ///# @arg {undefined, array, object, function} unique - The same arguments that
+  ///# @arg {function, string, array, object, null} unique [null] - The same arguments that
   ///# are passed into [_.filter](https://lodash.com/docs/4.17.4#filter) from lodash starting
   ///# with the second argument
   ///# The only difference is that if you don't pass anything into the filter function
   ///# it will filter out `null`, `undefined`, and `NaN` values
   ///# @chainable
-  filter (filter: string | Array<mixed> | Object | void): Class<FakeitArray> {
+  filter (filter: Function | string | Array<mixed> | Object | null = null): Class<FakeitArray> {
     const obj = this.clone()
-    if (filter == null || Number.isNaN(filter)) {
+    filter = validate(
+      filter,
+      joi
+        .alternatives()
+        .try(joi.func(), joi.string(), joi.array().min(1), joi.object().min(1), null),
+      'filter must be function, string, array, object, or null. It uses lodash `filter` behind the scenes',
+    )
+    if (filter == null) {
       filter = (item: mixed): mixed => item != null || !_.isNaN(item)
     }
 

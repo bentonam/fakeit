@@ -2,16 +2,21 @@
 
 import { cloneDeep } from 'lodash'
 import CallableInstance from 'callable-instance'
+import joi from 'joi'
+
+import { validate } from '../../utils'
+
+const func_schema = joi.alternatives()
+  .try(joi.func(), null)
 
 /// @name Base
-/// @page models/types/base
+/// @page fakeit-core/types
 /// @description This is the base class that is applied to the object and array class
 export default class Base extends CallableInstance {
   functions: Object
 
   inner: Object
 
-  _type = 'base'
   is_fakeit = true
   is_root = false
 
@@ -19,7 +24,6 @@ export default class Base extends CallableInstance {
 
   constructor () {
     super('build')
-
     this.is_root = false
     this.inner = {
       // this is defined on each class the base is applied to
@@ -35,8 +39,9 @@ export default class Base extends CallableInstance {
     }
   }
 
-  get schema (): string {
-    return this._type
+  // eslint-disable-next-line
+  get schema(): string {
+    return 'base'
   }
 
   ///# @name clone
@@ -62,6 +67,8 @@ export default class Base extends CallableInstance {
   ///#    foo: fakeit.before((t) => t.$faker.name.firstName()),
   ///#  })
   before (fn: Function): Class<Base> {
+    // this validation looks a little weird but it makes the error reporting much better
+    fn = validate({ before: fn }, joi.object({ before: func_schema })).before
     const obj = this.clone()
     obj.inner.options.before = fn
     return obj
@@ -78,6 +85,8 @@ export default class Base extends CallableInstance {
   ///#    last_name: fakeit((t) => t.$faker.name.lastName()) // this does the same thing
   ///#  })
   build (fn: Function): Class<Base> {
+    // this validation looks a little weird but it makes the error reporting much better
+    fn = validate({ build: fn }, joi.object({ build: func_schema })).build
     const obj = this.clone()
     obj.inner.options.build = fn
     return obj
@@ -95,6 +104,8 @@ export default class Base extends CallableInstance {
   ///#    name: fakeit.after((t) => `${t.$doc.first_name} ${t.$doc.last_name}`),
   ///#  })
   after (fn: Function): Class<Base> {
+    // this validation looks a little weird but it makes the error reporting much better
+    fn = validate({ after: fn }, joi.object({ after: func_schema })).after
     const obj = this.clone()
     obj.inner.options.after = fn
     return obj
@@ -120,7 +131,14 @@ export default class Base extends CallableInstance {
   ///#   .odds(70)
   odds (odds: number = 50): Class<Base> {
     const obj = this.clone()
-    obj.inner.options.odds = odds
+    obj.inner.options.odds = validate(
+      odds,
+      joi
+        .number()
+        .min(0)
+        .max(100),
+      `odds expects a number between 1 and 100, you passed in "${odds}"`,
+    )
     return obj
   }
 
