@@ -146,15 +146,11 @@ function model (): Object {
         name: joi
           .string()
           .min(1)
-          .required()
-          .example('Contacts'),
+          .required(),
         key: joi
           .alternatives()
           .try(joi.string(), joi.func())
-          .required()
-          .example('_id')
-          // eslint-disable-next-line
-          .example('key (t) {\n  return `country_${t.$doc.id}`\n}'),
+          .required(),
         dependencies: joi.array()
           .items(joi.string()),
         inputs: joi
@@ -165,10 +161,8 @@ function model (): Object {
               .try(joi.string()
                 .regex(/.+\.[a-z]{1,6}$|^http.+/), joi.func()),
           ),
-        min: joi.number()
-          .example(1),
-        max: joi.number()
-          .example(1000),
+        min: joi.number(),
+        max: joi.number(),
         count: joi.alternatives()
           .try(null, joi.number(), joi.func()),
         before: joi.alternatives()
