@@ -188,7 +188,7 @@ export default class FakeitArray extends Base {
       'filter must be function, string, array, object, or null. It uses lodash `filter` behind the scenes',
     )
     if (filter == null) {
-      filter = (item: mixed): mixed => item != null || !_.isNaN(item)
+      filter = (item: mixed): mixed => item != null && !_.isNaN(item)
     }
 
     // I have no idea what's wrong with flow. It's saying Array isn't a valid type
