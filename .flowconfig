@@ -4,6 +4,7 @@
 <PROJECT_ROOT>/flow-typed
 .*/packages/.*/dist
 .*/packages/.*/test
+.*/packages/.*/fakeitfile.js
 
 [include]
 packages/*/src
