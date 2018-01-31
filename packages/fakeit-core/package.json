@@ -1,8 +1,8 @@
 {
   "name": "@fakeit/core",
   "description": "FakeIt core",
-  "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
+    "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
   "version": "1.0.0",
@@ -20,26 +20,16 @@
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
     "@fakeit/file-loader": "^1.0.0",
+    "@fakeit/format-json": "^1.0.0",
     "callable-instance": "~1.0.0",
     "chance": "^1.0.13",
     "debug": "^3.1.0",
     "faker": "^4.1.0",
+    "find-root": "~1.1.0",
+    "fs-extra-promisify": "0.0.2",
+    "globby": "~7.1.1",
     "joi": "~13.1.1",
     "lodash": "~4.17.4",
     "relieve": "^2.2.1"
-  },
-  "plugins": [
-    "@fakeit/format-csv",
-    "@fakeit/format-cson",
-    "@fakeit/format-js",
-    "@fakeit/format-json",
-    "@fakeit/format-yaml",
-    "@fakeit/plugin-console",
-    "@fakeit/plugin-couchbase",
-    "@fakeit/plugin-directory",
-    "@fakeit/plugin-file",
-    "@fakeit/plugin-http",
-    "@fakeit/plugin-sync-gateway",
-    "@fakeit/plugin-zip"
-  ]
+  }
 }
