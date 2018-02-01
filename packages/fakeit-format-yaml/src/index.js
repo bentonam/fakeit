@@ -1,29 +1,28 @@
+// @flow
 import yaml from 'yamljs'
 
-const parsers = {}
+export default function (config: Object): void {
+  config.format('yaml', {
+    /// @name formats.yaml.parse
+    /// @alias formats.yml.parse
+    /// @arg {string, object} obj
+    /// @returns {object} - The javascript object
+    /// @async
+    parse (obj: string): Promise<Object> {
+      return Promise.resolve(yaml.parse(obj))
+    },
 
-parsers.yaml = {
-  ///# @name parsers.yaml.parse
-  ///# @alias parsers.yml.parse
-  ///# @arg {string, object} obj
-  ///# @returns {object} - The javascript object
-  ///# @async
-  parse: (obj) => Promise.resolve(yaml.parse(obj)),
-
-  ///# @name parsers.yaml.stringify
-  ///# @alias parsers.yml.stringify
-  ///# @arg {object} obj
-  ///# @arg {number} indent [2] The indent level
-  ///# @returns {string} - The yaml string
-  ///# @async
-  stringify (obj, indent = 2) {
-    return Promise.resolve(yaml.stringify(obj, 100, indent)
-      .trim())
-  },
-}
-
-parsers.yml = parsers.yaml
-
-export default {
-  parsers,
+    /// @name formats.yaml.stringify
+    /// @alias formats.yml.stringify
+    /// @arg {object} obj
+    /// @arg {object} settings [{}] The current settings
+    /// @returns {string} - The yaml string
+    /// @async
+    stringify (obj: Object, settings: Object = {}): Promise<string> {
+      const indent: number = ((settings.formats || {}).yaml || {}).spacing || settings.spacing
+      return Promise.resolve(yaml.stringify(obj, 100, indent)
+        .trim())
+    },
+  })
+  config.format('yml', config.formats.yaml)
 }

@@ -1,20 +1,23 @@
-export default {
-  parsers: {
-    json: {
-      ///# @name parsers.json.parse
-      ///# @arg {string, object} obj
-      ///# @returns {object} - The javascript object
-      ///# @async
-      parse: (obj) => Promise.resolve(JSON.parse(obj)),
+// @flow
 
-      ///# @name parsers.json.stringify
-      ///# @arg {object} obj
-      ///# @arg {number} indent [2] The indent level
-      ///# @returns {string} - The yaml string
-      ///# @async
-      stringify (obj, indent = 2) {
-        return Promise.resolve(JSON.stringify(obj, null, !parseInt(indent, 10) ? null : indent))
-      },
+export default function (config: Object): void {
+  config.format('json', {
+    /// @name formats.json.parse
+    /// @arg {string, object} obj
+    /// @returns {object} - The javascript object
+    /// @async
+    parse (obj: string): Promise<Object> {
+      return Promise.resolve(JSON.parse(obj))
     },
-  },
+
+    /// @name formats.json.stringify
+    /// @arg {object} obj
+    /// @arg {object} settings [{}] The current settings
+    /// @returns {string} - The json string
+    /// @async
+    stringify (obj: Object, settings: Object = {}): Promise<string> {
+      const indent: number = ((settings.formats || {}).json || {}).spacing || settings.spacing
+      return Promise.resolve(JSON.stringify(obj, null, indent))
+    },
+  })
 }
