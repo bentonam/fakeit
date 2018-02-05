@@ -1,5 +1,5 @@
 // @flow
-/* eslint-disable import/no-dynamic-require, global-require */
+
 import { cpus } from 'os'
 import findRoot from 'find-root'
 import path from 'path'
@@ -10,6 +10,7 @@ import buildDebug from 'debug'
 import joi from 'joi'
 import { validate } from './utils'
 import Config from './config'
+import requirePkg from './require-pkg'
 
 const debug = buildDebug('@fakeit/core:api')
 const max_threads = cpus().length - 1
@@ -51,8 +52,7 @@ const options_schema = joi
         joi.array()
           .items(joi.alternatives()
             .try(null, joi.string(), joi.func())),
-      )
-      .default([]),
+      ),
     timeout: joi.number()
       .min(1000),
   })
@@ -60,8 +60,6 @@ const options_schema = joi
 
 export default class Api {
   settings: Object = {}
-  plugins: Object = {}
-  formats: Object = {}
   config: Config
 
   // note that the only real way to pass in arguments here is to pass
@@ -101,9 +99,41 @@ export default class Api {
     )
 
     this.config = new Config(this.settings)
+
+    // this loads all the config files/plugins
+    this._loadConfigs()
   }
 
-  setup (): Api {
+  /// @name options
+  /// @description This function allows you to pass in additional options into the api
+  /// after it has been instantiated. For example this is used with the @fakeit/cli
+  /// @arg {object} options - The options you're wanting to add to the config
+  /// @markup Example:
+  /// const api = new Api()
+  /// api.options({
+  ///   format: 'csv',
+  /// })
+  /// @chainable
+  /// @note The only thing you can't add as an option after is a plugin.
+  /// That must be passed into the constructor or config files
+  options (options: Object = {}): Api {
+    options = validate(options, options_schema)
+
+    if (options.plugins) {
+      throw new Error("plugins can't be passed into api.options(), they must be defined in a `fakeitfile.js` or `package.json`")
+    }
+
+    Object.assign(this.settings, options)
+    this.config.runOptions()
+    return this
+  }
+
+  /// @name _loadConfigs
+  /// @description This will load any configurations declared in `fakeitfile.js`, `package.json`
+  /// It will also auto import plugins
+  /// @access private
+  /// @chainable
+  _loadConfigs (): Api {
     // sync is used here so that the api isn't
     // weird `new Api().setup().then(() => )` would be weird af
     /* eslint-disable no-sync */
@@ -118,9 +148,7 @@ export default class Api {
     let fakeitfile_config: Object = {}
     const fakeitfile = path.relative(__dirname, path.resolve(root, 'fakeitfile.js'))
     try {
-      // don't know why flow is broken
-      // $FlowFixMe
-      fakeitfile_config = require(fakeitfile)
+      fakeitfile_config = requirePkg(fakeitfile)
     } catch (e) {
       debug(`no config file was found: ${fakeitfile}`)
       // do nothing because we don't care if the file exists or not
@@ -161,7 +189,7 @@ export default class Api {
         }
         // ensure there's not another item in the array with the same value
         // that comes after the current index
-        return !array.includes(item, i + 1)
+        return item && !array.includes(item, i + 1)
       })
 
     // loop over all the plugins to load them and run them
@@ -179,8 +207,7 @@ export default class Api {
         let pluginFn: Function
         // don't know why flow is broken
         try {
-          // $FlowFixMe
-          pluginFn = require(plugin).default
+          pluginFn = requirePkg(plugin)
           debug(`loaded plugin: ${plugin}`)
           try {
             pluginFn(this.config)
@@ -195,9 +222,11 @@ export default class Api {
       }
     }
 
-    this.settings = Object.assign(this.settings, options)
-
     debug('plugins %O', options.plugins)
+    delete options.plugins
+
+    this.options(options)
+
     debug('setup end')
     return this
   }
