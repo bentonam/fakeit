@@ -2,7 +2,7 @@
 import ava from 'ava-spec'
 import { isFunction } from 'lodash'
 
-import FakeitObject from '../../../dist/model/types/object'
+import FakeitObject from '../../../src/model/types/object'
 
 const test = ava.group('model:types:object')
 test('init', (t) => {

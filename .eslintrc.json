@@ -184,7 +184,7 @@
       "files": [
         "packages/*/test/**/*.test.js",
         "packages/*/fakeitfile.js",
-        "packages/*/test/figures/**/*.js"
+        "packages/*/test/fixtures/**/*.js"
       ],
       "rules": {
         "import/no-extraneous-dependencies": "off",

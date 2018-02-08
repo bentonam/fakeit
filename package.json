@@ -84,7 +84,14 @@
     "*.json": ["prettier --parser json --write", "git add"]
   },
   "dependencies": {},
+  "nyc": {
+    "require": ["babel-register"],
+    "exclude": ["packages/*/test/**/*", "packages/*/dist/**/*"],
+    "sourceMap": false,
+    "instrument": false
+  },
   "ava": {
+    "require": ["babel-register"],
     "files": ["packages/*/test/**/*.test.js"],
     "source": [
       "packages/*/dist/**/*",

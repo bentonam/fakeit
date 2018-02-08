@@ -7,7 +7,12 @@
   import/no-dynamic-require,
   global-require
 */
-export default function requirePkg (pkg) {
+import path from 'path'
+
+export default function requirePkg (pkg, root = process.cwd()) {
+  if (/[./]{2,}/.test(pkg)) {
+    pkg = path.resolve(root, pkg)
+  }
   pkg = require(pkg)
 
   return pkg.default ? pkg.default : pkg

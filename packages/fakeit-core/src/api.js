@@ -12,6 +12,14 @@ import { validate } from './utils'
 import Config from './config'
 import requirePkg from './require-pkg'
 
+function merge (...args: Object[]): Object {
+  return mergeWith(...args, (objValue: mixed, srcValue: mixed): mixed[] | void => {
+    if (Array.isArray(objValue)) {
+      return objValue.concat(srcValue)
+    }
+  })
+}
+
 const debug = buildDebug('@fakeit/core:api')
 const max_threads = cpus().length - 1
 const options_schema = joi
@@ -64,7 +72,7 @@ export default class Api {
 
   // note that the only real way to pass in arguments here is to pass
   // them in during testing
-  constructor (options: Object = {}) {
+  constructor (options: Object) {
     this.settings = Object.assign(
       {
         root: process.cwd(),
@@ -88,14 +96,14 @@ export default class Api {
         // to not overload a server or lock up your computer
         limit: 50,
 
-        // starts off null and expects an array of the plugins names to use.
         // note this is autofilled, but a user can pass it into the config just incase
-        plugins: null,
+        plugins: [],
 
         // the max time allowed to output files
         timeout: 5000,
       },
-      options,
+      /* istanbul ignore next : to hard to test, also no reason to test for it */
+      options || {},
     )
 
     this.config = new Config(this.settings)
@@ -123,7 +131,7 @@ export default class Api {
       throw new Error("plugins can't be passed into api.options(), they must be defined in a `fakeitfile.js` or `package.json`")
     }
 
-    Object.assign(this.settings, options)
+    merge(this.settings, options)
     this.config.runOptions()
     return this
   }
@@ -146,9 +154,9 @@ export default class Api {
       devDependencies = {},
     } = fs.readJsonSync(path.join(root, 'package.json'))
     let fakeitfile_config: Object = {}
-    const fakeitfile = path.relative(__dirname, path.resolve(root, 'fakeitfile.js'))
+    const fakeitfile = './fakeitfile.js'
     try {
-      fakeitfile_config = requirePkg(fakeitfile)
+      fakeitfile_config = requirePkg(fakeitfile, root)
     } catch (e) {
       debug(`no config file was found: ${fakeitfile}`)
       // do nothing because we don't care if the file exists or not
@@ -156,16 +164,7 @@ export default class Api {
     debug('fakeitfile.js config: %O', fakeitfile_config)
     debug('package.json config: %O', user_pkg_config)
 
-    let options = mergeWith(
-      {},
-      user_pkg_config || {},
-      fakeitfile_config,
-      (objValue: mixed, srcValue: mixed): mixed[] | void => {
-        if (Array.isArray(objValue)) {
-          return objValue.concat(srcValue)
-        }
-      },
-    )
+    let options = merge({}, user_pkg_config || {}, fakeitfile_config)
 
     options = validate(options, options_schema)
 
@@ -178,8 +177,9 @@ export default class Api {
       )
       // filter out any packages that don't match @fakeit/format* or @fakeit/plugin*
       .filter((pkg: string) => pkg && /@fakeit\/(format|plugin).*/.test(pkg))
+    debug('dynamic_plugins: %O', dynamic_plugins)
     options.plugins = dynamic_plugins
-      .concat(options.plugins)
+      .concat(this.settings.plugins, options.plugins)
       // filter out any duplicate strings. This can't use `_.uniq` otherwise it would filter out
       // annonymous functions that could be defined in the `fakeitfile.js`
       .filter((item: string | Function, i, array) => {
@@ -195,29 +195,34 @@ export default class Api {
     // loop over all the plugins to load them and run them
     for (const plugin of options.plugins) {
       if (typeof plugin === 'function') {
-        // anything plugin that runs in here was defined in the `fakeitfile.js`
+        // anything that runs in here was defined in the users `fakeitfile.js`
         try {
-          debug('ran fakeitfile.js plugin init')
           plugin(this.config)
+          debug('ran fakeitfile.js plugin init')
         } catch (e) {
-          console.log('error with plugin defined in fakeitfile.js', e)
+          e.message = `error with plugin defined in fakeitfile.js. ${e.message}`
           throw e
         }
       } else {
+        // anything that runs in here was imported either dynamically or by specifying a string
         let pluginFn: Function
-        // don't know why flow is broken
+
         try {
-          pluginFn = requirePkg(plugin)
+          pluginFn = requirePkg(plugin, root)
           debug(`loaded plugin: ${plugin}`)
+        } catch (e) {
+          debug(`couldn't load ${plugin}`)
+        }
+
+        // if it was loaded
+        if (pluginFn) {
           try {
             pluginFn(this.config)
             debug(`ran plugin init: ${plugin}`)
           } catch (e) {
-            console.log(`error running plugin ${plugin}`, e)
+            e.message = `error running plugin ${plugin}. ${e.message}`
             throw e
           }
-        } catch (e) {
-          console.log(`couldn't load ${plugin}`)
         }
       }
     }
@@ -231,14 +236,19 @@ export default class Api {
     return this
   }
 
-  // used to run the cli plugin options
-  cli (caporal: Object): Api {
-    this.config.runCli(caporal)
-    return this
+  ///# @name runCli
+  ///# @description
+  ///# This is used to run the cli plugin commands that will add different commands to the cli
+  ///# @arg {caporal} caporal - The Caporal.js instance
+  ///# @async
+  runCli (caporal: Object): Promise<void> {
+    return this.config.runCli(caporal)
   }
 
-  // used to run the model plugins
-  plugins (): Api {
+  ///# @name runPlugins
+  ///# @description
+  ///# This function is used to run the plugins for the models
+  runPlugins (): Api {
     this.config.runPlugins()
     return this
   }

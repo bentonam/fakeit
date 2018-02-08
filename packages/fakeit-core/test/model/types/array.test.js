@@ -2,7 +2,7 @@
 import ava from 'ava-spec'
 import { isFunction } from 'lodash'
 
-import FakeitArray from '../../../dist/model/types/array'
+import FakeitArray from '../../../src/model/types/array'
 
 const test = ava.group('model:types:array')
 test('init', (t) => {

@@ -1,7 +1,7 @@
 import ava from 'ava-spec'
 import { isFunction, isPlainObject, isEmpty, isArray } from 'lodash'
 
-import fakeit, { model } from '../../dist/model'
+import fakeit, { model } from '../../src/model'
 
 const test = ava.group('model:index')
 

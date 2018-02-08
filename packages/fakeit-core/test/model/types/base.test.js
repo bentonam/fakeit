@@ -2,7 +2,7 @@
 import ava from 'ava-spec'
 import { isFunction } from 'lodash'
 
-import Base from '../../../dist/model/types/base'
+import Base from '../../../src/model/types/base'
 
 const test = ava.group('model:types:base')
 test('init', (t) => {

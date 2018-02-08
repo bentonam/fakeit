@@ -1,6 +1,9 @@
 // @flow
 import buildDebug from 'debug'
-import { cloneDeep } from 'lodash'
+import { entries, get, set } from 'lodash'
+import joi from 'joi'
+import { forEach } from 'async-array-methods'
+import { validate } from './utils'
 
 const debug = buildDebug('@fakeit/core:config')
 /// @name config
@@ -39,20 +42,19 @@ const debug = buildDebug('@fakeit/core:config')
 ///   })
 ///
 ///   // this function would allow a plugin author to define out their plugin defaults
-///   const defaults = {
-///     server: '127.0.0.1',
-///     bucket: 'default',
-///     username: '',
-///     password: '',
-///     timeout: 5000
-///   }
-///   config.options('couchbase', defaults, (plugin_options) => {
+///   config.options('couchbase', (plugin_options) => {
 ///     // `plugin_options` would be the result of the defaults
 ///     // merged with the options passed in the config/cli
 ///
 ///     // we could expose the validate function and joi to make it easy to add validation
 ///     // config.validate(plugin_options, config.joi.object())
-///     return plugin_options
+///     return Object.assign({
+///       server: '127.0.0.1',
+///       bucket: 'default',
+///       username: '',
+///       password: '',
+///       timeout: 5000
+///     }, plugin_options)
 ///   })
 ///
 ///   config.cli((caporal) => {
@@ -80,7 +82,8 @@ export default class Config {
   $plugins: Object = {}
   formats: Object = {}
   settings: Object = {}
-  cli_plugins: Function[] = []
+  _cli_plugins: Function[] = []
+  _plugin_default_options: Object = {}
   processors: Object = {}
   outputs: Object = {}
 
@@ -112,7 +115,17 @@ export default class Config {
   ///# })
   ///# @chainable
   plugin (name: string, fn: Function): Config {
-    // @todo add validation
+    name = validate(
+      name,
+      joi.string(),
+      `\`config.plugin(name, fn)\` name must be a string you passed in ${name}`,
+    )
+    fn = validate(
+      fn,
+      joi.func(),
+      // $FlowFixMe
+      `\`config.plugin(name, fn)\` name must be a string you passed in ${fn}`,
+    )
     debug(`added plugin: ${name}`)
     this.plugins[name] = fn
     return this
@@ -158,43 +171,129 @@ export default class Config {
   ///# This is required because some parsers are async.
   ///# @chainable
   format (ext: string, parse_stringify: Object): Config {
-    // @todo add validations
+    ext = validate(
+      ext,
+      joi
+        .string()
+        .min(1)
+        .max(6),
+      (str: string) => str.replace('value', 'ext'),
+    )
+    parse_stringify = validate(
+      parse_stringify,
+      joi.object({ parse: joi.func(), stringify: joi.func() }),
+      (str: string) => str.replace('value', 'parse_stringify'),
+    )
     debug(`added format: ${ext}`)
     this.formats[ext] = parse_stringify
     return this
   }
+
+  ///# @name joi
+  ///# @getter
+  ///# @description
+  ///# This will just return the [joi](https://github.com/hapijs/joi) object
+  ///# for you to use with the validation
+  ///# @return {joi} The [joi](https://github.com/hapijs/joi) object
+  /* eslint-disable class-methods-use-this */
+  /* istanbul ignore next : this is a third party lib */
+  get joi (): Object {
+    return joi
+  }
+
+  ///# @name validate
+  ///# @description
+  ///# This can be used to validate options. This uses
+  ///# [joi](https://github.com/hapijs/joi) behind the scenes
+  ///# @arg {*} the item you want to validate against
+  ///# @arg {joi} The [joi](https://github.com/hapijs/joi) schema
+  ///# @markup
+  ///# const joi = config.joi
+  ///# const schema = joi.object({
+  ///#   foo: joi.string()
+  ///# })
+  ///# config.validate({ foo: 'somestring' }, schema)
+  ///# @chainable
+  /* istanbul ignore next : this is tested with the utils */
+  validate (obj: mixed, schema: Object): Config {
+    return validate(obj, schema)
+  }
+  /* eslint-enable class-methods-use-this */
 
   ///# @name options
   ///# @description
   ///# The `options` function allows you to pass in default options,
   ///# and run any validation that you want to run against the options that
   ///# were set.
-  ///# @arg {string} name - The name of the options
-  ///# @arg {object} defaults - Whatever the defaults are that you want to set
-  ///# @arg {function} fn - The function to run validation against any options that were passed in.
+  ///# @arg {string} key - The name of the options
+  ///# @arg {object, function} obj_fn
+  ///# The function to run validation against any options that were passed in.
   ///# This validation function is optional. If you do use this function you are required to return
   ///# the options that you want to end up using and those will be set globally
   ///# @markup Example: adding couchbase defaults
   ///# // this function would allow a plugin author to define out their plugin defaults
-  ///# const defaults = {
-  ///#   server: '127.0.0.1',
-  ///#   bucket: 'default',
-  ///#   username: '',
-  ///#   password: '',
-  ///#   timeout: 5000
-  ///# }
-  ///# config.options('couchbase', defaults, (plugin_options) => {
+  ///# config.options('couchbase', (plugin_options) => {
   ///#   ...validation...
-  ///#   return plugin_options
+  ///#   return Object.assign({
+  ///#     server: '127.0.0.1',
+  ///#     bucket: 'default',
+  ///#     username: '',
+  ///#     password: '',
+  ///#     timeout: 5000
+  ///#   }, plugin_options)
   ///# })
   ///# @chainable
-  options (name: string, defaults: Object, fn: Function = (options: mixed) => options): Config {
-    // @todo add validations
-    debug(`added option defaults: ${name}`)
+  options (key_path: string, obj_fn: Object | Function): Config {
+    key_path = validate(key_path, joi.string(), (str: string) => str.replace('value', 'key_path'))
+    obj_fn = validate(obj_fn, joi.alternatives()
+      .try(joi.object(), joi.func()), (str: string) => {
+      return str
+        .split(/\n/)
+        .slice(-3)
+        .join('\n')
+        .replace(/value/g, 'obj_fn')
+    })
 
-    this.options[name] = {
-      defaults: cloneDeep(defaults),
-      fn,
+    debug(`added option defaults: ${key_path}`)
+    let fn: Function = obj_fn
+    // if a object is passed in then just convert it to a function
+    // that does the extending already. This is just a shorthand for
+    // a comon use case
+    if (typeof obj_fn === 'object') {
+      const obj: Object = obj_fn
+      fn = (plugin_options: Object) => {
+        return Object.assign({}, obj, plugin_options)
+      }
+    }
+
+    this._plugin_default_options[key_path] = fn
+    return this
+  }
+
+  ///# @name runOptions
+  ///# @description This will run all the options that were set with `config.options(...)`
+  ///# @markup Example: adding couchbase defaults
+  ///# // this function would allow a plugin author to define out their plugin defaults
+  ///# config.options('couchbase', (plugin_options) => {
+  ///#   ...validation...
+  ///#   return Object.assign({
+  ///#     server: '127.0.0.1',
+  ///#     bucket: 'default',
+  ///#     username: '',
+  ///#     password: '',
+  ///#     timeout: 5000
+  ///#   }, plugin_options)
+  ///# })
+  ///#
+  ///# config.runOptions()
+  ///# @chainable
+  runOptions (): Config {
+    for (const [ key, value ] of entries(this._plugin_default_options)) {
+      try {
+        set(this.settings, key, value(get(this.settings, key)))
+      } catch (e) {
+        throw e
+      }
     }
     return this
   }
@@ -208,7 +307,7 @@ export default class Config {
   ///# that can be used to add the different things you wish to add. For mor information visit
   ///# their repo [Caporal.js](https://github.com/mattallty/Caporal.js)
   ///# @markup Example
-  ///# config.cli((caporal) => {
+  ///# config.cli((caporal, settings) => {
   ///#   // the cli instance will be passed in so that the different outputs can be added to it
   ///#   caporal
   ///#     .command('couchbase')
@@ -216,23 +315,26 @@ export default class Config {
   ///# })
   ///# @chainable
   cli (fn: Function): Config {
-    // @todo add validations
+    fn = validate(fn, joi.func(), 'config.cli only accepts a function')
+
     debug('added cli fn:', fn)
-    if (typeof fn === 'function') {
-      this.cli_plugins.push(fn)
-    }
+    this._cli_plugins.push(fn)
     return this
   }
 
   ///# @name runCli
   ///# @access private
   ///# @description This is used to run all the cli plugin functions
-  ///# @chainable
-  runCli (caporal: Object): Config {
-    for (const plugin of this.cli_plugins) {
-      plugin(caporal)
-    }
-    return this
+  ///# @async
+  runCli (caporal: Object): Promise<void> {
+    /* istanbul ignore next : to hard to test, but it is accounted for */
+    validate(
+      ((caporal || {}).constructor || {}).name,
+      joi.string()
+        .regex(/^Program$/),
+      'a Caporal.js instance must be passed in to `config.runCli()`',
+    )
+    return forEach(this._cli_plugins, (cliPlugin: Function) => cliPlugin(caporal, this.settings))
   }
 
   ///# @name processor
@@ -254,7 +356,15 @@ export default class Config {
   ///# })
   ///# @chainable
   processor (ext: string, fn: Function): Config {
-    // @todo add validations
+    ext = validate(
+      ext,
+      joi
+        .string()
+        .min(1)
+        .max(6),
+      (str: string) => str.replace('value', 'ext'),
+    )
+    fn = validate(fn, joi.func(), (str: string) => str.replace('value', 'fn'))
     debug(`added processor: ${ext}`)
     this.processors[ext] = fn
     return this
@@ -278,7 +388,15 @@ export default class Config {
   ///# })
   ///# @chainable
   output (type: string, fn: Function): Config {
-    // @todo add validations
+    type = validate(
+      type,
+      // for quality purposes we only allow lowercase a-z and a -
+      joi.string()
+        .regex(/^[a-z][a-z-]+[a-z]$/),
+      (str: string) => str.replace('value', 'type'),
+    )
+    fn = validate(fn, joi.func(), (str: string) => str.replace('value', 'fn'))
+
     debug(`added output: ${type}`)
     this.outputs[type] = fn
     return this
