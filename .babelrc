@@ -6,5 +6,10 @@
     ["transform-private", {
       "pattern": "^_"
     }]
-  ]
+  ],
+  "env": {
+    "test": {
+      "plugins": ["istanbul"]
+    }
+  }
 }

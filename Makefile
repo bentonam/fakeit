@@ -48,7 +48,7 @@ docs-build docs-compile:
 # so build files with source maps
 watch:
 	@make clean
-	@gulp watch
+	@NODE_ENV="test" gulp watch
 
 # formats and lints all the files
 lint:

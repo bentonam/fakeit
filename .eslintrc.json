@@ -181,7 +181,11 @@
   },
   "overrides": [
     {
-      "files": ["packages/*/test/**/*.test.js", "packages/*/fakeitfile.js"],
+      "files": [
+        "packages/*/test/**/*.test.js",
+        "packages/*/fakeitfile.js",
+        "packages/*/test/figures/**/*.js"
+      ],
       "rules": {
         "import/no-extraneous-dependencies": "off",
         "id-length": "off",
