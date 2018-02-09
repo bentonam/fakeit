@@ -42,12 +42,12 @@ export function parse (full_path: string): Promise<Object> {
 /// @name start
 /// @description Called when the task is started by the Worker
 /// @returns {array} - With the paths that have been matched
-export function start () {
+export function start (): Promise<void> {
   debug('start()')
   // simulating parsing a file
   // *Note: this is where we'll need a function to determine which formatter to use
   // based on the file extension or lastly try something like require(`@fakeit/format-${ext}`)
-  parse(process.argv[3].replace(/^"|"$/i, ''))
+  return parse(process.argv[3].replace(/^"|"$/i, ''))
     .then((result: mixed) => {
     // send the resulting data back up to the worker
       channel.send('data', result)
