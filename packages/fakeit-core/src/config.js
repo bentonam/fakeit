@@ -4,6 +4,7 @@ import { entries, get, set } from 'lodash'
 import joi from 'joi'
 import { forEach } from 'async-array-methods'
 import { validate } from './utils'
+import FakeitError from './error'
 
 const debug = buildDebug('@fakeit/core:config')
 /// @name config
@@ -292,7 +293,7 @@ export default class Config {
       try {
         set(this.settings, key, value(get(this.settings, key)))
       } catch (e) {
-        throw e
+        throw new FakeitError(e)
       }
     }
     return this

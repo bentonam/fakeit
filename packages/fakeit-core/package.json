@@ -23,6 +23,7 @@
     "@fakeit/format-json": "^1.0.0",
     "async-array-methods": "~2.1.0",
     "callable-instance": "~1.0.0",
+    "callsite-record": "~4.1.1",
     "chance": "^1.0.13",
     "debug": "^3.1.0",
     "faker": "^4.1.0",
@@ -31,7 +32,8 @@
     "globby": "~7.1.1",
     "joi": "~13.1.1",
     "lodash": "~4.17.4",
-    "relieve": "^2.2.1"
+    "relieve": "^2.2.1",
+    "source-map-support": "~0.5.3"
   },
   "devDependencies": {
     "caporal": "~0.9.0"

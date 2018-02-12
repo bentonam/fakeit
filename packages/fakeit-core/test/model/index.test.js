@@ -43,7 +43,7 @@ test.group('options', (test) => {
             name: '',
           })
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('key', (t) => {
         const error = t.throws(() => {
@@ -52,7 +52,7 @@ test.group('options', (test) => {
             key: '',
           })
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('dependencies', (t) => {
         const error = t.throws(() => {
@@ -60,7 +60,7 @@ test.group('options', (test) => {
             dependencies: {},
           }))
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('inputs', (t) => {
         const one = t.throws(() => {
@@ -70,7 +70,7 @@ test.group('options', (test) => {
             },
           }))
         })
-        t.snapshot(one)
+        t.snapshot(one.message)
         const two = t.throws(() => {
           fakeit.options(b({
             inputs: {
@@ -78,7 +78,7 @@ test.group('options', (test) => {
             },
           }))
         })
-        t.snapshot(two)
+        t.snapshot(two.message)
       })
 
       test('min', (t) => {
@@ -87,7 +87,7 @@ test.group('options', (test) => {
             min () {},
           }))
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('max', (t) => {
         const error = t.throws(() => {
@@ -95,7 +95,7 @@ test.group('options', (test) => {
             max () {},
           }))
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('before', (t) => {
         const error = t.throws(() => {
@@ -103,7 +103,7 @@ test.group('options', (test) => {
             before: '',
           }))
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('beforeEach', (t) => {
         const error = t.throws(() => {
@@ -111,7 +111,7 @@ test.group('options', (test) => {
             beforeEach: '',
           }))
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('afterEach', (t) => {
         const error = t.throws(() => {
@@ -119,7 +119,7 @@ test.group('options', (test) => {
             afterEach: '',
           }))
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('after', (t) => {
         const error = t.throws(() => {
@@ -127,7 +127,7 @@ test.group('options', (test) => {
             after: '',
           }))
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
       test('seed', (t) => {
         const error = t.throws(() => {
@@ -135,7 +135,7 @@ test.group('options', (test) => {
             seed () {},
           }))
         })
-        t.snapshot(error)
+        t.snapshot(error.message)
       })
     })
   })
@@ -154,7 +154,7 @@ test.group('before', (test) => {
     const error = t.throws(() => {
       fakeit.before('something')
     })
-    t.snapshot(error)
+    t.snapshot(error.message)
   })
 })
 
@@ -174,7 +174,7 @@ test.group('build', (test) => {
     const error = t.throws(() => {
       fakeit.build('something')
     })
-    t.snapshot(error)
+    t.snapshot(error.message)
   })
 })
 
@@ -191,7 +191,7 @@ test.group('after', (test) => {
     const error = t.throws(() => {
       fakeit.after('something')
     })
-    t.snapshot(error)
+    t.snapshot(error.message)
   })
 })
 
@@ -218,13 +218,13 @@ test.group('object', (test) => {
     const error = t.throws(() => {
       fakeit.object(() => 'woohoo')
     })
-    t.snapshot(error)
+    t.snapshot(error.message)
   })
   test("throws when object is passed but doesn't have any keys", (t) => {
     const error = t.throws(() => {
       fakeit.object({})
     })
-    t.snapshot(error)
+    t.snapshot(error.message)
   })
 })
 
@@ -254,14 +254,14 @@ test.group('array', (test) => {
     const error = t.throws(() => {
       fakeit.array(() => 'woohoo')
     })
-    t.snapshot(error)
+    t.snapshot(error.message)
   })
 
   test("throws when array is passed but doesn't have any items", (t) => {
     const error = t.throws(() => {
       fakeit.array([])
     })
-    t.snapshot(error)
+    t.snapshot(error.message)
   })
 
   test.group('min', (test) => {
@@ -280,7 +280,7 @@ test.group('array', (test) => {
       const error = t.throws(() => {
         fakeit.array([ 'woohoo' ]).min('asdfasdf')
       })
-      t.snapshot(error)
+      t.snapshot(error.message)
     })
   })
 
@@ -295,7 +295,7 @@ test.group('array', (test) => {
       const error = t.throws(() => {
         fakeit.array([ 'woohoo' ]).max('asdfasdf')
       })
-      t.snapshot(error)
+      t.snapshot(error.message)
     })
   })
 
@@ -326,7 +326,7 @@ test.group('array', (test) => {
       const error = t.throws(() => {
         fakeit.array([ 'woohoo' ]).length('asdfasdf')
       })
-      t.snapshot(error)
+      t.snapshot(error.message)
     })
   })
 
@@ -352,7 +352,7 @@ test.group('array', (test) => {
       const error = t.throws(() => {
         fakeit.array([ 'woohoo' ]).unique(1000)
       })
-      t.snapshot(error)
+      t.snapshot(error.message)
     })
   })
 
@@ -375,7 +375,7 @@ test.group('array', (test) => {
       const error = t.throws(() => {
         fakeit.array([ 'woohoo' ]).filter(1000)
       })
-      t.snapshot(error)
+      t.snapshot(error.message)
     })
   })
 })
@@ -386,9 +386,9 @@ test.group('odds', (test) => {
     t.is(actual.inner.options.odds, 10)
   })
   test('invalid', (t) => {
-    t.snapshot(t.throws(() => fakeit.odds(-1)))
-    t.snapshot(t.throws(() => fakeit.odds(101)))
-    t.snapshot(t.throws(() => fakeit.odds('woohoo')))
+    t.snapshot(t.throws(() => fakeit.odds(-1)).message)
+    t.snapshot(t.throws(() => fakeit.odds(101)).message)
+    t.snapshot(t.throws(() => fakeit.odds('woohoo')).message)
   })
 })
 

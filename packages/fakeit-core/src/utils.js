@@ -8,6 +8,8 @@
 
 import joi from 'joi'
 
+import FakeitError from './error'
+
 /// @name validate
 /// @description This is a small utility that is used to run joi validation
 /// This allows for consistency in validation
@@ -49,7 +51,10 @@ export function validate (obj: mixed, schema: ?Object, message_or_function: stri
       message = fn(message) || message
     }
 
-    throw message
+    throw new FakeitError(message, {
+      filter: (frame: Object) => !/fakeit.*\/utils\.js/.test(frame.getFileName()),
+      self: validate,
+    })
   }
 
   return result.value

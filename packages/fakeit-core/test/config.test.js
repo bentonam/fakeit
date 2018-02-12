@@ -27,8 +27,8 @@ test.group('plugin', (test) => {
   test('invalid', (t) => {
     const name = t.throws(() => t.context.plugin(2123, () => 'woohoo'))
     const fn = t.throws(() => t.context.plugin('name', {}))
-    t.snapshot(name)
-    t.snapshot(fn)
+    t.snapshot(name.message)
+    t.snapshot(fn.message)
   })
 })
 
@@ -60,9 +60,9 @@ test.group('format', () => {
     const ext = t.throws(() => t.context.format(100, () => {}))
     const ext_to_long = t.throws(() => t.context.format('jsonasdfasd', () => {}))
     const obj = t.throws(() => t.context.format('ext', () => {}))
-    t.snapshot(ext)
-    t.snapshot(ext_to_long)
-    t.snapshot(obj)
+    t.snapshot(ext.message)
+    t.snapshot(ext_to_long.message)
+    t.snapshot(obj.message)
   })
 })
 
@@ -104,8 +104,8 @@ test.group('options', (test) => {
 
     config.runOptions()
 
-    t.snapshot(name)
-    t.snapshot(fn)
+    t.snapshot(name.message)
+    t.snapshot(fn.message)
     t.deepEqual(
       config.getPluginOptions(),
       {},
@@ -172,9 +172,9 @@ test.group('options/validate/joi/runOptions', (test) => {
       )
     })
 
-    const message = t.throws(() => t.context.runOptions())
+    const error = t.throws(() => t.context.runOptions())
 
-    t.snapshot(message)
+    t.snapshot(error.message)
   })
 })
 
@@ -200,7 +200,7 @@ test.group('cli', (test) => {
     }
     const config = new Config()
     const fn = t.throws(() => config.cli({}))
-    t.snapshot(fn)
+    t.snapshot(fn.message)
     t.deepEqual(config.getCliPlugins(), [], 'no plugins should exist because there was an error')
   })
 })
@@ -223,8 +223,8 @@ test.group('runCli', (test) => {
   })
 
   test('invalid', (t) => {
-    const message = t.throws(() => t.context.runCli())
-    t.snapshot(message)
+    const error = t.throws(() => t.context.runCli())
+    t.snapshot(error.message)
   })
 })
 
@@ -243,9 +243,9 @@ test.group('processor', (test) => {
     const ext_number = t.throws(() => t.context.processor(1233))
     const fn = t.throws(() => t.context.processor('yaml', {}))
 
-    t.snapshot(ext)
-    t.snapshot(ext_number)
-    t.snapshot(fn)
+    t.snapshot(ext.message)
+    t.snapshot(ext_number.message)
+    t.snapshot(fn.message)
 
     t.deepEqual(
       t.context.processors,
@@ -269,8 +269,8 @@ test.group('output', (test) => {
     const type = t.throws(() => t.context.output('aasdf_adsfasdf'))
     const fn = t.throws(() => t.context.output('abcd', {}))
 
-    t.snapshot(type)
-    t.snapshot(fn)
+    t.snapshot(type.message)
+    t.snapshot(fn.message)
 
     t.deepEqual(t.context.outputs, {}, "there shouldn't be a output because there was an error")
   })

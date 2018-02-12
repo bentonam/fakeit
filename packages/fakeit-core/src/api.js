@@ -11,6 +11,7 @@ import joi from 'joi'
 import { validate } from './utils'
 import Config from './config'
 import requirePkg from './require-pkg'
+import FakeitError from './error'
 
 function merge (...args: Object[]): Object {
   return mergeWith(...args, (objValue: mixed, srcValue: mixed): mixed[] | void => {
@@ -128,7 +129,7 @@ export default class Api {
     options = validate(options, options_schema)
 
     if (options.plugins) {
-      throw new Error("plugins can't be passed into api.options(), they must be defined in a `fakeitfile.js` or `package.json`")
+      throw new FakeitError("plugins can't be passed into api.options(), they must be defined in a `fakeitfile.js` or `package.json`")
     }
 
     merge(this.settings, options)
@@ -201,7 +202,7 @@ export default class Api {
           debug('ran fakeitfile.js plugin init')
         } catch (e) {
           e.message = `error with plugin defined in fakeitfile.js. ${e.message}`
-          throw e
+          throw new FakeitError(e)
         }
       } else {
         // anything that runs in here was imported either dynamically or by specifying a string
@@ -221,7 +222,7 @@ export default class Api {
             debug(`ran plugin init: ${plugin}`)
           } catch (e) {
             e.message = `error running plugin ${plugin}. ${e.message}`
-            throw e
+            throw new FakeitError(e)
           }
         }
       }
