@@ -65,7 +65,7 @@ lint-md:
 
 # formats your json files with prettier
 lint-json:
-	@prettier 'packages/*/+(src|app|test)/**/*.json' 'packages/*/*.json' '*.json' --parser json --write
+	@prettier 'packages/*/+(src|app|test)/**/*.json' 'packages/*/*.json' '*.json' '.babelrc' --parser json --write
 
 # run unit tests
 test:

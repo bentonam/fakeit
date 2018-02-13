@@ -81,7 +81,7 @@
       "git add"
     ],
     "*.md": ["prettier --parser markdown --single-quote --write", "git add"],
-    "*.json": ["prettier --parser json --write", "git add"]
+    "*.@(json|babelrc)": ["prettier --parser json --write", "git add"]
   },
   "dependencies": {},
   "nyc": {

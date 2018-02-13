@@ -1,11 +1,25 @@
 {
-  "presets": ["env", "flow", "stage-0"],
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "node": "6"
+        }
+      }
+    ],
+    "flow",
+    "stage-0"
+  ],
   "plugins": [
     "external-helpers",
     "transform-runtime",
-    ["transform-private", {
-      "pattern": "^_"
-    }]
+    [
+      "transform-private",
+      {
+        "pattern": "^_"
+      }
+    ]
   ],
   "env": {
     "test": {
