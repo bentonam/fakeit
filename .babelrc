@@ -19,6 +19,12 @@
       {
         "pattern": "^_"
       }
+    ],
+    [
+      "transform-react-jsx",
+      {
+        "pragma": "h"
+      }
     ]
   ],
   "env": {

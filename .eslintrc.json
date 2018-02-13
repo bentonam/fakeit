@@ -1,5 +1,5 @@
 {
-  "extends": "airbnb-base",
+  "extends": "airbnb",
   "parser": "babel-eslint",
   "plugins": ["fat-arrow-same-line", "flowtype"],
   "rules": {
@@ -36,6 +36,14 @@
     "flowtype/union-intersection-spacing": ["error", "always"],
     "flowtype/use-flow-type": "warn",
     "flowtype/valid-syntax": "warn",
+    "react/react-in-jsx-scope": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "varsIgnorePattern": "h"
+      }
+    ],
+    "no-plusplus": "off",
     "curly": ["error", "multi-line"],
     "no-case-declarations": "error",
     "accessor-pairs": ["error", { "getWithoutSet": true }],

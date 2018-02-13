@@ -56,8 +56,8 @@ lint:
 
 # formats your js code with prettier, then lints them with eslint
 lint-js:
-	@prettier-eslint 'packages/*/+(src|app|test)/**/*.js' '*.js' --list-different --single-quote --trailing-comma all --parser flow --write
-	@eslint --cache 'packages/*/+(src|app|test)/**/*.js' '*.js'
+	@prettier-eslint 'packages/*/+(src|app|test)/**/*.{js,jsx}' '*.{js,jsx}' --list-different --single-quote --trailing-comma all --parser flow --write
+	@eslint --cache 'packages/*/+(src|app|test)/**/*.{js,jsx}' '*.{js,jsx}'
 
 # formats your markdown files with prettier
 lint-md:

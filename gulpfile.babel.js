@@ -7,10 +7,10 @@ import path from 'path'
 const $ = require('gulp-load-plugins')()
 
 function swapSrcWithDist (src) {
-  return src.replace(/\bsrc\b/, 'dist')
+  return src.replace(/\bsrc\b/, 'dist').replace('.jsx', '.js')
 }
 
-const packages = './packages/*/src/**/*.js'
+const packages = './packages/*/src/**/*.@(js|jsx)'
 
 gulp.task('build', () => {
   const base = path.join(__dirname, 'packages')
