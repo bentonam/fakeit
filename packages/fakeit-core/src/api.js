@@ -42,6 +42,9 @@ const options_schema = joi
           .min(0)
           .max(4),
       ),
+    count: joi.alternatives()
+      .try(null, joi.number()
+        .min(1)),
     output: joi.alternatives()
       .try(joi.func(), joi.string()),
     threads: joi
@@ -64,6 +67,8 @@ const options_schema = joi
       ),
     timeout: joi.number()
       .min(1000),
+    seed: joi.alternatives()
+      .try(null, joi.number(), joi.string()),
   })
   .unknown()
 
@@ -81,6 +86,11 @@ export default class Api {
         // this is the format to output it in.
         // The default is json because it's installed automatically
         format: 'json',
+
+        // Sets a global count that's used instead of the count defined on the model.
+        // If this is set then it will also override anything that's dynamically set via
+        // `fakeit.before(() => ...)` on a model level
+        count: null,
 
         // the character(s) to use for spacing. default is 2 because it's the most common
         spacing: 2,
@@ -102,6 +112,9 @@ export default class Api {
 
         // the max time allowed to output files
         timeout: 5000,
+
+        // The global seed to use for repeatable data
+        seed: null,
       },
       /* istanbul ignore next : to hard to test, also no reason to test for it */
       options || {},
