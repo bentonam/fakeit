@@ -1,7 +1,29 @@
 {
-  "presets": ["env", "flow"],
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "node": "6"
+        }
+      }
+    ],
+    "flow",
+    "stage-0"
+  ],
   "plugins": [
     "external-helpers",
-    "transform-runtime"
-  ]
+    "transform-runtime",
+    [
+      "transform-private",
+      {
+        "pattern": "^_"
+      }
+    ]
+  ],
+  "env": {
+    "test": {
+      "plugins": ["istanbul"]
+    }
+  }
 }

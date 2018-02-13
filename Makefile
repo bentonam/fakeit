@@ -48,7 +48,7 @@ docs-build docs-compile:
 # so build files with source maps
 watch:
 	@make clean
-	@gulp watch
+	@NODE_ENV="test" gulp watch
 
 # formats and lints all the files
 lint:
@@ -56,7 +56,7 @@ lint:
 
 # formats your js code with prettier, then lints them with eslint
 lint-js:
-	@prettier-eslint 'packages/*/+(src|app|test)/**/*.js' '*.js' --list-different --single-quote --trailing-comma all --write
+	@prettier-eslint 'packages/*/+(src|app|test)/**/*.js' '*.js' --list-different --single-quote --trailing-comma all --parser flow --write
 	@eslint --cache 'packages/*/+(src|app|test)/**/*.js' '*.js'
 
 # formats your markdown files with prettier
@@ -65,7 +65,7 @@ lint-md:
 
 # formats your json files with prettier
 lint-json:
-	@prettier 'packages/*/+(src|app|test)/**/*.json' 'packages/*/*.json' '*.json' --parser json --write
+	@prettier 'packages/*/+(src|app|test)/**/*.json' 'packages/*/*.json' '*.json' '.babelrc' --parser json --write
 
 # run unit tests
 test:

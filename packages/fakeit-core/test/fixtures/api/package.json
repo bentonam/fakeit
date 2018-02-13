@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@fakeit/format-json": "^1.0.0"
+  },
+  "devDependencies": {
+    "@fakeit/format-cson": "^1.0.0"
+  },
+  "fakeit": {
+    "timeout": 2000,
+    "merge-array-test": ["one", "two"]
+  }
+}

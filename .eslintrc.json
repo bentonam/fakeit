@@ -3,29 +3,39 @@
   "parser": "babel-eslint",
   "plugins": ["fat-arrow-same-line", "flowtype"],
   "rules": {
-    "flowtype/boolean-style": [2, "boolean"],
-    "flowtype/define-flow-type": 1,
-    "flowtype/delimiter-dangle": [2, "never"],
-    "flowtype/generic-spacing": [2, "never"],
-    "flowtype/no-primitive-constructor-types": 2,
-    "flowtype/no-types-missing-file-annotation": 2,
+    "flowtype/boolean-style": ["error", "boolean"],
+    "flowtype/define-flow-type": "warn",
+    "flowtype/delimiter-dangle": ["error", "never"],
+    "flowtype/generic-spacing": ["error", "never"],
+    "flowtype/no-primitive-constructor-types": "error",
+    "flowtype/no-types-missing-file-annotation": "error",
     "flowtype/no-weak-types": "off",
-    "flowtype/object-type-delimiter": [2, "comma"],
-    "flowtype/require-parameter-type": 2,
-    "flowtype/require-return-type": [
-      2,
-      "always",
-      { "annotateUndefined": "never" }
+    "flowtype/object-type-delimiter": ["error", "comma"],
+    "flowtype/require-parameter-type": [
+      "error",
+      {
+        "excludeParameterMatch":
+          "^(resolve|reject|e|err|error|array|i|index|next)$|^_"
+      }
     ],
-    "flowtype/require-valid-file-annotation": 2,
-    "flowtype/semi": [2, "always"],
-    "flowtype/space-after-type-colon": [2, "always"],
-    "flowtype/space-before-generic-bracket": [2, "never"],
-    "flowtype/space-before-type-colon": [2, "never"],
-    "flowtype/type-id-match": [2, "^([A-Z][a-z0-9]+)+Type$"],
-    "flowtype/union-intersection-spacing": [2, "always"],
-    "flowtype/use-flow-type": 1,
-    "flowtype/valid-syntax": 1,
+    "flowtype/require-return-type": [
+      "error",
+      "always",
+      {
+        "excludeArrowFunctions": true,
+        "annotateUndefined": "always",
+        "excludeMatching": ["constructor"]
+      }
+    ],
+    "flowtype/require-valid-file-annotation": "error",
+    "flowtype/semi": ["error", "always"],
+    "flowtype/space-after-type-colon": ["error", "always"],
+    "flowtype/space-before-generic-bracket": ["error", "never"],
+    "flowtype/space-before-type-colon": ["error", "never"],
+    "flowtype/type-id-match": ["error", "^([A-Z][a-z0-9]+)+Type$"],
+    "flowtype/union-intersection-spacing": ["error", "always"],
+    "flowtype/use-flow-type": "warn",
+    "flowtype/valid-syntax": "warn",
     "curly": ["error", "multi-line"],
     "no-case-declarations": "error",
     "accessor-pairs": ["error", { "getWithoutSet": true }],
@@ -163,18 +173,56 @@
     ],
     "no-undefined": "error",
     "consistent-return": "off",
-    "import/extensions": "off"
+    "import/extensions": "off",
+    "no-underscore-dangle": "off"
   },
   "env": {
     "node": true
   },
   "overrides": [
     {
-      "files": ["packages/*/test/**/*.test.js"],
+      "files": [
+        "packages/*/test/**/*.test.js",
+        "packages/*/fakeitfile.js",
+        "packages/*/test/fixtures/**/*.js"
+      ],
       "rules": {
         "import/no-extraneous-dependencies": "off",
         "id-length": "off",
-        "no-shadow": "off"
+        "no-shadow": "off",
+        "flowtype/boolean-style": "off",
+        "flowtype/define-flow-type": "off",
+        "flowtype/delimiter-dangle": "off",
+        "flowtype/generic-spacing": "off",
+        "flowtype/no-primitive-constructor-types": "off",
+        "flowtype/no-types-missing-file-annotation": "off",
+        "flowtype/no-weak-types": "off",
+        "flowtype/object-type-delimiter": "off",
+        "flowtype/require-parameter-type": "off",
+        "flowtype/require-return-type": "off",
+        "flowtype/require-valid-file-annotation": "off",
+        "flowtype/semi": "off",
+        "flowtype/space-after-type-colon": "off",
+        "flowtype/space-before-generic-bracket": "off",
+        "flowtype/space-before-type-colon": "off",
+        "flowtype/type-id-match": "off",
+        "flowtype/union-intersection-spacing": "off",
+        "flowtype/use-flow-type": "off",
+        "flowtype/valid-syntax": "off",
+        "newline-per-chained-call": [
+          "error",
+          {
+            "ignoreChainWithDepth": 3
+          }
+        ],
+        "max-lines": [
+          "error",
+          {
+            "max": 600,
+            "skipBlankLines": true,
+            "skipComments": true
+          }
+        ]
       }
     }
   ]
