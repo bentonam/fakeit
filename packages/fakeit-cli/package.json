@@ -18,9 +18,20 @@
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
     "@fakeit/core": "1.0.0",
+    "caporal": "~0.9.0",
     "chalk": "^2.3.0",
-    "commander": "~2.13.0",
     "globby": "^7.1.1",
-    "lodash": "~4.17.4"
+    "ink": "~0.4.1",
+    "ink-progress-bar": "~2.1.1",
+    "ink-progress-spinner": "~1.1.1",
+    "lodash": "~4.17.4",
+    "log-symbols": "~2.2.0"
+  },
+  "devDependencies": {
+    "@ladjs/time-require": "~0.1.4",
+    "@fakeit/format-json": "1.0.0"
+  },
+  "peerDependencies": {
+    "debug": "^3.1.0"
   }
 }

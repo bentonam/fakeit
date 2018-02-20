@@ -1,4 +1,21 @@
 #!/usr/bin/env node
+/* istanbul ignore file */
+// no need to lint this file since it's es5
+/* eslint-disable */
+const debug = require('debug')('@fakeit')
+if (debug.enabled) {
+  try {
+    require('@ladjs/time-require')
+  } catch (e) {
+    console.log('install `@ladjs/time-require` to see import times')
+  }
+}
 
-require('../dist/index.js')
-  .default()
+require('../dist/index.js').default()
+  .then((program) => {
+    program.parse(process.argv)
+  })
+  .catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })

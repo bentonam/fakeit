@@ -58,11 +58,14 @@ const debug = buildDebug('@fakeit/core:config')
 ///     }, plugin_options)
 ///   })
 ///
-///   config.cli((caporal) => {
+///   config.cli((caporal, next) => {
 ///     // the cli instance will be passed in so that the different outputs can be added to it
 ///     caporal
 ///       .command('couchbase')
 ///       // ...etc
+///       // note that the next function must be passed to the action command in order
+///       // for it to kick off correctly.
+///       .action(next('ink-test'))
 ///   })
 ///
 ///   // this is here for features like `@fakeit/plugin-yaml-model` so we could support yaml models
@@ -324,10 +327,12 @@ export default class Config {
   }
 
   ///# @name runCli
+  ///# @arg {object} caporal - The caporal instance
+  ///# @arg {function} next - The function that must be called inside of the `.action()`
   ///# @access private
   ///# @description This is used to run all the cli plugin functions
   ///# @async
-  runCli (caporal: Object): Promise<void> {
+  runCli (caporal: Object, next: Function): Promise<void> {
     /* istanbul ignore next : to hard to test, but it is accounted for */
     validate(
       ((caporal || {}).constructor || {}).name,
@@ -335,7 +340,7 @@ export default class Config {
         .regex(/^Program$/),
       'a Caporal.js instance must be passed in to `config.runCli()`',
     )
-    return forEach(this._cli_plugins, (cliPlugin: Function) => cliPlugin(caporal, this.settings))
+    return forEach(this._cli_plugins, (cliPlugin: Function) => cliPlugin(caporal, next))
   }
 
   ///# @name processor

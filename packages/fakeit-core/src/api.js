@@ -5,9 +5,10 @@ import findRoot from 'find-root'
 import path from 'path'
 import fs from 'fs-extra-promisify'
 import globby from 'globby'
-import { mergeWith } from 'lodash'
+import { mergeWith, random, clamp, noop } from 'lodash'
 import buildDebug from 'debug'
 import joi from 'joi'
+import { EventEmitter } from 'events'
 import { validate } from './utils'
 import Config from './config'
 import requirePkg from './require-pkg'
@@ -47,6 +48,8 @@ const options_schema = joi
         .min(1)),
     output: joi.alternatives()
       .try(joi.func(), joi.string()),
+    models: joi.array()
+      .items(joi.string()),
     threads: joi
       .number()
       .min(1)
@@ -72,13 +75,14 @@ const options_schema = joi
   })
   .unknown()
 
-export default class Api {
+export default class Api extends EventEmitter {
   settings: Object = {}
   config: Config
 
   // note that the only real way to pass in arguments here is to pass
   // them in during testing
   constructor (options: Object) {
+    super()
     this.settings = Object.assign(
       {
         root: process.cwd(),
@@ -97,7 +101,10 @@ export default class Api {
 
         // The type of output to use.
         // This can be a function or string that matches one of the registered output types
-        output (): void {},
+        output: noop,
+
+        // the models to be output
+        models: [],
 
         // the number of threads to use. The default number of threads is the max amount that
         // your computer has to offer
@@ -219,7 +226,7 @@ export default class Api {
         }
       } else {
         // anything that runs in here was imported either dynamically or by specifying a string
-        let pluginFn: Function
+        let pluginFn: Function | void
 
         try {
           pluginFn = requirePkg(plugin, root)
@@ -250,13 +257,76 @@ export default class Api {
     return this
   }
 
+  // run everything
+  run (): void {
+    // !!!!!!
+    // !!!!!!
+    // !!!!!!
+    // !!!!!! currently this function is fake and just used to demo the cli
+    // !!!!!!
+    // !!!!!!
+    // !!!!!!
+
+    const createModel = (name: string) => {
+      const model = {
+        name,
+        count: 0,
+        total: random(500, 2000),
+        output: 0,
+        is_dependency: Boolean(random(0, 1)),
+        _should_error: random(0, 4) === 0,
+        error: false,
+      }
+      this.emit('model-start', model)
+      return model
+    }
+    const models = [
+      'one',
+      'two',
+      'three',
+      'four',
+      'five',
+    ].map(createModel)
+
+    const interval = setInterval(() => {
+      const index = random(0, models.length - 1)
+      const model = models[index]
+      if (!model) {
+        clearInterval(interval)
+        this.emit('finished')
+        return
+      }
+
+      if (!model.is_dependency) {
+        model.output = clamp(model.output + random(1, 10), 0, model.count)
+      }
+
+      if (model._should_error && random(0, 100) < 3) {
+        model.error = true
+      }
+
+      if (typeof model.error === 'number') {
+        model.error += random(1, 25)
+      }
+
+      model.count = clamp(model.count + random(1, 25), model.total)
+
+      if ((model.output || model.count) === model.total || model.error) {
+        models.splice(index, 1)
+      }
+
+      this.emit('document-update', model)
+    }, 10)
+  }
+
   ///# @name runCli
   ///# @description
   ///# This is used to run the cli plugin commands that will add different commands to the cli
   ///# @arg {caporal} caporal - The Caporal.js instance
+  ///# @arg {function} next - The function that should be called to initiate the document generation
   ///# @async
-  runCli (caporal: Object): Promise<void> {
-    return this.config.runCli(caporal)
+  runCli (caporal: Object, next: Function): Promise<void> {
+    return this.config.runCli(caporal, next)
   }
 
   ///# @name runPlugins

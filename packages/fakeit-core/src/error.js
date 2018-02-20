@@ -14,13 +14,18 @@ function processFrameFn (frame: Object): Object {
   // fixes a weird bug with `wrapCallSite`
   frame.isNative = () => false
 
-  let getFileName = frame.getFileName()
+  let file = frame.getFileName()
 
   frame = wrapCallSite(frame)
-  if (getFileName.includes('fakeit')) {
-    getFileName = getFileName.replace('dist', 'src')
-    frame.getFileName = () => getFileName
-    frame.getScriptNameOrSourceURL = () => getFileName
+  if (file.includes('fakeit')) {
+    try {
+      file = frame.getScriptNameOrSourceURL()
+        .replace(/dist.[a-z-]+./, '')
+    } catch (e) {
+      file = file.replace('dist', 'src')
+    }
+    frame.getFileName = () => file
+    frame.getScriptNameOrSourceURL = () => file
   }
 
   return frame
@@ -28,6 +33,7 @@ function processFrameFn (frame: Object): Object {
 
 /* eslint-disable no-sync */
 export default class FakeitError extends Error {
+  _stack: string
   constructor (reason: string | Error, options: Object = {}) {
     super(reason)
 
