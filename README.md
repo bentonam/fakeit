@@ -582,7 +582,7 @@ const fakeit = new Fakeit({
   seed: 0, // the seed to use. If it's 0 then a random seed is used each time. A string or a number can be passed in as an seed
   log: true, // if then logging to the console is enable
   verbose: false, // if true then verbose logging is enable
-  timestamp: true // if true the logging output to console has timestamps
+  timestamp: true, // if true the logging output to console has timestamps
 });
 
 // models can be an a comma delimited string of globs, or an array of globs
@@ -625,7 +625,7 @@ fakeit
     bucket: 'default', // the bucket name
     username: '', // the username to use if applicable
     password: '', // the password for the account if applicable
-    timeout: 5000 // timeout for the servers
+    timeout: 5000, // timeout for the servers
   })
   .then(data => {
     // the data returned will always be a string in the format that was set

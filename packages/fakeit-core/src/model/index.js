@@ -7,6 +7,7 @@
 
 import { get, merge } from 'lodash'
 import joi from 'joi'
+import autoBind from 'auto-bind'
 import Base from './types/base'
 import FakeitArray from './types/array'
 import FakeitObject from './types/object'
@@ -130,6 +131,9 @@ function model (): Object {
       this.is_root = true
 
       delete this.inner
+
+      // auto binds methods to it's instance
+      autoBind(this)
     }
 
     get settings (): Object {

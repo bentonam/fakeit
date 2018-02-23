@@ -6,18 +6,20 @@
 /// @description Worker task that handles parsing any available input
 ////
 import path from 'path'
+import buildDebug from 'debug'
 
-const debug = require('debug')(`fakeit/file-loader:parser[${process.pid}]`)
+const debug = buildDebug(`@fakeit/file-loader:parser[${process.pid}]`)
 
 // The line below is disabled for flow because it can't detect that relieve is attached to process
 // $FlowFixMe
 const channel = process.relieve.ipc
 
 /// @name process
-/// @description Handles parsing of a passed file, this will be called from the
-///              Worker as worket.get('parse', path_to_file), the Worker handles
-///              wraps the call in a Promise
-/// @returns {Promise} - Contents of parsed file
+/// @description
+/// Handles parsing of a  passed file, this will be called from the
+/// Worker as worket.get('parse', path_to_file), the Worker handles
+/// wraps the call in a Promise
+/// @returns {Promise<Object>} - Contents of parsed file
 export function parse (full_path: string): Promise<Object> {
   debug('parse()')
   const info = path.parse(full_path)

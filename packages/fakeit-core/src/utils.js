@@ -39,19 +39,11 @@ export function validate (obj: mixed, schema: ?Object, message_or_function: stri
 
     message = result.error.annotate()
 
-    if (message.includes('-- missing --')) {
-      message = message
-        .split('\n')
-        .slice(3)
-        .join('\n')
-        .replace(/\n\[1\]\s*/, '')
-    }
-
     if (fn) {
       message = fn(message) || message
     }
 
-    throw new FakeitError(message, {
+    throw new FakeitError(`\n${message}`, {
       filter: (frame: Object) => !/fakeit.*\/utils\.js/.test(frame.getFileName()),
       self: validate,
     })

@@ -14,18 +14,18 @@ install:
 
 # remove the build and log folders
 clean:
-	@rm -rf dist logs
+	@rm -rf \
+		packages/*/dist \
+		packages/*/logs
 
 # remove all files that are ignored by git
 deep-clean:
 	@make clean
 	@rm -rf \
 		node_modules packages/*/node_modules \
-		dist packages/*/dist \
 		.nyc_output \
 		npm-debug.log \
 		yarn-error.log
-	@rm -rf .nyc_output/ npm-debug.log yarn-error.log
 
 # reinstall the node_modules and start with a fresh node build
 reinstall:

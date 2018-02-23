@@ -5,14 +5,17 @@ import findRoot from 'find-root'
 import path from 'path'
 import fs from 'fs-extra-promisify'
 import globby from 'globby'
-import { mergeWith, random, clamp, noop } from 'lodash'
+import { mergeWith, noop, isEmpty } from 'lodash'
 import buildDebug from 'debug'
 import joi from 'joi'
-import { EventEmitter } from 'events'
+import EventEmitter from 'events'
+import autoBind from 'auto-bind'
+// import CallableTask from 'relieve/tasks/CallableTask'
 import { validate } from './utils'
 import Config from './config'
 import requirePkg from './require-pkg'
 import FakeitError from './error'
+// import RunStatus from './run-status'
 
 function merge (...args: Object[]): Object {
   return mergeWith(...args, (objValue: mixed, srcValue: mixed): mixed[] | void => {
@@ -122,6 +125,9 @@ export default class Api extends EventEmitter {
 
         // The global seed to use for repeatable data
         seed: null,
+
+        // fail after the first error
+        fail_fast: true,
       },
       /* istanbul ignore next : to hard to test, also no reason to test for it */
       options || {},
@@ -131,6 +137,9 @@ export default class Api extends EventEmitter {
 
     // this loads all the config files/plugins
     this._loadConfigs()
+
+    // auto binds methods to it's instance
+    autoBind(this)
   }
 
   /// @name options
@@ -212,6 +221,7 @@ export default class Api extends EventEmitter {
         // that comes after the current index
         return item && !array.includes(item, i + 1)
       })
+    this.settings.plugins = options.plugins
 
     // loop over all the plugins to load them and run them
     for (const plugin of options.plugins) {
@@ -257,8 +267,65 @@ export default class Api extends EventEmitter {
     return this
   }
 
+  _resolveFiles (globs: string | string[]): Promise<string> {
+    if (isEmpty(globs)) {
+      globs = this.settings.models
+    }
+    globs = globs.map((glob: string) => path.resolve(this.settings.root, glob))
+    return globby(globs, {
+      cwd: this.settings.root,
+    })
+  }
+
   // run everything
-  run (): void {
+  async run (models: string | string[]): Promise<void> {
+    models = await this._resolveFiles(models)
+
+    if (!models.length) {
+      throw new FakeitError('you must pass in models to run')
+    }
+
+    const pkg = requirePkg(models[0])
+    // console.log('models:', models)
+    // console.log('models:', )
+
+    console.log(pkg.model.settings.dependencies)
+    process.exit(0)
+
+    // // holds the pending forks
+    // const pending_forks = new Set()
+    // let bailed = false
+    //
+    // const status = new RunStatus({
+    //   fail_fast: this.settings.fail_fast,
+    //   model_count: models.length,
+    // })
+    //
+    // if (this.settings.fail_fast) {
+    //   // Prevent new test files from running once a test has failed.
+    //   status.on('document', (document: Object) => {
+    //     if (document.error) {
+    //       bailed = true
+    //
+    //       for (const fork of pending_forks) {
+    //         fork.notifyOfPeerFailure()
+    //       }
+    //     }
+    //   })
+    // }
+    //
+    // this.emit('models-run', status, models)
+    //
+    // console.log(models)
+
+    // const task = new CallableTask(`${__dirname}/task.js`, { restart: true })
+    // // bluebird specific
+    // return Promise.map(files, (file) => {
+    //   console.log(file);
+    // })
+
+    /* eslint-disable no-unreachable */
+
     // !!!!!!
     // !!!!!!
     // !!!!!!
@@ -267,56 +334,60 @@ export default class Api extends EventEmitter {
     // !!!!!!
     // !!!!!!
 
-    const createModel = (name: string) => {
-      const model = {
-        name,
-        count: 0,
-        total: random(500, 2000),
-        output: 0,
-        is_dependency: Boolean(random(0, 1)),
-        _should_error: random(0, 4) === 0,
-        error: false,
-      }
-      this.emit('model-start', model)
-      return model
-    }
-    const models = [
-      'one',
-      'two',
-      'three',
-      'four',
-      'five',
-    ].map(createModel)
-
-    const interval = setInterval(() => {
-      const index = random(0, models.length - 1)
-      const model = models[index]
-      if (!model) {
-        clearInterval(interval)
-        this.emit('finished')
-        return
-      }
-
-      if (!model.is_dependency) {
-        model.output = clamp(model.output + random(1, 10), 0, model.count)
-      }
-
-      if (model._should_error && random(0, 100) < 3) {
-        model.error = true
-      }
-
-      if (typeof model.error === 'number') {
-        model.error += random(1, 25)
-      }
-
-      model.count = clamp(model.count + random(1, 25), model.total)
-
-      if ((model.output || model.count) === model.total || model.error) {
-        models.splice(index, 1)
-      }
-
-      this.emit('document-update', model)
-    }, 10)
+    // // eslint-disable-next-line
+    // const _ = require('lodash')
+    // const random = _.random
+    // const clamp = _.clamp
+    // const createModel = (name: string) => {
+    //   const model = {
+    //     name,
+    //     count: 0,
+    //     total: random(500, 2000),
+    //     output: 0,
+    //     is_dependency: Boolean(random(0, 1)),
+    //     _should_error: random(0, 4) === 0,
+    //     error: false,
+    //   }
+    //   this.emit('model-start', model)
+    //   return model
+    // }
+    // const _models = [
+    //   'one',
+    //   'two',
+    //   'three',
+    //   'four',
+    //   'five',
+    // ].map(createModel)
+    //
+    // const interval = setInterval(() => {
+    //   const index = random(0, _models.length - 1)
+    //   const model = _models[index]
+    //   if (!model) {
+    //     clearInterval(interval)
+    //     this.emit('finished')
+    //     return
+    //   }
+    //
+    //   if (!model.is_dependency) {
+    //     model.output = clamp(model.output + random(1, 10), 0, model.count)
+    //   }
+    //
+    //   if (model._should_error && random(0, 100) < 3) {
+    //     model.error = true
+    //   }
+    //
+    //   if (typeof model.error === 'number') {
+    //     model.error += random(1, 25)
+    //   }
+    //
+    //   model.count = clamp(model.count + random(1, 25), model.total)
+    //
+    //   if ((model.output || model.count) === model.total || model.error) {
+    //     _models.splice(index, 1)
+    //   }
+    //
+    //   this.emit('document-update', model)
+    // }, 10)
   }
 
   ///# @name runCli

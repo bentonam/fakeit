@@ -188,6 +188,7 @@ export default class FakeitArray extends Base {
       'filter must be function, string, array, object, or null. It uses lodash `filter` behind the scenes',
     )
     if (filter == null) {
+      // $FlowFixMe
       filter = (item: mixed): mixed => item != null && !_.isNaN(item)
     }
 

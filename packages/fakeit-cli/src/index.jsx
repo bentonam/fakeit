@@ -5,6 +5,8 @@ import program from 'caporal'
 import chalk from 'chalk'
 import path from 'path'
 import { h, render } from 'ink'
+// flow is broken
+// $FlowFixMe
 import { FakeitError, Api } from '@fakeit/core'
 import { findIndex } from 'lodash'
 import { version, description } from '../package.json'

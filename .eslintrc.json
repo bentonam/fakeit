@@ -5,7 +5,7 @@
   "rules": {
     "flowtype/boolean-style": ["error", "boolean"],
     "flowtype/define-flow-type": "warn",
-    "flowtype/delimiter-dangle": ["error", "never"],
+    "flowtype/delimiter-dangle": ["error", "always"],
     "flowtype/generic-spacing": ["error", "never"],
     "flowtype/no-primitive-constructor-types": "error",
     "flowtype/no-types-missing-file-annotation": "error",
@@ -28,7 +28,7 @@
       }
     ],
     "flowtype/require-valid-file-annotation": "error",
-    "flowtype/semi": ["error", "always"],
+    "flowtype/semi": ["error", "never"],
     "flowtype/space-after-type-colon": ["error", "always"],
     "flowtype/space-before-generic-bracket": ["error", "never"],
     "flowtype/space-before-type-colon": ["error", "never"],

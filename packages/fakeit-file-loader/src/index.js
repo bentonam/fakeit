@@ -9,8 +9,9 @@
 import relieve from 'relieve'
 import { cpus } from 'os'
 import { sep } from 'path'
+import buildDebug from 'debug'
 
-const debug = require('debug')('fakeit/file-loader')
+const debug = buildDebug('@fakeit/file-loader')
 
 const { ScriptTask } = relieve.tasks
 const { QueueWorker } = relieve.workers
@@ -19,13 +20,19 @@ const { QueueWorker } = relieve.workers
 /// @description Handles loading files
 /// @type {class}
 export default class FileLoader extends QueueWorker {
+  formats: Object
+  data: Object
   ///# @name constructor
   ///# @arg {number} threads - The maximum number of threads to use when loading files
-  constructor (threads: number = cpus().length - 1) {
-    debug(`{constructor} - starting worker with ${threads} threads`)
+  constructor (formats: Object, threads: number = cpus().length - 1) {
+    debug(`{constructor} - starting worker with ${Object.keys(formats)
+      .join(', ')} formats, and ${threads} threads`)
+
     // use the number of threads to set the concurrency setting, when the QueueWorker is
     // ran it will only allow that many tasks to run at a time
     super({ concurrency: threads })
+
+    this.formats = formats
     this.data = {} // variable to hold rendered data sent from the tasks
   }
 

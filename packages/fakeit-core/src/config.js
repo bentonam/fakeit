@@ -2,7 +2,7 @@
 import buildDebug from 'debug'
 import { entries, get, set } from 'lodash'
 import joi from 'joi'
-import { forEach } from 'async-array-methods'
+import Promise from 'bluebird'
 import { validate } from './utils'
 import FakeitError from './error'
 
@@ -340,7 +340,8 @@ export default class Config {
         .regex(/^Program$/),
       'a Caporal.js instance must be passed in to `config.runCli()`',
     )
-    return forEach(this._cli_plugins, (cliPlugin: Function) => cliPlugin(caporal, next))
+    return Promise.resolve(this._cli_plugins)
+      .map((cliPlugin: Function) => cliPlugin(caporal, next))
   }
 
   ///# @name processor

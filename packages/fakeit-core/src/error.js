@@ -3,8 +3,11 @@
 import callsiteRecord from 'callsite-record'
 import { wrapCallSite } from 'source-map-support'
 import buildDebug from 'debug'
-
+import { natives } from 'stack-utils-node-internals'
 import { homedir } from 'os'
+
+const internals = natives.map((native: string) => native.replace(/\//g, '.'))
+const filter_regex = new RegExp(`\\bbabel[a-z./]*\\b|^(${internals.join('|')})\\.js$`)
 
 const home = new RegExp(homedir(), 'g')
 
@@ -18,12 +21,8 @@ function processFrameFn (frame: Object): Object {
 
   frame = wrapCallSite(frame)
   if (file.includes('fakeit')) {
-    try {
-      file = frame.getScriptNameOrSourceURL()
-        .replace(/dist.[a-z-]+./, '')
-    } catch (e) {
-      file = file.replace('dist', 'src')
-    }
+    file = file.replace('dist', 'src')
+      .replace(/jsx$/, 'js')
     frame.getFileName = () => file
     frame.getScriptNameOrSourceURL = () => file
   }
@@ -55,7 +54,8 @@ export default class FakeitError extends Error {
         })
           .renderSync({
             stackFilter (frame: Object): boolean {
-              const filter = !/(node_modules(?!@fakeit*)|^(module|bootstrap_node)\.js$)/.test(frame.getFileName())
+              const filter = !filter_regex.test(frame.getFileName())
+
               if (options.filter) {
                 return options.filter(frame) && filter
               }

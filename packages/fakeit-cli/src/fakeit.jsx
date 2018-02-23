@@ -4,7 +4,6 @@
 import { h, Component, Text, Indent } from 'ink'
 import { throttle } from 'lodash'
 import buildDebug from 'debug'
-
 import Model from './model'
 
 const debug = buildDebug('@fakeit/cli')
@@ -50,6 +49,10 @@ export default class Fakeit extends Component {
     })
 
     this.api.run(this.props.models)
+      .catch((err) => {
+        console.log(err)
+        process.exit(1)
+      })
   }
 
   componentWillUnmount (): void {
