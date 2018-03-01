@@ -1,7 +1,7 @@
 // @flow
 import Promise from 'bluebird'
 
-import { model } from './model'
+import model from './model'
 import FakeitError from './error'
 import Api from './api'
 
@@ -19,14 +19,10 @@ Promise.longStackTraces()
 // // if you really want to
 // const fakeit = require('fakeit').default
 // ```
-const initial = model()
 Object.defineProperty(exports, '__esModule', {
   value: true,
 })
-
-Object.assign(module.exports, initial)
-
-module.exports = initial
-module.exports.default = initial
+module.exports = model
+module.exports.default = model
 module.exports.FakeitError = FakeitError
 module.exports.Api = Api

@@ -5,17 +5,20 @@ import findRoot from 'find-root'
 import path from 'path'
 import fs from 'fs-extra-promisify'
 import globby from 'globby'
-import { mergeWith, noop, isEmpty } from 'lodash'
+import { mergeWith, noop } from 'lodash'
 import buildDebug from 'debug'
 import joi from 'joi'
 import EventEmitter from 'events'
 import autoBind from 'auto-bind'
+import Promise from 'bluebird'
 // import CallableTask from 'relieve/tasks/CallableTask'
+// import QueueWorker from 'relieve/workers/QueueWorker'
 import { validate } from './utils'
 import Config from './config'
 import requirePkg from './require-pkg'
 import FakeitError from './error'
 // import RunStatus from './run-status'
+import Runner from './runner'
 
 function merge (...args: Object[]): Object {
   return mergeWith(...args, (objValue: mixed, srcValue: mixed): mixed[] | void => {
@@ -267,30 +270,45 @@ export default class Api extends EventEmitter {
     return this
   }
 
-  _resolveFiles (globs: string | string[]): Promise<string> {
-    if (isEmpty(globs)) {
-      globs = this.settings.models
+  resolveGlobs (globs: string | string[], root: string = this.settings.root): string[] {
+    if (!Array.isArray(globs)) {
+      globs = [ globs ]
     }
-    globs = globs.map((glob: string) => path.resolve(this.settings.root, glob))
-    return globby(globs, {
-      cwd: this.settings.root,
-    })
+    return globs.map((glob: string) => path.resolve(root, glob))
   }
 
   // run everything
-  async run (models: string | string[]): Promise<void> {
-    models = await this._resolveFiles(models)
+  async run (globs: string | string[]): Promise<void> {
+    const runner = new Runner(this)
 
-    if (!models.length) {
-      throw new FakeitError('you must pass in models to run')
-    }
+    await runner.run(globs)
 
-    const pkg = requirePkg(models[0])
-    // console.log('models:', models)
-    // console.log('models:', )
+    // const worker = new QueueWorker({ concurrency: this.settings.threads })
+    //
+    // const stuff = {}
+    // models.slice(0, 1)
+    //   .forEach((file: string) => {
+    //     const task = new CallableTask(`${__dirname}/task.js`)
+    //     task.name = file
+    //     task.arguments = [ { file } ]
+    //     task.once('start', () => {
+    //       task.send('api', this)
+    //     // task.call('run', [ 'fuck off', console.log.bind(console) ])
+    //     })
+    //     task.on('dependencies', (dependencies: string[]) => {
+    //       stuff[file] = this._resolveGlobs(dependencies)
+    //       console.log('dependencies', stuff)
+    //     })
+    //
+    //     worker.add(task)
+    //   })
+    //
+    // worker.run()
 
-    console.log(pkg.model.settings.dependencies)
-    process.exit(0)
+    // const pkg = requirePkg(models[0])
+
+    // console.log(pkg.model.settings.dependencies)
+    // process.exit(0)
 
     // // holds the pending forks
     // const pending_forks = new Set()
@@ -313,12 +331,11 @@ export default class Api extends EventEmitter {
     //     }
     //   })
     // }
-    //
+
     // this.emit('models-run', status, models)
     //
     // console.log(models)
 
-    // const task = new CallableTask(`${__dirname}/task.js`, { restart: true })
     // // bluebird specific
     // return Promise.map(files, (file) => {
     //   console.log(file);

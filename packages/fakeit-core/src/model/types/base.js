@@ -44,6 +44,10 @@ export default class Base extends CallableInstance {
     return 'base'
   }
 
+  get settings (): Object {
+    return this.model.settings
+  }
+
   ///# @name clone
   ///# @description This makes a clone of the current instance
   ///# @returns {class} the cloned class
