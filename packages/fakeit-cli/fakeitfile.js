@@ -13,4 +13,7 @@ function someplugin (config) {
 
 module.exports = {
   plugins: [ someplugin ],
+  output () {
+    console.log('woohoooo')
+  },
 }

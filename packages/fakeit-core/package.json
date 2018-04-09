@@ -32,6 +32,7 @@
     "find-root": "~1.1.0",
     "fs-extra-promisify": "0.0.2",
     "globby": "~8.0.1",
+    "highland": "~3.0.0-beta.5",
     "joi": "~13.1.1",
     "lodash": "~4.17.4",
     "relieve": "^2.2.1",

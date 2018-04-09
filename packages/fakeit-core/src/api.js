@@ -11,14 +11,12 @@ import joi from 'joi'
 import EventEmitter from 'events'
 import autoBind from 'auto-bind'
 import Promise from 'bluebird'
-// import CallableTask from 'relieve/tasks/CallableTask'
-// import QueueWorker from 'relieve/workers/QueueWorker'
 import { validate } from './utils'
 import Config from './config'
 import requirePkg from './require-pkg'
 import FakeitError from './error'
 // import RunStatus from './run-status'
-import Runner from './runner'
+import Orchestrator from './orchestrator'
 
 function merge (...args: Object[]): Object {
   return mergeWith(...args, (objValue: mixed, srcValue: mixed): mixed[] | void => {
@@ -87,7 +85,7 @@ export default class Api extends EventEmitter {
 
   // note that the only real way to pass in arguments here is to pass
   // them in during testing
-  constructor (options: Object) {
+  constructor (options?: Object) {
     super()
     this.settings = Object.assign(
       {
@@ -271,77 +269,15 @@ export default class Api extends EventEmitter {
   }
 
   resolveGlobs (globs: string | string[], root: string = this.settings.root): string[] {
-    if (!Array.isArray(globs)) {
-      globs = [ globs ]
-    }
-    return globs.map((glob: string) => path.resolve(root, glob))
+    return [].concat(globs)
+      .map((glob: string) => path.resolve(root, glob))
   }
 
   // run everything
   async run (globs: string | string[]): Promise<void> {
-    const runner = new Runner(this)
+    const orchestrator = new Orchestrator(this)
 
-    await runner.run(globs)
-
-    // const worker = new QueueWorker({ concurrency: this.settings.threads })
-    //
-    // const stuff = {}
-    // models.slice(0, 1)
-    //   .forEach((file: string) => {
-    //     const task = new CallableTask(`${__dirname}/task.js`)
-    //     task.name = file
-    //     task.arguments = [ { file } ]
-    //     task.once('start', () => {
-    //       task.send('api', this)
-    //     // task.call('run', [ 'fuck off', console.log.bind(console) ])
-    //     })
-    //     task.on('dependencies', (dependencies: string[]) => {
-    //       stuff[file] = this._resolveGlobs(dependencies)
-    //       console.log('dependencies', stuff)
-    //     })
-    //
-    //     worker.add(task)
-    //   })
-    //
-    // worker.run()
-
-    // const pkg = requirePkg(models[0])
-
-    // console.log(pkg.model.settings.dependencies)
-    // process.exit(0)
-
-    // // holds the pending forks
-    // const pending_forks = new Set()
-    // let bailed = false
-    //
-    // const status = new RunStatus({
-    //   fail_fast: this.settings.fail_fast,
-    //   model_count: models.length,
-    // })
-    //
-    // if (this.settings.fail_fast) {
-    //   // Prevent new test files from running once a test has failed.
-    //   status.on('document', (document: Object) => {
-    //     if (document.error) {
-    //       bailed = true
-    //
-    //       for (const fork of pending_forks) {
-    //         fork.notifyOfPeerFailure()
-    //       }
-    //     }
-    //   })
-    // }
-
-    // this.emit('models-run', status, models)
-    //
-    // console.log(models)
-
-    // // bluebird specific
-    // return Promise.map(files, (file) => {
-    //   console.log(file);
-    // })
-
-    /* eslint-disable no-unreachable */
+    await orchestrator.run(globs)
 
     // !!!!!!
     // !!!!!!
