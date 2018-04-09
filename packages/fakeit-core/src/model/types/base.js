@@ -20,7 +20,7 @@ export default class Base extends CallableInstance {
   is_fakeit = true
   is_root = false
 
-  model: Object
+  rootModel: Object
 
   constructor () {
     super('build')
@@ -45,7 +45,7 @@ export default class Base extends CallableInstance {
   }
 
   get settings (): Object {
-    return this.model.settings
+    return this.rootModel.settings
   }
 
   ///# @name clone
@@ -56,7 +56,7 @@ export default class Base extends CallableInstance {
     // $FlowFixMe
     const obj = Object.create(Object.getPrototypeOf(this))
     obj.is_fakeit = true
-    obj.model = this.model
+    obj.rootModel = this.rootModel
     obj.inner = cloneDeep(this.inner)
     return obj
   }

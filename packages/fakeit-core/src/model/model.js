@@ -13,11 +13,21 @@ import FakeitArray from './types/array'
 import FakeitObject from './types/object'
 import { validate } from '../utils'
 
+type DependenciesType = {
+  model: string,
+  sample: number,
+}
+
+type InputsType = {
+  model: string,
+  sample: number,
+}
+
 type SettingsType = {
   name: string,
   key: string,
-  dependencies: string[],
-  inputs: Object,
+  dependencies: DependenciesType[],
+  inputs: InputsType[],
   min: number,
   max: number,
   count: null | number | Function,
@@ -49,6 +59,7 @@ export interface ModelInterface {
   after(fn: Function): Base;
   odds(odds: number): Base;
   ref(ref: string): mixed;
+  pid?: number;
 }
 
 /// @name Model
@@ -97,7 +108,7 @@ export default class Model extends Base {
       ///# @type {object}
       ///# The key is what you will use to get the data.
       ///# The value can be a string to a file path or a url or an async function
-      inputs: {},
+      inputs: [],
 
       ///# @name _settings.min
       ///# @description This is the min number of documents that can potentially get created
@@ -182,6 +193,10 @@ export default class Model extends Base {
   ///# @arg {object} options - The options that are be used on the model
   ///# @chainable
   options (options: Object): Model {
+    const inputs_values = joi
+      .alternatives()
+      .try(joi.string()
+        .regex(/.+\.[a-z]{1,6}$|^http.+/), joi.func())
     // to retreive the options use `fakeit.settings`
     const schema = joi.object({
       name: joi
@@ -192,16 +207,20 @@ export default class Model extends Base {
         .alternatives()
         .try(joi.string(), joi.func())
         .required(),
-      dependencies: joi.array()
-        .items(joi.string()),
-      inputs: joi
-        .object()
-        .pattern(
-          /.+/g,
-          joi.alternatives()
-            .try(joi.string()
-              .regex(/.+\.[a-z]{1,6}$|^http.+/), joi.func()),
-        ),
+      dependencies: joi
+        .array()
+        .items(joi
+          .alternatives()
+          .try(joi.string(), joi.object({ model: joi.string(), sample: joi.number() }))),
+      inputs: joi.array()
+        .items(joi.alternatives()
+          .try(
+            inputs_values,
+            joi.object({
+              input: inputs_values,
+              sample: joi.number(),
+            }),
+          )),
       min: joi.number(),
       max: joi.number(),
       count: joi.alternatives()
@@ -218,7 +237,26 @@ export default class Model extends Base {
         .try(joi.number(), joi.string()),
     })
 
-    this._settings = merge(this._settings, validate(options, schema) || {})
+    const valid_options = validate(options, schema) || {}
+
+    function sample (key: string): Function {
+      return (item: string | Object): Object => {
+        if (typeof item === 'string') {
+          return { [key]: item, sample: 100 }
+        }
+        return item
+      }
+    }
+
+    if (valid_options.dependencies) {
+      valid_options.dependencies = valid_options.dependencies.map(sample('model'))
+    }
+
+    if (valid_options.inputs) {
+      valid_options.inputs = valid_options.inputs.map(sample('input'))
+    }
+
+    this._settings = merge(this._settings, valid_options)
 
     return this
   }
@@ -230,7 +268,7 @@ export default class Model extends Base {
   ///# @chainable
   _applyDefaults (Schema: Class<FakeitObject | FakeitArray | Base>): Object {
     const schema = new Schema()
-    schema.model = this
+    schema.rootModel = this
     return schema
   }
   /* eslint-disable newline-per-chained-call */
