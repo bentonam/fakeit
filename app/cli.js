@@ -35,6 +35,8 @@ export default async function() {
     'timeout',
     'useStreams',
     'highWaterMark',
+    'scopeName',
+    'collectionName',
     // gets set based off the command that's used
     'output',
   ];
@@ -93,6 +95,8 @@ export default async function() {
     .option('-b, --bucket [bucket]', `The bucket name (${dim('default')})`)
     .option('-u, --username [username]', 'The username to use (optional pre-5.0)')
     .option('-p, --password [password]', 'the password for the account (optional)')
+    .option('-sn, --scopeName [scopeName]', 'Name of a scope to insert data to (optional)')
+    .option('-c, --collectionName [collectionName]', 'Name of a collection to insert data to (optional)')
     .option('-t, --timeout [timeout]', `timeout for the servers (${dim(5000)})`, Number)
     .option('-r, --use-streams [useStreams]', `${chalk.red('**experimental**')}
                                       Whether or not to use node streams. Used for high output
