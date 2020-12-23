@@ -134,7 +134,7 @@ generate.group('zip', models(async (t, model) => {
   const entry_file = zip.getEntries()[0].name;
   t.is(path.extname(entry_file), '.json');
   // read the entry_file from the zip file and convert it to an object from a json string
-  return to.object(await zip.readAsText(entry_file));
+  return to.object(zip.readAsText(entry_file));
 }));
 
 

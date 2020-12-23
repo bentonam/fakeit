@@ -192,6 +192,7 @@ module.exports.models = function(settings) {
                 }
               })
               .catch(function(err) {
+                // console.log(`UTILS ERROR: ${JSON.stringify(err.message)}`);
                 t.fail(err);
               });
           });

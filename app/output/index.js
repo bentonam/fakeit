@@ -87,6 +87,7 @@ export default class Output extends Base {
   ///# @arg {array, object} documents - The data that you want to be saved
   ///# @returns {array, object, string} - This is determined by the output type that's passed and the format that's used.
   ///# @async
+  // eslint-disable-next-line max-statements
   async output(documents) {
     let count = 0;
     if (!documents) {

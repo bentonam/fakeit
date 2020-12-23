@@ -11,14 +11,15 @@ Utility that generates fake data in `json`, `yaml`, `yml`, `cson`, or `csv` form
 ![Example of how it works](https://raw.githubusercontent.com/bentonam/fakeit/master/assets/example.gif)
 
 Generated data can be output in the following formats and destinations:
-  - `json`
-  - `yaml`
-  - `yml`
-  - `cson`
-  - `csv`
-  - Zip Archive of `json`, `yaml`, `yml`, `cson` or `csv` files
-  - Couchbase Server
-  - Couchbase Sync Gateway Server
+
+- `json`
+- `yaml`
+- `yml`
+- `cson`
+- `csv`
+- Zip Archive of `json`, `yaml`, `yml`, `cson` or `csv` files
+- Couchbase Server
+- Couchbase Sync Gateway Server
 
 ## Install
 
@@ -66,9 +67,11 @@ All data is generated from one or more [YAML](http://yaml.org/) files.  Models a
 At the root of a model the following keys are used, if it's not required then it's optional
 
 #### `name` *(required)*
+
 The name of the model
 
 #### `type`
+
 The data type of the model to be generated. This needs to be set top level, as well as a per property/items basis. It determines the starting data type, and how the result of the build loop will be converted once complete
 
 **Note:** If type isn't set it defaults to `'null'`.
@@ -114,30 +117,28 @@ properties:
         build: faker.random.word()
 ```
 
-
 #### `data`
 
 This is the main data object that is uses the same properties in several different situations.
 
-  - `min`: The minimum number of documents to generate
-  - `max`: The maximum number of documents to generate
-  - `count`: A fixed number of documents to generate. If this is defined then `min` and `max` are ignored. If `min`, `max`, and `count` aren't defined `count` defaults to 1
-  - `pre_run`: A function that runs before the documents are generated
-  - `pre_build`: A function to be run *before each document* is generated
-  - `value`: Returns a value (can't be a function).
-  - `build`: The function to be run when the property is built. Only runs if `value` isn't defined
-  - `fake:` A template string to be used by Faker i.e. `"{{name.firstName}}"`. This will only run if `build`, and `value` aren't defined.
-  - `post_build`: A function to be run *after each document* is generated
-  - `post_run`: A function that runs after all the documents are generated for that model
+- `min`: The minimum number of documents to generate
+- `max`: The maximum number of documents to generate
+- `count`: A fixed number of documents to generate. If this is defined then `min` and `max` are ignored. If `min`, `max`, and `count` aren't defined `count` defaults to 1
+- `pre_run`: A function that runs before the documents are generated
+- `pre_build`: A function to be run *before each document* is generated
+- `value`: Returns a value (can't be a function).
+- `build`: The function to be run when the property is built. Only runs if `value` isn't defined
+- `fake:` A template string to be used by Faker i.e. `"{{name.firstName}}"`. This will only run if `build`, and `value` aren't defined.
+- `post_build`: A function to be run *after each document* is generated
+- `post_run`: A function that runs after all the documents are generated for that model
 
-The following keys can only be defined in the top level data object
-  - `dependencies`: An array of dependencies of file paths to the dependencies of the current model. They are relative to the model, and or they can be absolute paths.
-     Don't worry about the order, we will resolve all dependencies automagically #yourwelcome
-  - `inputs`: A object/string of input(s) that's required for this model to run. If it's a string the file name is used as the key.
-     The key is what you reference when you want to get data (aka `this.inputs[key]`). The value is the file path to the inputs location.
-     It can be relative to the model or an absolute path.
+The following keys can only be defined in the top level data object:
 
-
+- `dependencies`: An array of dependencies of file paths to the dependencies of the current model. They are relative to the model, and or they can be absolute paths.
+    Don't worry about the order, we will resolve all dependencies automagically #yourwelcome
+- `inputs`: A object/string of input(s) that's required for this model to run. If it's a string the file name is used as the key.
+    The key is what you reference when you want to get data (aka `this.inputs[key]`). The value is the file path to the inputs location.
+    It can be relative to the model or an absolute path.
 
 #### `key` *(required)*
 
@@ -188,7 +189,6 @@ properties:
       build: ++globals.user_counter
 ```
 
-
 #### `seed`
 
 If a seed is defined it will ensure that the documents created repeatable results. If you have a model with a data range of 2-10 a random number between 2 and 10 documents will be created no matter what the seed is. Let's say that 4 documents are generated the first time you run the model, each of those documents will be completely different than the next (as expected). Later you come back and you generate the data again this time it might generate 6 documents. The first 4 documents generated the second time will be exactly the same as the first time you generated the data. The seed can be number or string.
@@ -199,19 +199,19 @@ This only works if you use `faker` and `chance` to generate your random fake dat
 
 `faker.date` functions will not produce the same fake data each time.
 
-
 ##### Functions
 
 For any function defined above be sure to use `|` for multi line functions and **NOT** `>`. To see an in depth explanation see this [issue](https://github.com/bentonam/fakeit/issues/84#issuecomment-266905423)
 
 Each of these functions is passed the following variables that can be used at the time of it's execution:
-  - `documents` - An object containing a key for each model whose value is an array of each document that has been generated
-  - `globals` - An object containing any global variables that may have been set by any of the run or build functions
-  - `inputs` - An object containing a key for each input file used whose value is the deserialized version of the files data
-  - `faker` - A reference to [FakerJS](http://marak.github.io/faker.js/)
-  - `chance` - A reference to [ChanceJS](http://chancejs.com/)
-  - `document_index` - This is a number that represents the currently generated document's position in the run order
-  - `require` - This is the node `require` function, it allows you to require your own packages. Should require and set them in the pre_run functions for better performance.
+
+- `documents` - An object containing a key for each model whose value is an array of each document that has been generated
+- `globals` - An object containing any global variables that may have been set by any of the run or build functions
+- `inputs` - An object containing a key for each input file used whose value is the deserialized version of the files data
+- `faker` - A reference to [FakerJS](http://marak.github.io/faker.js/)
+- `chance` - A reference to [ChanceJS](http://chancejs.com/)
+- `document_index` - This is a number that represents the currently generated document's position in the run order
+- `require` - This is the node `require` function, it allows you to require your own packages. Should require and set them in the pre_run functions for better performance.
 
 For the `pre_run`, and `post_run` the `this` context refers to the current model.
 For the `pre_build`, `build`, and `post_build` the `this` context refers to the object currently being generated.
@@ -293,9 +293,9 @@ This is used to define out the properties for an object.
 
 Each key inside of the `properties` will be apart of the generated object. Each of the keys use the following properties to build the values.
 
-  - `type`: The data type of the property.  Values can be: `string`, `object `, `structure`, `number `, `integer `, `double `, `long `, `float`, `array`, `boolean `, `bool`
-  - `description`: A description of the property. This is just extra notes for the developer and doesn't affect the data.
-  - `data`: The same data options as defined above
+- `type`: The data type of the property.  Values can be: `string`, `object`, `structure`, `number`, `integer`, `double`, `long`, `float`, `array`, `boolean`, `bool`
+- `description`: A description of the property. This is just extra notes for the developer and doesn't affect the data.
+- `data`: The same data options as defined above
 
 ```yaml
 name: test
@@ -557,7 +557,6 @@ data:
 # etc...
 ```
 
-
 ## JS API
 
 If you don't want to use the CLI version of this app you can always use the JS api.
@@ -571,7 +570,6 @@ fakeit.generate('glob/to/models/**/*.yaml')
     console.log(data)
   })
 ```
-
 
 ### Fakeit Options
 
@@ -640,13 +638,12 @@ fakeit.generate(models, {
 
 To see more examples of some of the things you can do take a look at the [test cases](https://github.com/bentonam/fakeit/tree/master/test/fixtures/models) that are in this repo
 
-
 ### Changelog
 
-  - Model Dependencies are now defined in the model it's self by the file path to the model that the current one depends on. It doesn't matter what order they're because they will be resolve automagically.
-  - Model Inputs are now defined in the model it's self by the file path to the inputs location that the current model depends on. It can be a string or an object.
-  - Babel +6 support now exists. We don't install any presets or plugins for you but if `.babelrc` or `babelConfig` exists in the `package.json` of your project then all the functions are transpiled.
-  - Better error handling has been added so you know what went wrong and where it happened.
-  - JS support has also been added so you are no longer required to use the command line to create fake data.
-  - Added support for seeds to allow repeatable data.
-  - Added a progress indicator to show how many documents have been created
+- Model Dependencies are now defined in the model it's self by the file path to the model that the current one depends on. It doesn't matter what order they're because they will be resolve automagically.
+- Model Inputs are now defined in the model it's self by the file path to the inputs location that the current model depends on. It can be a string or an object.
+- Babel +6 support now exists. We don't install any presets or plugins for you but if `.babelrc` or `babelConfig` exists in the `package.json` of your project then all the functions are transpiled.
+- Better error handling has been added so you know what went wrong and where it happened.
+- JS support has also been added so you are no longer required to use the command line to create fake data.
+- Added support for seeds to allow repeatable data.
+- Added a progress indicator to show how many documents have been created

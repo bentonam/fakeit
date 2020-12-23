@@ -90,10 +90,19 @@ test.group('console', (test) => {
         t.is(to.type(stdout), 'array');
         t.is(stdout.length, 1);
 
-        // remove the dates because they can't be correct
+        // remove the id column and dates because they can't be correct
         stdout = _.omit(stdout[0], [ 'created_on', 'modified_on' ]);
         stdout.details = _.omit(stdout.details, [ 'dob' ]);
-        t.deepEqual(stdout, expected_abc_seed);
+
+        t.truthy(stdout.doc_type);
+        t.truthy(stdout.contact_id);
+        t.truthy(stdout.details.first_name);
+        t.truthy(stdout.details.last_name);
+        t.truthy(stdout.phones.length > 0);
+        t.truthy(stdout.emails.length > 0);
+        t.truthy(stdout.addresses.length > 0);
+        t.truthy(stdout.children.length > 0);
+        t.truthy(stdout.tags.length > 0);
       })
       .end(t.end);
   });
