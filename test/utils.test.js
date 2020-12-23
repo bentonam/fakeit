@@ -348,26 +348,26 @@ test.serial.group('parsers', (test) => {
   /* eslint-enable */
 
   tests.cson = `
-    _id: "airport_56"
+    _id: 'airport_56'
     airport_id: 56
-    doc_type: "airport"
-    airport_ident: "AYGA"
-    airport_type: "medium_airport"
-    airport_name: "Goroka"
+    doc_type: 'airport'
+    airport_ident: 'AYGA'
+    airport_type: 'medium_airport'
+    airport_name: 'Goroka'
     geo:
       latitude: -6.081689835
       longitude: 145.3919983
     elevation: 5282
-    iso_continent: "OC"
-    iso_country: "PG"
-    iso_region: "PG-EHG"
-    municipality: "Goroka"
-    airport_icao: "AYGA"
-    airport_iata: "GKA"
-    airport_gps_code: "AYGA"
+    iso_continent: 'OC'
+    iso_country: 'PG'
+    iso_region: 'PG-EHG'
+    municipality: 'Goroka'
+    airport_icao: 'AYGA'
+    airport_iata: 'GKA'
+    airport_gps_code: 'AYGA'
     timezone_offset: 10
-    dst: "U"
-    timezone: "Pacific/Port_Moresby"
+    dst: 'U'
+    timezone: 'Pacific/Port_Moresby'
   `;
 
   tests.csv = `
