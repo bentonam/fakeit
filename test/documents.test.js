@@ -306,8 +306,8 @@ test.group('build', (test) => {
         t.context.document.documents = {};
         const actual = await t.context.document.build(model);
         t.deepEqual(actual[0].phones, [
-          { type: 'Mobile', phone_number: '505.771.2870', extension: null },
-          { type: 'Mobile', phone_number: '275-728-6040', extension: null }
+          { type: 'Mobile', phone_number: '605.771.2870', extension: null },
+          { type: 'Mobile', phone_number: '475-728-6040', extension: null }
         ]);
       }
     });
