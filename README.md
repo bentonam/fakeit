@@ -47,6 +47,7 @@ npm install fakeit --global
 
     -h, --help           output usage information
     -V, --version        output the version number
+
     --root <directory>   Defines the root directory from which paths are resolve from (process.cwd())
     --babel <glob>       The location to the babel config (+(.babelrc|package.json))
     -c, --count <n>      Overrides the number of documents to generate specified by the model. Defaults to model defined count
@@ -58,6 +59,50 @@ npm install fakeit --global
     -n, --spacing <n>    the number of spaces to use for indention (2)
     -l, --limit <n>      limit how many files are output at a time (100)
     -x, --seed <seed>    The global seed to use for repeatable data
+```
+
+### Console Specific CLI Options
+
+```bash
+  Options:
+
+    -h, --no-highlight     This turns off the cli-table when a csv format
+```
+
+### Couchbase Specific CLI Options
+
+```bash
+  Options:
+
+    -s, --server            The server IP address
+    -b, --bucket            The name of the bucket to insert data to
+    -u, --username          The RBAC username to use (optional pre-5.0)
+    -p, --password          The RBAC password for the account (optional)
+    -t, --timeout           Timeout for the servers
+    -r, --use-streams       Whether or not to use node streams. Used for high output documents and can only be used when there are no dependencies (experimental)
+    -w, --high-water-mark   The number of objects to process through the stream at a time (experimental)
+    --scopeName             Name of a scope to insert data to (optional)
+    --collectionName        Name of a collection to insert data to (optional)
+```
+
+### Sync Gateway Specific CLI Options
+
+```bash
+  Options:
+
+    -s, --server            The server IP address
+    -b, --bucket            The name of the bucket to insert data to
+    -u, --username          The RBAC username to use (optional pre-5.0)
+    -p, --password          The RBAC password for the account (optional)
+    -t, --timeout           Timeout for the servers
+```
+
+### Directory Specific CLI Options
+
+```bash
+  Options:
+
+    -a, --archive           If an archive file is passed, then the data will be output as a zip file
 ```
 
 ## Models

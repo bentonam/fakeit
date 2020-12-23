@@ -17,7 +17,7 @@ clean:
 # remove all files that are ignored by git
 deep-clean:
 	make clean
-	rm -rf node_modules/ dist/ .nyc_output/ npm-debug.log yarn-error.log
+	rm -rf node_modules/ dist/ .nyc_output/ npm-debug.log yarn-error.log package-lock.json yarn-lock.json
 
 # reinstall the node_modules and start with a fresh node build
 reinstall setup:

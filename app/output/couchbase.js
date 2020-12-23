@@ -106,7 +106,7 @@ export default class Couchbase extends Base {
 
   ///# @name finalize
   ///# @description
-  ///# This disconnect from couchbase if it's connected
+  ///# This disconnect from couchbase if it is connected
   ///# @async
   async finalize() {
     if (this.bucket && this.bucket.connected) {

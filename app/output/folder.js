@@ -54,7 +54,7 @@ export default class Folder extends Base {
 
   ///# @name output
   ///# @description
-  ///# This is used to output the data that's passed to it
+  ///# This is used to output the data that is passed to it
   ///# @arg {string} id - The id to use for this data
   ///# @arg {object, array, string} data - The data that you want to be saved
   ///# @async
