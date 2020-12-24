@@ -3,7 +3,7 @@ import ava from 'ava-spec';
 import Logger from '../dist/logger';
 import to from 'to-js';
 import { stdout } from 'test-console';
-import { stripColor } from 'chalk';
+import stripAnsi from 'strip-ansi';
 import { PassThrough as PassThroughStream } from 'stream';
 import _ from 'lodash';
 import getStream from 'get-stream';
@@ -62,7 +62,7 @@ test.serial.group('log', (test) => {
       if (![ 'warning', 'info' ].includes(type)) {
         type = '';
       }
-      t.truthy(new RegExp(`^\\[[0-9]+:[0-9]+:[0-9]+\\]\\s(?:.+)?\\s*${type}:?\\s*$`).test(stripColor(inspect.output[0])));
+      t.truthy(new RegExp(`^\\[[0-9]+:[0-9]+:[0-9]+\\]\\s(?:.+)?\\s*${type}:?\\s*$`).test(stripAnsi(inspect.output[0])));
     });
   });
 
@@ -75,7 +75,7 @@ test.serial.group('log', (test) => {
       inspect.restore();
       t.is(inspect.output.length, 2);
       t.is(inspect.output[1].trim(), 'woohoo');
-      t.truthy(regex.test(stripColor(inspect.output[0])));
+      t.truthy(regex.test(stripAnsi(inspect.output[0])));
     });
 
     test('when error constructor is passed as the first argument', (t) => {
@@ -92,7 +92,7 @@ test.serial.group('log', (test) => {
           t.is(line.slice(0, 2), 'at');
         }
       });
-      t.truthy(regex.test(stripColor(inspect.output[0])));
+      t.truthy(regex.test(stripAnsi(inspect.output[0])));
     });
   });
 
@@ -113,8 +113,8 @@ test.serial.group('time', (test) => {
     const inspect = stdout.inspect();
     t.throws(tester);
     inspect.restore();
-    t.not(stripColor(inspect.output[0]), inspect.output[0]);
-    t.truthy(/^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/.test(stripColor(inspect.output[0])));
+    t.not(stripAnsi(inspect.output[0]), inspect.output[0]);
+    t.truthy(/^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/.test(stripAnsi(inspect.output[0])));
     t.is(inspect.output.length, 2);
     t.is(inspect.output[1].split('\n')[0], 'You must pass in a label for `Logger.prototype.time`');
   });
@@ -124,8 +124,8 @@ test.serial.group('time', (test) => {
     const inspect = stdout.inspect();
     t.throws(tester);
     inspect.restore();
-    t.not(stripColor(inspect.output[0]), inspect.output[0]);
-    t.truthy(/^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/.test(stripColor(inspect.output[0])));
+    t.not(stripAnsi(inspect.output[0]), inspect.output[0]);
+    t.truthy(/^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/.test(stripAnsi(inspect.output[0])));
     t.is(inspect.output.length, 2);
     t.is(inspect.output[1].split('\n')[0], 'You must pass in a label for `Logger.prototype.timeEnd`');
   });
@@ -150,7 +150,7 @@ test.serial.group('time', (test) => {
         const actual = t.context.timeEnd(expected);
         t.truthy(actual);
         t.is(typeof actual, 'string');
-        const [ number, unit ] = stripColor(actual).trim().match(/\+?([0-9\.]+)\s*([µmsn]+)?/).slice(1);
+        const [ number, unit ] = stripAnsi(actual).trim().match(/\+?([0-9\.]+)\s*([µmsn]+)?/).slice(1);
         if (number !== '0') {
           t.is(typeof unit, 'string');
           t.truthy([ 'µs', 'ns', 'ms', 's', ].includes(unit));
@@ -218,7 +218,7 @@ test.serial.group('spinner', (test) => {
     await delay(200);
     actual.stop();
     stream.end();
-    const states = stripColor(await getStream(stream)).trim().split('__').filter(Boolean);
+    const states = stripAnsi(await getStream(stream)).trim().split('__').filter(Boolean);
     const last_state = states.splice(-2, 2).join('');
     states.filter(Boolean).forEach((state) => {
       const [ frame, text ] = state.split(/\s+/);
@@ -251,9 +251,9 @@ test.serial.group('spinner', (test) => {
     t.is(one.id, undefined);
     t.is(two.id, undefined);
     t.is(three.id, undefined);
-    t.truthy(/error: failed/.test(stripColor(inspect.output.join(''))));
+    t.truthy(/error: failed/.test(stripAnsi(inspect.output.join(''))));
     stream.end();
-    const states = stripColor(await getStream(stream)).trim().split('__').filter(Boolean);
+    const states = stripAnsi(await getStream(stream)).trim().split('__').filter(Boolean);
     const last_state = states.pop();
     states.forEach((state) => {
       const [ frame, text ] = state.split(/\s+/);

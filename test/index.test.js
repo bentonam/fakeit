@@ -4,7 +4,7 @@ import globby from 'globby';
 import fs from 'fs-extra-promisify';
 import { stdout } from 'test-console';
 import path, { join as p } from 'path';
-import { stripColor } from 'chalk';
+import stripAnsi from 'strip-ansi';
 import ava from 'ava-spec';
 import AdmZip from 'adm-zip';
 import Fakeit from '../dist/index.js';
@@ -73,7 +73,7 @@ generate.serial.group('console', models(async (t, model) => {
   const inspect = stdout.inspect();
   await t.context.fakeit.generate(model, t.context.defaults);
   inspect.restore();
-  const actual = to.object(stripColor(inspect.output[0].trim()))[0];
+  const actual = to.object(stripAnsi(inspect.output[0].trim()))[0];
 
   return actual;
 }));

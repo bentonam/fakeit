@@ -4,7 +4,7 @@ import Output, { validate, isServer, isString, output_types } from '../../dist/o
 import ava from 'ava-spec';
 import { join as p } from 'path';
 import { stdout } from 'test-console';
-import { stripColor } from 'chalk';
+import stripAnsi from 'strip-ansi';
 import fs from 'fs-extra-promisify';
 import { map, reduce } from 'async-array-methods';
 import globby from 'globby';
@@ -584,7 +584,7 @@ test.group('output', (test) => {
       inspect.restore();
       t.not(inspect.output[0].trim(), node);
       if (language !== 'csv') {
-        t.is(stripColor(inspect.output[0]).trim(), node);
+        t.is(stripAnsi(inspect.output[0]).trim(), node);
       }
     });
   }));

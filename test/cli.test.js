@@ -3,7 +3,7 @@ import ava from 'ava-spec';
 import to from 'to-js';
 import fs from 'fs-extra-promisify';
 import nixt from 'nixt';
-import { stripColor } from 'chalk';
+import stripAnsi from 'strip-ansi';
 const bin = nixt().cwd(p(__dirname, 'fixtures', 'models')).base('../../../bin/fakeit ');
 import cli, { code, dim } from '../dist/cli.js';
 import _ from 'lodash';
@@ -225,10 +225,10 @@ test.group('help', (test) => {
 
 test('code', (t) => {
   t.is(code('one'), '\u001b[1mone\u001b[22m');
-  t.deepEqual(stripColor(code('one', 'two', 'three')).split(/\s*,\s*/), [ 'one', 'two', 'three' ]);
+  t.deepEqual(stripAnsi(code('one', 'two', 'three')).split(/\s*,\s*/), [ 'one', 'two', 'three' ]);
 });
 
 test('dim', (t) => {
   t.is(dim('one'), '\u001b[2mone\u001b[22m');
-  t.deepEqual(stripColor(dim('one', 'two', 'three')).split(/\s*,\s*/), [ 'one', 'two', 'three' ]);
+  t.deepEqual(stripAnsi(dim('one', 'two', 'three')).split(/\s*,\s*/), [ 'one', 'two', 'three' ]);
 });

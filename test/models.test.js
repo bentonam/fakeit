@@ -20,7 +20,7 @@ import AdmZip from 'adm-zip';
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
 import { stdout } from 'test-console';
-import { stripColor } from 'chalk';
+import stripAnsi from 'strip-ansi';
 /* istanbul ignore next */
 const utils = require('./utils');
 const models = utils.models({
@@ -227,7 +227,7 @@ test.group('registerModels', (test) => {
       .then(() => t.fail())
       .catch(() => t.pass());
     inspect.restore();
-    t.truthy(/^\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\]\s+.\s+error:$/.test(stripColor(inspect.output[0]).trim()));
+    t.truthy(/^\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\]\s+.\s+error:$/.test(stripAnsi(inspect.output[0]).trim()));
     t.truthy(/ENOENT: no such file or directory/.test(inspect.output[1]));
   });
 });
