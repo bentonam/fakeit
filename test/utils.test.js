@@ -49,13 +49,13 @@ test.group('objectSearch', (test) => {
     t.deepEqual(actual, [ 'one' ]);
   });
 
-  test('match first instance of `two`', (t) => {
+  test('match first instance of `two` when an object is provided', (t) => {
     const actual = objectSearch(obj, /^.*two$/);
     t.is(actual.length, 1);
     t.deepEqual(actual, [ 'one.two' ]);
   });
 
-  test('match first instance of `two`', (t) => {
+  test('match first instance of `two` when an array is provided and the regex is word based', (t) => {
     const arr = [ obj, obj ];
     const actual = objectSearch(arr, /^.*two$/);
     t.is(actual.length, 2);
@@ -64,7 +64,7 @@ test.group('objectSearch', (test) => {
     t.deepEqual(_.get(arr, actual[0]), { three: 'woohoo' });
   });
 
-  test('match first instance of `two`', (t) => {
+  test('match first instance of `two` when an array is provided and the regex is number based', (t) => {
     const arr = [ obj, obj ];
     const actual = objectSearch(arr, /^[0-9]$/);
     t.is(actual.length, 2);

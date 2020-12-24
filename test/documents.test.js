@@ -10,10 +10,12 @@ import {
 const Model = require('../dist/models.js').default;
 import { join as p } from 'path';
 import ava from 'ava-spec';
+import { Chance } from 'chance';
 import to from 'to-js';
 import is from 'joi';
 import _ from 'lodash';
 import fs from 'fs-extra-promisify';
+
 const test = ava.group('documents');
 const documents_root = p(__dirname, 'fixtures', 'models');
 /* istanbul ignore next */
@@ -30,6 +32,7 @@ const models = utils.models({
 
 
 let babel_config;
+const chance = new Chance();
 
 test.before(async () => {
   babel_config = await fs.readJson(p(__dirname, '..', '.babelrc'));
@@ -154,7 +157,7 @@ test.group('build', (test) => {
       if (to.type(title) === 'object') {
         title = to.keys(title)[0];
       }
-      test(`is ${title}`, async (t) => {
+      test(`is ${title} - ${chance.integer()}`, async (t) => {
         const doc = t.context.document;
         const obj = to.clone(model);
         if (actual != null) {
@@ -341,7 +344,8 @@ test.group('runData', (test) => {
       }
     };
     const tester = () => t.context.document.runData(Foo, 'context');
-    t.throws(tester, /Foo failed, Cannot read property 'woohoo' of undefined/);
+    const error = t.throws(tester);
+    t.is(error.message, 'Foo failed, Cannot read property \'woohoo\' of undefined');
   });
 });
 
@@ -762,11 +766,12 @@ test.group('buildValue', (test) => {
         }
       }), []);
 
+      t.truthy(_.isArray(actual));
       is.assert(actual, is.array()
         .items(is.object({
-          first_name: is.string().regex(/[A-Z][a-zA-Z\s]+/),
-          gender: [ is.string().regex(/M|F/), is.allow(null) ],
           age: is.number().min(1).max(17),
+          first_name: is.string().regex(/[A-Z][a-zA-Z\s]+/),
+          gender: [ is.string().regex(/M|F/), is.allow(null) ]
         }))
         .length(5));
     });
@@ -1001,7 +1006,7 @@ test.group('transformValueToType', (test) => {
     } else if (to.type(value) === 'array') {
       value = `[ '${value.join('\', \'')}' ]`;
     }
-    test(`type is \`${actual[0]}\` and value is \`${value}\``, (t) => {
+    test(`type is \`${actual[0]}\` and value is \`${value}\` - ${chance.integer()}`, (t) => {
       if ('array,object'.includes(to.type(expected))) {
         t.deepEqual(transformValueToType(...actual), expected);
       } else {

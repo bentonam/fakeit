@@ -17,7 +17,7 @@ clean:
 # remove all files that are ignored by git
 deep-clean:
 	make clean
-	rm -rf node_modules/ dist/ .nyc_output/ npm-debug.log yarn-error.log package-lock.json yarn-lock.json
+	rm -rf node_modules/ dist/ .nyc_output/ npm-debug.log yarn-error.log package-lock.json yarn.lock
 
 # reinstall the node_modules and start with a fresh node build
 reinstall setup:
@@ -60,7 +60,7 @@ test:
 coverage test-coverage code-coverage:
 	# if there's no instance source maps files then build the files with source maps
 	@[ -f ./dist/index.js.map ] || (echo "building files with source maps" && make build-source-maps)
-	NODE_ENV="test" nyc --silent -- ./node_modules/.bin/ava --verbose --no-cache
+	NODE_ENV="test" ./node_modules/.bin/nyc ./node_modules/.bin/ava --verbose --no-cache
 
 
 # These commands only run the report of the code coverage

@@ -66,7 +66,7 @@ export default class Couchbase extends Base {
         // Check if the user configured a collection and/or a scope. If so,
         // use them, otherwise use the default scope and default collection.
         if (scopeName && collectionName) {
-          this.bucket.scope(scopeName).collection(collectionName);
+          this.collection = this.bucket.scope(scopeName).collection(collectionName);
         } else if (collectionName) {
           this.collection = this.bucket.collection(collectionName);
         } else {

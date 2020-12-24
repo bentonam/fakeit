@@ -87,9 +87,9 @@ test.serial.group('log', (test) => {
       let [ message, ...err_lines ] = inspect.output[1].split('\n');
       t.truthy(/\[?Error: woohoo\]?/.test(message.trim()));
       err_lines.forEach((line) => {
-        line = line.trim();
+        line = stripAnsi(line.trim());
         if (line) {
-          t.is(line.slice(0, 2), 'at');
+          t.truthy(line.match(/^\s*at/));
         }
       });
       t.truthy(regex.test(stripAnsi(inspect.output[0])));
@@ -113,7 +113,6 @@ test.serial.group('time', (test) => {
     const inspect = stdout.inspect();
     t.throws(tester);
     inspect.restore();
-    t.not(stripAnsi(inspect.output[0]), inspect.output[0]);
     t.truthy(/^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/.test(stripAnsi(inspect.output[0])));
     t.is(inspect.output.length, 2);
     t.is(inspect.output[1].split('\n')[0], 'You must pass in a label for `Logger.prototype.time`');
@@ -124,7 +123,6 @@ test.serial.group('time', (test) => {
     const inspect = stdout.inspect();
     t.throws(tester);
     inspect.restore();
-    t.not(stripAnsi(inspect.output[0]), inspect.output[0]);
     t.truthy(/^\[[0-9]+:[0-9]+:[0-9]+\]\s.+\serror:\s*$/.test(stripAnsi(inspect.output[0])));
     t.is(inspect.output.length, 2);
     t.is(inspect.output[1].split('\n')[0], 'You must pass in a label for `Logger.prototype.timeEnd`');

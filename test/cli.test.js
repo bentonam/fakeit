@@ -224,11 +224,11 @@ test.group('help', (test) => {
 });
 
 test('code', (t) => {
-  t.is(code('one'), '\u001b[1mone\u001b[22m');
+  t.is(code('one'), 'one');
   t.deepEqual(stripAnsi(code('one', 'two', 'three')).split(/\s*,\s*/), [ 'one', 'two', 'three' ]);
 });
 
 test('dim', (t) => {
-  t.is(dim('one'), '\u001b[2mone\u001b[22m');
+  t.is(dim('one'), 'one');
   t.deepEqual(stripAnsi(dim('one', 'two', 'three')).split(/\s*,\s*/), [ 'one', 'two', 'three' ]);
 });

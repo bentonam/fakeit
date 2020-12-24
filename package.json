@@ -44,15 +44,14 @@
   "license": "MIT",
   "homepage": "https://github.com/bentonam/fakeit#readme",
   "dependencies": {
+    "@babel/runtime-corejs3": "^7.0.0",
     "adm-zip": "^0.5.1",
     "async-array-methods": "^2.1.0",
-    "babel-core": "~6.26.3",
-    "babel-helpers": "~6.24.1",
-    "babel-runtime": "~6.26.0",
     "chalk": "^4.1.0",
     "chance": "^1.1.7",
     "cli-table": "~0.3.4",
     "commander": "^6.2.1",
+    "core-js": "3.8.1",
     "couchbase": "^3.1.0",
     "cson": "^7.20.0",
     "csv-parse": "^4.14.2",
@@ -79,14 +78,13 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "ava": "^0.16.0",
+    "@ava/babel": "^1.0.1",
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "ava": "^3.14.0",
     "ava-spec": "github:tjbenton/ava-spec",
-    "babel-cli": "~6.26.0",
-    "babel-plugin-array-includes": "~2.0.3",
-    "babel-plugin-external-helpers": "~6.22.0",
-    "babel-plugin-transform-runtime": "~6.23.0",
-    "babel-preset-latest": "~6.24.1",
-    "babel-preset-stage-0": "~6.24.1",
     "coveralls": "^3.1.0",
     "get-stream": "~6.0.0",
     "joi": "~10.2.0",
@@ -101,13 +99,15 @@
   },
   "babelConfig": {
     "presets": [
-      "latest",
-      "stage-0"
+      "@babel/preset-env"
     ],
     "plugins": [
-      "transform-runtime",
-      "external-helpers",
-      "array-includes"
+      [
+        "@babel/plugin-transform-runtime",
+        {
+          "corejs": 3
+        }
+      ]
     ]
   },
   "ava": {
@@ -120,8 +120,9 @@
       "test/utils.js"
     ],
     "failFast": true,
+    "failWithoutAssertions": false,
     "concurrency": 1,
-    "babel": "inherit"
+    "babel": true
   },
   "nyc": {
     "exclude": [

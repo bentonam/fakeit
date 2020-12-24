@@ -151,7 +151,7 @@ test.group('output', (test) => {
 
   for (let language of to.keys(languages)) {
     const data = languages[language];
-    test(language, async (t) => {
+    test.serial(language, async (t) => {
       t.context.cluster.bucket = sinon.fake.returns({
         defaultCollection: sinon.stub().callsFake(() => {
           return {
@@ -175,9 +175,11 @@ test.group('output', (test) => {
       t.context.output_options.bucket = `output-${language}`;
       const id = `1234567890-${language}`;
       t.context.output_options.format = language;
-      await t.context.output(id, data);
+      const result = await t.context.output(id, data);
+      t.is(result.cas, 23423497);
+      t.is(result.token, 'asldfj923249-asdf2bh234-2kchadr');
       const document = await t.context.collection.get(id);
-      t.not(document, null);
+      t.not(document, undefined);
       t.deepEqual(document.content, data);
     });
   }
@@ -213,7 +215,7 @@ test.group('output', (test) => {
     t.context.prepare();
     await t.context.output(id, data);
     const document = await t.context.collection.get(id);
-    t.not(document, null);
+    t.not(document, undefined);
     t.deepEqual(document.content, data);
   });
 });
