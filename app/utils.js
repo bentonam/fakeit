@@ -81,14 +81,14 @@ export async function findFiles(globs) {
   };
 
   const find = async (items) => {
-    items = sort(await map(items, (item) => {
+    items = sort(await map(items, async (item) => {
       if (globby.hasMagic(item)) {
-        return globby(item);
+        return await globby(item);
       } else if (!!path.extname(item)) {
         return item;
       }
 
-      return globby(path.join(item, '*'));
+      return await globby(item);
     }));
     if (items.length) {
       return find(items);

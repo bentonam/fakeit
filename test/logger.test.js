@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import ava from 'ava-spec';
 import Logger from '../dist/logger';
 import to from 'to-js';
@@ -196,7 +197,7 @@ test.serial.group('spinner', (test) => {
 
   test('start/stop custom stream', async (t) => {
     const stream = getPassThroughStream();
-    const actual = t.context.spinner({ stream, text: 'stop__', color: false, enabled: true });
+    const actual = t.context.spinner({ stream, text: 'stop__', color: false, isEnabled: true });
     actual.start();
     await delay(200);
     actual.stop();
@@ -212,7 +213,7 @@ test.serial.group('spinner', (test) => {
   test('start/stop custom stream with verbose option', async (t) => {
     const stream = getPassThroughStream();
     t.context.options.verbose = true;
-    const actual = t.context.spinner({ stream, text: 'stop__', color: false, enabled: true });
+    const actual = t.context.spinner({ stream, text: 'stop__', color: false, isEnabled: true });
     actual.start();
     await delay(200);
     actual.stop();
@@ -234,7 +235,9 @@ test.serial.group('spinner', (test) => {
 
   test.serial('fail custom stream', async (t) => {
     const stream = getPassThroughStream();
-    const [ one, two, three ] = [ 'one', 'two', 'three' ].map((str) => t.context.spinner({ stream, text: `${str}__`, color: false, enabled: true }));
+    const [ one, two, three ] = [ 'one', 'two', 'three' ].map((str) => {
+      return t.context.spinner({ stream, text: `${str}__`, color: false, isEnabled: true });
+    });
     const inspect = stdout.inspect();
     one.start();
     two.start();
@@ -245,9 +248,9 @@ test.serial.group('spinner', (test) => {
     const tester = () => three.fail('failed');
     t.throws(tester);
     inspect.restore();
-    t.is(one.id, null);
-    t.is(two.id, null);
-    t.is(three.id, null);
+    t.is(one.id, undefined);
+    t.is(two.id, undefined);
+    t.is(three.id, undefined);
     t.truthy(/error: failed/.test(stripColor(inspect.output.join(''))));
     stream.end();
     const states = stripColor(await getStream(stream)).trim().split('__').filter(Boolean);

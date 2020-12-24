@@ -501,7 +501,7 @@ test.serial.group('prepare', (test) => {
     t.is(t.context.outputter.constructor.name, 'Zip');
     t.is(to.type(t.context.outputter.zip), 'object');
     t.is(t.context.prepared, true);
-    t.deepEqual(await globby('zip', { cwd: root }), [ 'zip' ]);
+    t.deepEqual(await globby('zip', { cwd: root }), []);
     t.deepEqual(await globby(p('zip', '**', '*'), { cwd: root }), []);
   });
 
@@ -516,7 +516,7 @@ test.serial.group('prepare', (test) => {
     await preparing;
     t.is(t.context.outputter.constructor.name, 'Folder');
     t.is(t.context.prepared, true);
-    t.deepEqual(await globby('folder', { cwd: root }), [ 'folder' ]);
+    t.deepEqual(await globby('folder', { cwd: root }), []);
     t.deepEqual(await globby(p('folder', '**', '*'), { cwd: root }), []);
   });
 
