@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undefined */
 
 import Models, {
@@ -13,7 +14,7 @@ import Models, {
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
 import to from 'to-js';
-import is from 'joi';
+import Joi from 'joi';
 import _ from 'lodash';
 import fs from 'fs-extra-promisify';
 import AdmZip from 'adm-zip';
@@ -68,19 +69,31 @@ test('without args', (t) => {
       seed: 0,
       babel_config: '+(.babelrc|package.json)'
     },
-    log_types: is.object().required(),
-    inputs: is.object().length(0),
-    models: is.array().length(0),
-    prepared: is.boolean(),
-    registered_models: is.array().length(0),
-    spinners: is.object().required(),
+    log_types: {
+      error: 'red',
+      info: 'blue',
+      log: 'gray',
+      success: 'green',
+      verbose: 'magenta',
+      warning: 'yellow'
+    },
+    inputs: {},
+    models: [],
+    prepared: false,
+    registered_models: [],
+    spinners: {},
   };
-  const { error } = is.validate(t.context, expected);
-  if (error) {
-    t.fail(error);
-  } else {
-    t.pass();
-  }
+
+  t.deepEqual(t.context._events, expected._events);
+  t.deepEqual(t.context._eventsCount, expected._eventsCount);
+  t.deepEqual(t.context._maxListeners, expected._maxListeners);
+  t.deepEqual(t.context.options, expected.options);
+  t.deepEqual(t.context.log_types, expected.log_types);
+  t.deepEqual(t.context.inputs, expected.inputs);
+  t.deepEqual(t.context.models, expected.models);
+  t.deepEqual(t.context.prepared, expected.prepared);
+  t.deepEqual(t.context.registered_models, expected.registered_models);
+  t.deepEqual(t.context.spinners, expected.spinners);
 });
 
 
@@ -309,7 +322,7 @@ test.group('parseModelInputs', models(async (t, file) => {
   files = to.flatten(files).filter(Boolean);
 
   const expected = files.reduce((prev, next) => {
-    prev[path.basename(next).split('.')[0]] = is.any().allow(is.array(), is.object());
+    prev[path.basename(next).split('.')[0]] = Joi.any().allow(Joi.array(), Joi.object());
     return prev;
   }, {});
 
@@ -320,7 +333,7 @@ test.group('parseModelInputs', models(async (t, file) => {
   const tests = [ t.context.inputs, actual ];
 
   for (let item of tests) {
-    const { error } = is.object(expected).validate(item);
+    const { error } = Joi.object(expected).validate(item);
     if (error) {
       t.fail(error);
     } else {
@@ -445,7 +458,7 @@ test.group('parseModelReferences', models((t, file) => {
     const expected = to.extend(to.clone(_.get(original_model, set_location)), _.get(original_model, get_location));
     const actual = _.get(model, set_location);
 
-    const { error } = is.compile(expected).validate(actual);
+    const { error } = Joi.compile(expected).validate(actual);
 
     if (error) {
       t.fail(error);

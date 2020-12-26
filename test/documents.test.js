@@ -12,7 +12,7 @@ import { join as p } from 'path';
 import ava from 'ava-spec';
 import { Chance } from 'chance';
 import to from 'to-js';
-import is from 'joi';
+import Joi from 'joi';
 import _ from 'lodash';
 import fs from 'fs-extra-promisify';
 
@@ -100,13 +100,13 @@ test.group('build', (test) => {
     t.deepEqual(doc.globals, {});
     t.deepEqual(doc.documents, {});
     const actual = await doc.build(model);
-    const schema = is.array()
-      .items(is.object({
-        test: is.string().regex(/woohoo/),
+    const schema = Joi.array()
+      .items(Joi.object({
+        test: Joi.string().regex(/woohoo/),
       }))
       .length(1);
-    is.assert(actual, schema);
-    is.assert(doc.documents, is.object({ build_test: schema }));
+    Joi.assert(actual, schema);
+    Joi.assert(doc.documents, Joi.object({ build_test: schema }));
     t.deepEqual(doc.globals, { woohoo: 'woohoo' });
   });
 
@@ -437,10 +437,10 @@ test.group('buildObject', (test) => {
     const doc = t.context.document.initializeDocument(model, paths);
     const actual = t.context.document.buildObject(model, to.clone(doc), paths, 1);
 
-    const schema = is.object({
-      phone: is.object({
-        type: is.string(),
-        phone_number: is.string().regex(/\(333\) 333 \- 3333/),
+    const schema = Joi.object({
+      phone: Joi.object({
+        type: Joi.string(),
+        phone_number: Joi.string().regex(/\(333\) 333 \- 3333/),
       })
     });
 
@@ -767,11 +767,11 @@ test.group('buildValue', (test) => {
       }), []);
 
       t.truthy(_.isArray(actual));
-      is.assert(actual, is.array()
-        .items(is.object({
-          age: is.number().min(1).max(17),
-          first_name: is.string().regex(/[A-Z][a-zA-Z\s]+/),
-          gender: [ is.string().regex(/M|F/), is.allow(null) ]
+      Joi.assert(actual, Joi.array()
+        .items(Joi.object({
+          age: Joi.number().min(1).max(17),
+          first_name: Joi.string().regex(/[A-Z][a-zA-Z\s]+/),
+          gender: [ Joi.string().regex(/M|F/), Joi.allow(null) ]
         }))
         .length(5));
     });
@@ -879,18 +879,18 @@ test.group('postProcess', (test) => {
     let doc = t.context.document.initializeDocument(model, paths);
     doc = t.context.document.buildObject(model, doc, paths, 1);
     const actual = t.context.document.postProcess(model, to.clone(doc), paths);
-    const schema = is.object({
-      nochanges: is.string().lowercase(),
-      changes: is.string().uppercase(),
-      emails: is.array()
-        .items(is.string().regex(/[A-Z]+\@example\.com/))
+    const schema = Joi.object({
+      nochanges: Joi.string().lowercase(),
+      changes: Joi.string().uppercase(),
+      emails: Joi.array()
+        .items(Joi.string().regex(/[A-Z]+\@example\.com/))
         .min(1)
         .max(4),
-      phones: is.array()
-        .items(is.object({
-          type: is.string(),
-          extension: is.string().regex(/10/),
-          phone_number: is.string().regex(/\(333\) 333 \- 3333/),
+      phones: Joi.array()
+        .items(Joi.object({
+          type: Joi.string(),
+          extension: Joi.string().regex(/10/),
+          phone_number: Joi.string().regex(/\(333\) 333 \- 3333/),
         }))
         .min(1)
         .max(4),
@@ -898,7 +898,7 @@ test.group('postProcess', (test) => {
 
     t.truthy(/[a-z]+/.test(doc.changes));
     t.truthy(/[A-Z]+/.test(actual.changes));
-    is.assert(actual, schema);
+    Joi.assert(actual, schema);
     t.notDeepEqual(doc, actual);
   });
 

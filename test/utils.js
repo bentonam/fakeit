@@ -184,12 +184,14 @@ module.exports.models = function(settings) {
                   } else {
                     t.pass(`${model} is valid`);
                   }
-                };
-                if (schema.isJoi) {
-                  schema.validate(picked, validate);
-                } else {
-                  joi.validate(picked, schema, validate);
                 }
+
+                schema.validate(picked, validate);
+                // if (schema.isJoi) {
+                //   schema.validate(picked, validate);
+                // } else {
+                //   joi.validate(picked, schema, validate);
+                // }
               })
               .catch(function(err) {
                 console.log(`UTILS ERROR: ${JSON.stringify(err)}`);
