@@ -64,7 +64,7 @@ test.group('setup', (test) => {
     t.is(t.context.preparing, undefined);
 
     try {
-      await t.context.setup()
+      await t.context.setup();
       // If we get here then fail the test because we are
       // expecting a failure with this test
       t.fail();
