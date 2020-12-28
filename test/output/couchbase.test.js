@@ -7,9 +7,11 @@ import ava from 'ava-spec';
 import sinon from 'sinon';
 
 const test = ava.group('output:couchbase');
+const username = 'test';
+const password = 'test';
 
 test.beforeEach((t) => {
-  t.context = new Couchbase();
+  t.context = new Couchbase({}, { username, password });
   t.context.cluster = sinon.mock(Couchbase.prototype);
 });
 
@@ -19,6 +21,8 @@ test.afterEach(() => {
 });
 
 test('without args', (t) => {
+  default_options.username = username;
+  default_options.password = password;
   t.deepEqual(t.context.output_options, default_options);
   t.is(t.context.prepared, false);
   t.is(typeof t.context.prepare, 'function');
@@ -53,7 +57,23 @@ test('prepare', async (t) => {
 });
 
 test.group('setup', (test) => {
-  test(async (t) => {
+  test('returns an exception when a bucket is not found', async (t) => {
+    t.context.cluster.bucket = null;
+
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+
+    try {
+      await t.context.setup()
+      // If we get here then fail the test because we are
+      // expecting a failure with this test
+      t.fail();
+    } catch (e) {
+      t.pass();
+    }
+  });
+
+  test('is successful when scopeName and collectionName are not provided', async (t) => {
     t.context.cluster.bucket = sinon.fake.returns({
       defaultCollection: sinon.stub().callsFake(() => {
         return {
@@ -76,6 +96,73 @@ test.group('setup', (test) => {
     t.is(t.context.prepared, true);
     t.is(to.type(t.context.bucket), 'object');
     t.is(t.context.bucket.connected, true);
+  });
+
+  test('is successful when only collectionName is provided', async (t) => {
+    const collectionName = 'test';
+    t.context.output_options.collectionName = collectionName;
+    t.context.cluster.bucket = sinon.fake.returns({
+      collection: sinon.stub().callsFake(() => {
+        return {
+          upsert: sinon.stub().callsFake(() => {
+            return Promise.resolve({
+              cas: 23423497,
+              token: 'asldfj923249-asdf2bh234-2kchadr',
+            });
+          }),
+        };
+      })
+    });
+
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+
+    const preparing = t.context.setup();
+    t.falsy(await preparing);
+
+    t.is(t.context.prepared, true);
+    t.is(to.type(t.context.bucket), 'object');
+    t.is(t.context.bucket.connected, true);
+    t.not(t.context.collection, undefined);
+    t.not(t.context.collection, null);
+  });
+
+  test('is successful when both scopeName and collectionName are provided', async (t) => {
+    const scopeName = 'test';
+    const collectionName = 'test';
+    t.context.output_options.scopeName = scopeName;
+    t.context.output_options.collectionName = collectionName;
+    t.context.cluster.bucket = sinon.fake.returns({
+      scope: sinon.stub().callsFake(() => {
+        return {
+          collection: sinon.stub().callsFake(() => {
+            return {
+              // eslint-disable-next-line max-nested-callbacks
+              upsert: sinon.stub().callsFake(() => {
+                return Promise.resolve({
+                  cas: 23423497,
+                  token: 'asldfj923249-asdf2bh234-2kchadr',
+                });
+              }),
+            };
+          })
+        };
+      }),
+    });
+
+    t.is(t.context.prepared, false);
+    t.is(t.context.preparing, undefined);
+
+    const preparing = t.context.setup();
+    t.falsy(await preparing);
+
+    t.is(t.context.prepared, true);
+    t.is(to.type(t.context.bucket), 'object');
+    t.is(t.context.bucket.connected, true);
+    t.not(t.context.scope, undefined);
+    t.not(t.context.scope, null);
+    t.not(t.context.collection, undefined);
+    t.not(t.context.collection, null);
   });
 });
 
