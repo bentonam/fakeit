@@ -35,7 +35,7 @@ export default class Base extends Logger {
   }
 
   /// @name resolvePaths
-  /// @description This is ued to parsed paths that are passed to the different functions
+  /// @description This is used to parse paths that are passed to the different functions
   /// @arg {string, array} paths - The paths to normalize
   /// @arg {string} root [this.options.root] - This is the base that will resolve other paths
   /// @returns {array} An empty array or an array containing paths
