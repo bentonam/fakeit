@@ -18,5 +18,7 @@ test((t) => {
     username: '',
     password: '',
     timeout: 5000,
+    scopeName: '',
+    collectionName: '',
   });
 });

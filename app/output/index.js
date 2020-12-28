@@ -87,6 +87,7 @@ export default class Output extends Base {
   ///# @arg {array, object} documents - The data that you want to be saved
   ///# @returns {array, object, string} - This is determined by the output type that's passed and the format that's used.
   ///# @async
+  // eslint-disable-next-line max-statements
   async output(documents) {
     let count = 0;
     if (!documents) {
@@ -372,6 +373,18 @@ export const validate = {
       throw new Error('The highWaterMark option must be a number');
     }
   },
+
+  scopeName(option) {
+    if (!is.string(option)) {
+      throw new Error('The scopeName option must be a string');
+    }
+  },
+
+  collectionName(option) {
+    if (!is.string(option)) {
+      throw new Error('The collectionName option must be a string');
+    }
+  }
 };
 
 

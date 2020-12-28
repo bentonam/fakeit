@@ -82,7 +82,7 @@ module.exports.models = function(settings) {
   ///#   const inspect = stdout.inspect()
   ///#   await t.context.fakeit.generate(model, t.context.defaults)
   ///#   inspect.restore()
-  ///#   const actual = to.object(stripColor(inspect.output[2].trim()))[0]
+  ///#   const actual = to.object(stripAnsi(inspect.output[2].trim()))[0]
   ///#
   ///#   // make sure that you return the actual result
   ///#   // because it will be run through validation
@@ -184,15 +184,18 @@ module.exports.models = function(settings) {
                   } else {
                     t.pass(`${model} is valid`);
                   }
-                };
-                if (schema.isJoi) {
-                  schema.validate(picked, validate);
-                } else {
-                  joi.validate(picked, schema, validate);
                 }
+
+                schema.validate(picked, validate);
+                // if (schema.isJoi) {
+                //   schema.validate(picked, validate);
+                // } else {
+                //   joi.validate(picked, schema, validate);
+                // }
               })
               .catch(function(err) {
-                t.fail(err);
+                console.log(`UTILS ERROR: ${JSON.stringify(err)}`);
+                t.fail(err.message);
               });
           });
         } else if (
