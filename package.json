@@ -1,10 +1,10 @@
 {
-  "name": "fakeit",
+  "name": "fakeit-facet",
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "Command-line utility that generates fake data which can be output as JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
   "scripts": {
     "test": "make test",
@@ -16,10 +16,10 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bentonam/fakeit.git"
+    "url": "git+https://github.com/facetdigital/fakeit.git"
   },
   "bugs": {
-    "url": "https://github.com/bentonam/fakeit/issues"
+    "url": "https://github.com/facetdigital/fakeit/issues"
   },
   "engines": {
     "node": "<=10"
@@ -42,7 +42,7 @@
     "sync-gateway"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/bentonam/fakeit#readme",
+  "homepage": "https://github.com/facetdigital/fakeit#readme",
   "dependencies": {
     "@babel/runtime-corejs3": "7.12.5",
     "adm-zip": "0.5.1",
