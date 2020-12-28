@@ -69,6 +69,12 @@ npm install fakeit --global
     -h, --no-highlight     This turns off the cli-table when a csv format
 ```
 
+#### FakeIt Console usage example
+
+```bash
+fakeit console ../test/fixtures/models/simple/models
+```
+
 ### Couchbase Specific CLI Options
 
 ```bash
@@ -85,6 +91,12 @@ npm install fakeit --global
     --collectionName        Name of a collection to insert data to (optional)
 ```
 
+#### FakeIt Couchbase usage example
+
+```bash
+fakeit couchbase -s 127.0.0.1 -b sample -u Administrator -p password --scopeName sample --collectionName=test ../test/fixtures/models/simple/models
+```
+
 ### Sync Gateway Specific CLI Options
 
 ```bash
@@ -97,12 +109,24 @@ npm install fakeit --global
     -t, --timeout           Timeout for the servers
 ```
 
+#### FakeIt Couchbase Sync Gateway usage example
+
+```bash
+fakeit couchbase -s 127.0.0.1 -b sample -u Administrator -p password ../test/fixtures/models/simple/models
+```
+
 ### Directory Specific CLI Options
 
 ```bash
   Options:
 
     -a, --archive           If an archive file is passed, then the data will be output as a zip file
+```
+
+#### FakeIt Directory usage example
+
+```bash
+./fakeit directory output/ ../test/fixtures/models/simple/models
 ```
 
 ## Models
@@ -686,6 +710,20 @@ fakeit.generate(models, {
 To see more examples of some of the things you can do take a look at the [test cases](https://github.com/bentonam/fakeit/tree/master/test/fixtures/models) that are in this repo
 
 ### Changelog
+
+#### 2.0.0
+
+- Updated all library dependencies to the latest versions
+- Migrated from Babel 6 to Babel 7
+- Updated Couchbase logic to take `scopeName` and `collectionName` parameters to support these new features in Couchbase Server 7+
+- Update commander to the latest version which required code to be refactored due to changes in the Commander library
+- Updated AVA to the latest version which required tests to be refactored due to changes in the AVA library
+- Updated existing tests to fix a few test issues
+- Specify that Node v10 or less should be utilized
+- Update readme documentation
+- Fix typo's throughout code documentation
+
+#### 1.4.0 & prior
 
 - Model Dependencies are now defined in the model it's self by the file path to the model that the current one depends on. It doesn't matter what order they're because they will be resolve automagically.
 - Model Inputs are now defined in the model it's self by the file path to the inputs location that the current model depends on. It can be a string or an object.
