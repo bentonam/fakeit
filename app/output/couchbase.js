@@ -17,7 +17,7 @@ export default class Couchbase extends Base {
     const { username, password } = this.output_options;
     let couchbaseOptions = {};
 
-    if (username || password) {
+    if (username && password) {
       couchbaseOptions = {
         username,
         password
@@ -66,7 +66,8 @@ export default class Couchbase extends Base {
         // Check if the user configured a collection and/or a scope. If so,
         // use them, otherwise use the default scope and default collection.
         if (scopeName && collectionName) {
-          this.collection = this.bucket.scope(scopeName).collection(collectionName);
+          this.scope = this.bucket.scope(scopeName);
+          this.collection = this.scope.collection(collectionName);
         } else if (collectionName) {
           this.collection = this.bucket.collection(collectionName);
         } else {
