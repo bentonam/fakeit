@@ -408,7 +408,7 @@ test.group('parseModelFunctions', (test) => {
     };
     const tester = () => parseModelFunctions(actual);
     const error = t.throws(tester);
-    t.is(error.message, 'Function Error in model \'undefined\', for property: build, Reason: Unexpected token var');
+    t.is(error.message, 'Function Error in model \'undefined\', for property: build, Reason: Unexpected token \'var\'');
   });
 
   test.group('functions are returning values correctly', (test) => {
