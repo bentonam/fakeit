@@ -626,6 +626,14 @@ data:
 # etc...
 ```
 
+**IMPORTANT:** When creating the input data in CSV format, the first column will not be used. You must make the first row in the CSV file, column header values. The column header names can be used in the yaml files to reference the correct data field from the CSV. The first column should have a name of id, the remaining columns can be whatever you want them to be. The id column will not be used so just make it an arbitrary number. If you need/want to specify an id value in the CSV file to be used in the yaml file just make the second column be the actual id value used in the yaml file. Here's an example of how your CSV file should be setup:
+
+```csv
+id,countryId,code,name,continent
+1,country::gb,GB,United Kingdom,EU
+2,country::us,US,United States,NA
+```
+
 ## JS API
 
 If you don't want to use the CLI version of this app you can always use the JS api.
