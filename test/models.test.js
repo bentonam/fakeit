@@ -398,7 +398,7 @@ test.group('parseModelFunctions', (test) => {
     const tester = () => parseModelFunctions(actual, babel_config);
     const error = t.throws(tester);
     t.truthy(error.message.includes(`Failed to transpile build with babel in ${__dirname}\n`));
-    t.truthy(error.message.includes('unknown: Unexpected token, expected ";" (2:7)\n'));
+    t.truthy(error.message.includes('unknown: Missing semicolon (2:6)\n'));
   });
 
   test('failed to create function', async (t) => {

@@ -126,13 +126,18 @@ generate.group('zip', models(async (t, model) => {
   t.context.defaults.output = root;
   t.context.defaults.archive = 'archive.zip';
   await t.context.fakeit.generate(model, t.context.defaults);
+
   const files = await globby(p(root, '**', '*'));
+
   t.is(files.length, 1);
   t.is(path.extname(files[0]), '.zip');
   const zip = new AdmZip(files[0]);
+
   t.is(zip.getEntries().length, 1);
   const entry_file = zip.getEntries()[0].name;
+
   t.is(path.extname(entry_file), '.json');
+
   // read the entry_file from the zip file and convert it to an object from a json string
   return to.object(zip.readAsText(entry_file));
 }));

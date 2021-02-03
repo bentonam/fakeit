@@ -187,14 +187,11 @@ module.exports.models = function(settings) {
                 }
 
                 schema.validate(picked, validate);
-                // if (schema.isJoi) {
-                //   schema.validate(picked, validate);
-                // } else {
-                //   joi.validate(picked, schema, validate);
-                // }
               })
               .catch(function(err) {
                 console.log(`UTILS ERROR: ${JSON.stringify(err)}`);
+                console.log(`UTILS ERROR MESSAGE: ${JSON.stringify(err.message)}`);
+                console.log(`UTILS ERROR STACK: ${JSON.stringify(err.stack)}`);
                 t.fail(err.message);
               });
           });
