@@ -173,7 +173,7 @@ test.group('output', (test) => {
       const result = await t.context.output(id, data);
       t.is(result.cas, 23423497);
       t.is(result.token, 'asldfj923249-asdf2bh234-2kchadr');
-      const document = await t.context.collection.get(id);
+      const document = await t.context.bucket.defaultCollection().get(id);
       t.not(document, undefined);
       t.deepEqual(document.content, data);
     });
@@ -209,7 +209,7 @@ test.group('output', (test) => {
     t.context.output_options.format = language;
     t.context.prepare();
     await t.context.output(id, data);
-    const document = await t.context.collection.get(id);
+    const document = await t.context.bucket.defaultCollection().get(id);
     t.not(document, undefined);
     t.deepEqual(document.content, data);
   });
