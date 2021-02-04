@@ -57,22 +57,11 @@ export default class Couchbase extends Base {
       return this.prepare();
     }
 
-    const { server, bucket, scopeName, collectionName } = this.output_options;
+    const { server, bucket } = this.output_options;
 
     return new Promise((resolve, reject) => {
       try {
         this.bucket = this.cluster.bucket(bucket);
-
-        // Check if the user configured a collection and/or a scope. If so,
-        // use them, otherwise use the default scope and default collection.
-        if (scopeName && collectionName) {
-          this.scope = this.bucket.scope(scopeName);
-          this.collection = this.scope.collection(collectionName);
-        } else if (collectionName) {
-          this.collection = this.bucket.collection(collectionName);
-        } else {
-          this.collection = this.bucket.defaultCollection();
-        }
       } catch (err) {
         console.log(err);
 
@@ -102,7 +91,7 @@ export default class Couchbase extends Base {
     }
 
     // upserts a document into couchbase
-    return this.collection.upsert(id, data);
+    return this.bucket.defaultCollection().upsert(id, data);
   }
 
   ///# @name finalize
