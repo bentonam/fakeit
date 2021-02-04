@@ -34,6 +34,4 @@ module.exports = {
   username: '', // the username to use if applicable
   password: '', // the password for the account if applicable
   timeout: 5000, // timeout for the servers
-  scopeName: '', // scope name to use if applicable
-  collectionName: '', // collection name to use if applicable
 };

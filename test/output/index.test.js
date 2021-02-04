@@ -41,8 +41,6 @@ test('without args', async (t) => {
     password: '',
     username: '',
     timeout: 5000,
-    scopeName: '',
-    collectionName: '',
   });
 });
 

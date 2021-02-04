@@ -66,6 +66,12 @@ export default class Folder extends Base {
       await this.preparing;
     }
 
-    return fs.writeFile(path.join(this.output_options.output, `${id}.${this.output_options.format}`), data);
+    // Some files may contain an id or key property that contains backslashes so we must
+    // be sure to create the directory structure and file before trying to write to the file
+    // otherwise the writeFile function will fail with a `no such file or directory` error.
+    const fileToWriteTo = path.join(this.output_options.output, `${id}.${this.output_options.format}`);
+    await fs.ensureFile(fileToWriteTo);
+
+    return fs.writeFile(fileToWriteTo, data);
   }
 }

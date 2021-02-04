@@ -37,8 +37,6 @@ export default async function() {
     'timeout',
     'useStreams',
     'highWaterMark',
-    'scopeName',
-    'collectionName',
     // gets set based off the command that's used
     'output',
   ];
@@ -57,8 +55,6 @@ export default async function() {
         'timeout',
         'useStreams',
         'highWaterMark',
-        'scopeName',
-        'collectionName'
       ];
       const commandOptions = pick(options, couchbaseOptions);
       commandOptions.output = output;
@@ -109,8 +105,6 @@ export default async function() {
     .option('-b, --bucket [bucket]', `The bucket name (${dim('default')})`, 'default')
     .option('-u, --username [username]', 'The username to use (optional pre-5.0)')
     .option('-p, --password [password]', 'the password for the account (optional)')
-    .option('-sn, --scopeName [scopeName]', 'Name of a scope to insert data to (optional)')
-    .option('-c, --collectionName [collectionName]', 'Name of a collection to insert data to (optional)')
     .option('-t, --timeout [timeout]', `timeout for the servers (${dim(5000)})`, 5000)
     .option('-r, --use-streams [useStreams]', `${chalk.red('**experimental**')}
                                       Whether or not to use node streams. Used for high output
@@ -178,6 +172,10 @@ export default async function() {
 
     // get the output path
     const output_path = path.join(output.output, output.archive || '');
+
+    // eslint-disable-next-line max-len
+    const regex = /^(\-\-(?:program|root|babel|count|format|spacing|seed|limit|bucket|username|password|timeout|server|useStreams|highWaterMark)|(?:\-[cfnxl]{1,}))$/;
+
     // get the model files that have been passed into fakeit
     const models = program.args.filter((str, i, args) => {
       const prev = args[i - 1] || '';
@@ -185,7 +183,7 @@ export default async function() {
       if (
         typeof str !== 'string' ||
         // if the previous str was one of these commands that has options then remove it
-        /^(\-\-(?:program|root|babel|count|format|spacing|seed|limit)|(?:\-[cfnxl]{1,}))$/.test(prev) ||
+        regex.test(prev) ||
         // if the str is one of the commands then remove it
         /^(([-]{1,2}[a-zA-Z]+)|\-\-no\-[a-z]+)$/.test(str) ||
         // if the str is the same as the output path then remove it
