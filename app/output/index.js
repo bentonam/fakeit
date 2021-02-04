@@ -372,18 +372,6 @@ export const validate = {
     if (!is.number(option)) {
       throw new Error('The highWaterMark option must be a number');
     }
-  },
-
-  scopeName(option) {
-    if (!is.string(option)) {
-      throw new Error('The scopeName option must be a string');
-    }
-  },
-
-  collectionName(option) {
-    if (!is.string(option)) {
-      throw new Error('The collectionName option must be a string');
-    }
   }
 };
 
