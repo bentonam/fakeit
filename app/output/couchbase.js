@@ -81,8 +81,9 @@ export default class Couchbase extends Base {
   ///# This is used to output the data that's passed to it
   ///# @arg {string} id - The id to use for this data
   ///# @arg {object, array, string} data - The data that you want to be saved
+  ///# @arg {object} options - Options from the original YAML file definition to be used by the output logic
   ///# @async
-  async output(id, data) {
+  async output(id, data, options = {}) {
     if (this.prepared !== true) {
       if (this.preparing == null) {
         this.prepare();
@@ -90,8 +91,18 @@ export default class Couchbase extends Base {
       await this.preparing;
     }
 
+    let collection = this.bucket.defaultCollection();
+
+    // Check if the user configured a collection and/or a scope. If so,
+    // use them, otherwise use the default scope and default collection.
+    if (options.scope && options.collection) {
+      collection = this.bucket.scope(options.scope).collection(options.collection);
+    } else if (options.collection) {
+      collection = this.bucket.collection(options.collection);
+    }
+
     // upserts a document into couchbase
-    return this.bucket.defaultCollection().upsert(id, data);
+    return collection.upsert(id, data, { timeout: 5000 });
   }
 
   ///# @name finalize
