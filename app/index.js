@@ -70,7 +70,13 @@ export default class Fakeit extends Base {
       documents = new DocumentsStream(this.options, this.globals, model.inputs, output);
     } else {
       documents = new Documents(this.options, this.documents, this.globals, model.inputs);
-      documents.on('data', (data) => output.output(data));
+      documents.on('data', (data, modelDoc) => {
+        const options = {
+          scope: modelDoc.scope || '',
+          collection: modelDoc.collection || '',
+        };
+        return output.output(data, options);
+      });
     }
     result = await documents.build(model.models);
     delete model.inputs;
