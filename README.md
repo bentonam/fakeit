@@ -87,14 +87,12 @@ fakeit console ../test/fixtures/models/simple/models
     -t, --timeout           Timeout for the servers
     -r, --use-streams       Whether or not to use node streams. Used for high output documents and can only be used when there are no dependencies (experimental)
     -w, --high-water-mark   The number of objects to process through the stream at a time (experimental)
-    --scopeName             Name of a scope to insert data to (optional)
-    --collectionName        Name of a collection to insert data to (optional)
 ```
 
 #### FakeIt Couchbase usage example
 
 ```bash
-fakeit couchbase -s 127.0.0.1 -b sample -u Administrator -p password --scopeName sample --collectionName=test ../test/fixtures/models/simple/models
+fakeit couchbase -s 127.0.0.1 -b "sample" -u "Administrator" -p "password" ../test/fixtures/models/simple/models
 ```
 
 ### Sync Gateway Specific CLI Options
@@ -112,7 +110,7 @@ fakeit couchbase -s 127.0.0.1 -b sample -u Administrator -p password --scopeName
 #### FakeIt Couchbase Sync Gateway usage example
 
 ```bash
-fakeit couchbase -s 127.0.0.1 -b sample -u Administrator -p password ../test/fixtures/models/simple/models
+fakeit couchbase -s 127.0.0.1 -b "sample" -u "Administrator" -p "password" ../test/fixtures/models/simple/models
 ```
 
 ### Directory Specific CLI Options
@@ -126,7 +124,7 @@ fakeit couchbase -s 127.0.0.1 -b sample -u Administrator -p password ../test/fix
 #### FakeIt Directory usage example
 
 ```bash
-./fakeit directory output/ ../test/fixtures/models/simple/models
+fakeit directory 'output' '../test/fixtures/models/simple/models'
 ```
 
 ## Models
@@ -144,6 +142,18 @@ The name of the model
 The data type of the model to be generated. This needs to be set top level, as well as a per property/items basis. It determines the starting data type, and how the result of the build loop will be converted once complete
 
 **Note:** If type isn't set it defaults to `'null'`.
+
+#### `scope`
+
+The scope to use within Couchbase.
+
+**NOTE:** This only applies to Couchbase Server 7.0+ **If you are not using Couchbase 7.0+ and define this property, it will cause an error.** Additionally, make sure the scope exists in Couchbase before you set this property.
+
+#### `collection`
+
+The collection to use within Couchbase.
+
+**NOTE:** This only applies to Couchbase Server 7.0+ **If you are not using Couchbase 7.0+ and define this property, it will cause an error.** Additionally, make sure the collection exists in Couchbase before you set this property
 
 ###### Available types
 
@@ -291,6 +301,8 @@ If you have a nested object being created in an array or something, `this` will 
 ```yaml
 name: Users
 type: object
+scope: test
+collection: users
 key:
   data:
     build: `user_${this.user_id}`
@@ -495,6 +507,8 @@ It can be beneficial to define definitions that can be referenced one or more ti
 name: Contacts
 type: object
 key: contact_id
+scope: development
+collection: contacts
 data:
   min: 1
   max: 4
@@ -703,8 +717,6 @@ fakeit.generate(models, {
   username: '', // the username to use if applicable
   password: '', // the password for the account if applicable
   timeout: 5000, // timeout for the servers
-  scopeName: '', // scope name to use if applicable
-  collectionName: '', // collection name to use if applicable
 })
   .then((data) => {
     // the data returned will always be a string in the format that was set
@@ -718,6 +730,11 @@ fakeit.generate(models, {
 To see more examples of some of the things you can do take a look at the [test cases](https://github.com/bentonam/fakeit/tree/master/test/fixtures/models) that are in this repo
 
 ### Changelog
+
+#### 2.0.5
+
+- Removed Couchbase parameters `scopeName` and `collectionName` in favor of defining these values in each model
+- Fixed an error with the **directory/folder** output method that caused models with an id or key containing a backslash to not be output due to the directory not existing.
 
 #### 2.0.0
 
