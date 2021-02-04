@@ -408,7 +408,7 @@ export function parseModelDefaults(model) {
 
 
 /// @name parseModelCount
-/// @description Determins the total number of documents to run
+/// @description Determines the total number of documents to run
 /// @arg {object} model - The model to update
 /// @arg {undefined, null, number} count - The count to override the model settings
 export function parseModelCount(model, count) {
