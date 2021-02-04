@@ -37,6 +37,7 @@ export default class Fakeit extends Base {
     this.globals = {};
   }
 
+  // eslint-disable-next-line max-statements
   async generate(models, output_options = {}) {
     if (to.type(models) === 'object') {
       output_options = models;
