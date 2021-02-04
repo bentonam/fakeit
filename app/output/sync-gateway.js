@@ -93,8 +93,9 @@ export default class SyncGateway extends Base {
   ///# This is used to output the data that's passed to it
   ///# @arg {string} id - The id to use for this data
   ///# @arg {object, array, string} data - The data that you want to be saved
+  ///# @arg {object} options - Options from the original YAML file definition to be used by the output logic
   ///# @async
-  async output(id, data) {
+  async output(id, data, options = {}) {
     if (this.prepared !== true) {
       if (this.preparing == null) {
         this.prepare();
@@ -104,7 +105,7 @@ export default class SyncGateway extends Base {
 
     const { server, bucket } = this.output_options;
 
-    const options = {
+    const config = {
       url: `${server}/${bucket}/${encodeURIComponent(id)}`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -116,10 +117,10 @@ export default class SyncGateway extends Base {
       const jar = req.jar();
       const cookie = req.cookie(`${this.session.name}=${this.session.id}`);
       jar.setCookie(cookie, server);
-      options.jar = jar;
+      config.jar = jar;
     }
 
-    const body = to.object((await request(options))[1]);
+    const body = to.object((await request(config))[1]);
 
     if (body.error) {
       if (body.reason === 'Document exists') {

@@ -57,8 +57,9 @@ export default class Folder extends Base {
   ///# This is used to output the data that is passed to it
   ///# @arg {string} id - The id to use for this data
   ///# @arg {object, array, string} data - The data that you want to be saved
+  ///# @arg {object} options - Options from the original YAML file definition to be used by the output logic
   ///# @async
-  async output(id, data) {
+  async output(id, data, options = {}) {
     if (this.prepared !== true) {
       if (this.preparing == null) {
         this.prepare();
