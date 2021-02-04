@@ -77,7 +77,8 @@ export default class Fakeit extends Base {
     await output.finalize();
     const time = this.timeEnd(label);
     if (this.options.verbose) {
-      console.log(`${success} Finished generating ${documents.total} documents in ${time}`);
+      const documentText = documents.total === 1 ? 'document' : 'documents';
+      console.log(`${success} Finished generating ${documents.total} ${documentText} in ${time}`);
     }
     return result;
   }
