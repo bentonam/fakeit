@@ -254,7 +254,7 @@ test.group('build', (test) => {
     }
 
     test('phones array lengths are the same', async (t) => {
-      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      const count = t.context.document.faker.datatype.number({ min: 10, max: 200 });
       t.plan(count * 2);
       for (var i = 0; i < count; i++) {
         const model = getModel();
@@ -286,7 +286,7 @@ test.group('build', (test) => {
     test('the content is exactly the same everytime', async (t) => {
       const model = getModel();
       let actual = [];
-      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      const count = t.context.document.faker.datatype.number({ min: 10, max: 200 });
       t.plan(count - 1);
       for (var i = 0; i < count; i++) {
         t.context.document.documents = {};
@@ -301,7 +301,7 @@ test.group('build', (test) => {
     });
 
     test('the two items returned are always the same', async (t) => {
-      const count = t.context.document.faker.random.number({ min: 10, max: 200 });
+      const count = t.context.document.faker.datatype.number({ min: 10, max: 200 });
       const model = getModel();
       model.data.count = 1;
       t.plan(count);

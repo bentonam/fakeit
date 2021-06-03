@@ -5,7 +5,10 @@ SHELL := /bin/bash
 args = $(filter-out $@, $(MAKECMDGOALS))
 .PHONY: all install clean deep-clean reinstall setup build compile build-source-maps compile-source-maps docs docs-server docs-build docs-compile watch lint test coverage test-coverage code-coverage report-coverage report-code-coverage ci prepatch patch minor major publish release
 
-all: build test
+all:
+	make build
+	make test
+	make lint
 
 install:
 	npm install

@@ -174,7 +174,7 @@ name: Types example
 # typically object or array
 type: object
 key:
-  build: faker.random.uuid()
+  build: faker.datatype.uuid()
 properties:
   foo:
     # can be set on properties of an object
@@ -315,7 +315,7 @@ properties:
   user_id:
     description: The users id
     data:
-      build: faker.random.uuid()
+      build: faker.datatype.uuid()
   name:
     description: The users first name
     data:
@@ -381,12 +381,12 @@ Each key inside of the `properties` will be apart of the generated object. Each 
 ```yaml
 name: test
 key:
-  build: faker.random.uuid()
+  build: faker.datatype.uuid()
 type: object
 properties:
   id:
     data:
-      build: faker.random.uuid()
+      build: faker.datatype.uuid()
   title:
     type: string
     description: The main title to use
@@ -442,7 +442,7 @@ It uses the same structure as `properties` does but it will return an array of v
 name: Array example
 key:
   data:
-    build: faker.random.uuid()
+    build: faker.datatype.uuid()
 type: object
 properties:
   keywords:
