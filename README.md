@@ -731,6 +731,11 @@ To see more examples of some of the things you can do take a look at the [test c
 
 ### Changelog
 
+#### 2.0.9
+
+- Revert `discardStdin` option of `ora` to be true
+- Utilize the CLI option `-S` to set if `isEnabled` should be true or false when passed to a new instance of ORA.
+
 #### 2.0.8
 
 - Update dependencies

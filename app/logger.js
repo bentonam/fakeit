@@ -158,7 +158,7 @@ export default class Logger extends Emitter {
       return this.spinners[options.text];
     }
 
-    options.discardStdin = false;
+    options.enabled = this.options.spinners || options.spinners;
 
     const spinner = this.spinners[options.text] = ora(options);
     spinner.title = options.text;
