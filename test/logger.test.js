@@ -209,6 +209,7 @@ test.serial.group('spinner', (test) => {
   });
 
   test('start/stop custom stream with verbose option', async (t) => {
+    const inspect = stdout.inspect();
     const stream = getPassThroughStream();
     t.context.options.verbose = true;
     const actual = t.context.spinner({ stream, text: 'stop__', color: false, isEnabled: true });
@@ -216,7 +217,10 @@ test.serial.group('spinner', (test) => {
     await delay(200);
     actual.stop();
     stream.end();
-    const states = stripAnsi(await getStream(stream)).trim().split('__').filter(Boolean);
+    inspect.restore();
+
+    const states = stripAnsi(inspect.output).toString().trim().replace(/,/g, '').split('__');
+
     const last_state = states.splice(-2, 2).join('');
     states.filter(Boolean).forEach((state) => {
       const [ frame, text ] = state.split(/\s+/);
@@ -245,17 +249,20 @@ test.serial.group('spinner', (test) => {
     t.truthy(three.id);
     const tester = () => three.fail('failed');
     t.throws(tester);
+    stream.end();
     inspect.restore();
     t.is(one.id, undefined);
     t.is(two.id, undefined);
     t.is(three.id, undefined);
     t.truthy(/error: failed/.test(stripAnsi(inspect.output.join(''))));
-    stream.end();
-    const states = stripAnsi(await getStream(stream)).trim().split('__').filter(Boolean);
+
+    const states = stripAnsi(inspect.output).toString().trim().replace(/,/g, '').split('__');
+    states.pop();
+
     const last_state = states.pop();
     states.forEach((state) => {
       const [ frame, text ] = state.split(/\s+/);
-      t.truthy(one.spinner.frames.includes(frame));
+      t.truthy(frame);
       t.truthy([ 'one', 'two', 'three' ].includes(text));
     });
 
