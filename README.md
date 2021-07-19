@@ -731,6 +731,11 @@ To see more examples of some of the things you can do take a look at the [test c
 
 ### Changelog
 
+#### 2.0.8
+
+- Update dependencies
+- Set `discardStdin` option of `ora` to be false
+
 #### 2.0.5
 
 - Removed Couchbase parameters `scopeName` and `collectionName` in favor of defining these values in each model
