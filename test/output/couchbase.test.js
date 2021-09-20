@@ -1,10 +1,10 @@
 /* eslint-disable no-undefined */
+import ava from 'ava-spec';
+import sinon from 'sinon';
+import to from 'to-js';
 
 import Couchbase from '../../dist/output/couchbase';
 import default_options from '../../dist/output/default-options';
-import to from 'to-js';
-import ava from 'ava-spec';
-import sinon from 'sinon';
 
 const test = ava.group('output:couchbase');
 const username = 'test';
@@ -13,6 +13,7 @@ const password = 'test';
 test.beforeEach((t) => {
   t.context = new Couchbase({}, { username, password });
   t.context.cluster = sinon.mock(Couchbase.prototype);
+  sinon.stub(Couchbase.prototype, 'connect');
 });
 
 test.afterEach(() => {
@@ -20,17 +21,16 @@ test.afterEach(() => {
   sinon.restore();
 });
 
-test('without args', (t) => {
+test.serial('without args', (t) => {
   default_options.username = username;
   default_options.password = password;
   t.deepEqual(t.context.output_options, default_options);
   t.is(t.context.prepared, false);
   t.is(typeof t.context.prepare, 'function');
   t.is(typeof t.context.output, 'function');
-  t.is(t.context.cluster.constructor.name, 'Object');
 });
 
-test('prepare', async (t) => {
+test.serial('prepare', async (t) => {
   t.context.cluster.bucket = sinon.fake.returns({
     defaultCollection: sinon.stub().callsFake(() => {
       return {
@@ -57,9 +57,7 @@ test('prepare', async (t) => {
 });
 
 test.group('setup', (test) => {
-  test('returns an exception when a bucket is not found', async (t) => {
-    t.context.cluster.bucket = null;
-
+  test.serial('returns an exception when a bucket is not found', async (t) => {
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
 
@@ -179,7 +177,7 @@ test.group('output', (test) => {
     });
   }
 
-  test('prepare has started but isn\'t complete', async (t) => {
+  test.serial('prepare has started but isn\'t complete', async (t) => {
     const language = 'json';
     const data = languages[language];
 
@@ -203,7 +201,6 @@ test.group('output', (test) => {
       })
     });
 
-
     t.context.output_options.bucket = `output-${language}`;
     const id = `1234567890-${language}`;
     t.context.output_options.format = language;
@@ -216,14 +213,14 @@ test.group('output', (test) => {
 });
 
 test.group('finalize', (test) => {
-  test('do nothing because prepare wasn\'t called before finalize', async (t) => {
+  test.serial('do nothing because prepare wasn\'t called before finalize', async (t) => {
     await t.context.finalize();
     t.is(t.context.bucket, undefined);
     t.is(t.context.prepared, false);
     t.is(t.context.preparing, undefined);
   });
 
-  test('disconnected', async (t) => {
+  test.serial('disconnected', async (t) => {
     t.context.cluster.close = sinon.stub().callsFake(() => {
       return '';
     });

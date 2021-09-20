@@ -126,7 +126,7 @@ export default class Output extends Base {
         spinner.start();
         const result = await this.outputter.output(null, parsed, outputOptions);
         spinner.text = `Outputting ${name} to ${output}`;
-        spinner.stop();
+        spinner.stopAndPersist();
         console.log(result);
         return result;
       }

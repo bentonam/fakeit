@@ -218,6 +218,12 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+/* istanbul ignore next : too hard to test */
+process.on('unhandledRejection', (err) => {
+  console.log('An unhandledRejection was found:', err);
+  process.exit(1);
+});
+
 export function code(...args) {
   return flattenDeep(args).map((str) => chalk.bold(str)).join(', ');
 }

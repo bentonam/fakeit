@@ -5,6 +5,7 @@ import perfy from 'perfy';
 import ora from 'ora';
 import formatSeconds from 'format-seconds';
 import Emitter from 'events-async';
+import { isEmpty } from 'lodash';
 
 symbols.warn = symbols.warning;
 symbols.ok = symbols.okay = symbols.success;
@@ -64,6 +65,7 @@ export default class Logger extends Emitter {
       arg = type;
       type = 'error';
     }
+
     if (this.options.log || type === 'error') {
       if ([ 'time', 'timeEnd' ].includes(type)) {
         return this[type](arg);
@@ -75,7 +77,9 @@ export default class Logger extends Emitter {
       }
 
       if (type === 'verbose') {
-        if (!this.options.verbose) return;
+        if (!this.options.verbose) {
+          return;
+        }
         type = 'console';
       }
 
@@ -159,10 +163,12 @@ export default class Logger extends Emitter {
     }
 
     options.isEnabled = this.options.spinners || options.spinners || true;
-    options.stream = process.stdout;
+    if (this.options.verbose) {
+      options.stream = process.stdout;
+    }
 
     const spinner = this.spinners[options.text] = ora(options);
-    spinner.title = options.text;
+
     const self = this;
     // store the originals
     spinner.originalStart = spinner.start;
@@ -177,7 +183,7 @@ export default class Logger extends Emitter {
       }
       this.originalStart();
       if (self.options.verbose) {
-        self.time(`spinner_${this.title}`);
+        self.time(`spinner_${options.text}`);
       }
       return this;
     };
@@ -191,11 +197,12 @@ export default class Logger extends Emitter {
       }
 
       if (self.options.verbose) {
-        const time = self.timeEnd(`spinner_${this.title}`);
+        const time = self.timeEnd(`spinner_${options.text}`);
         spinner.text += ` ${time}`;
         this.succeed();
         return this;
       }
+
       return this.originalStop();
     };
 
@@ -203,6 +210,7 @@ export default class Logger extends Emitter {
       spinner.stopAndPersist({
         symbol: symbols.error
       });
+
       // stop the rest of spinners
       to.each(self.spinners, ({ value }) => {
         value.originalStop();
@@ -221,7 +229,15 @@ export default class Logger extends Emitter {
       }
       this.originalStop();
 
-      this.stream.write(`${symbol.symbol || ' '} ${this.text}\n`);
+      let symbol_to_use = ' ';
+      if (symbol) {
+        symbol_to_use = symbol;
+        if (!isEmpty(symbol.symbol)) {
+          symbol_to_use = symbol.symbol;
+        }
+      }
+
+      this.stream.write(`${symbol_to_use} ${this.text}\n`);
       return this;
     };
     return spinner;

@@ -171,7 +171,6 @@ test.serial.group('spinner', (test) => {
   test('returns a modified instance of Ora', (t) => {
     const actual = t.context.spinner('instance');
     t.is(actual.constructor.name, 'Ora');
-    t.is(actual.title, 'instance');
     t.is(actual.text, 'instance');
     t.is(typeof actual.originalStart, 'function');
     t.is(typeof actual.originalStop, 'function');
@@ -235,8 +234,10 @@ test.serial.group('spinner', (test) => {
     }
   });
 
+  // eslint-disable-next-line max-statements
   test.serial('fail custom stream', async (t) => {
     const stream = getPassThroughStream();
+    t.context.options.verbose = true;
     const [ one, two, three ] = [ 'one', 'two', 'three' ].map((str) => {
       return t.context.spinner({ stream, text: `${str}__`, color: false, isEnabled: true });
     });
@@ -259,13 +260,13 @@ test.serial.group('spinner', (test) => {
     const states = stripAnsi(inspect.output).toString().trim().replace(/,/g, '').split('__');
     states.pop();
 
-    const last_state = states.pop();
     states.forEach((state) => {
       const [ frame, text ] = state.split(/\s+/);
       t.truthy(frame);
       t.truthy([ 'one', 'two', 'three' ].includes(text));
     });
 
+    const last_state = states.pop();
     {
       const [ check, text ] = last_state.split(/\s+/);
       t.is(check, '✖');

@@ -11,7 +11,7 @@ all:
 	make lint
 
 install:
-	npm install
+	yarn install
 
 # remove the build and log folders
 clean:
@@ -51,9 +51,26 @@ docs-build docs-compile:
 watch:
 	make build-source-maps -- --watch $(args)
 
-# lint test files
+# formats and lints all the files
 lint:
-	command -v ./node_modules/.bin/eslint >/dev/null 2>&1 && ./node_modules/.bin/eslint 'app' 'test' || ./node_modules/lint-rules/node_modules/.bin/eslint 'app' 'test';
+	@make lint-js lint-style lint-json lint-md --jobs
+
+# formats your js code with prettier, then lints them with eslint
+lint-js:
+	@eslint --cache --fix '+(app|src|test)/**/*.{js,jsx}'
+
+# formats your style code with prettier, then lints them with stylelint
+lint-style:
+	@prettier-stylelint-formatter '+(app|src|test)/**/*.+{css,scss,styl}' --write
+	@stylelint '+(app|src|test)/**/*.{css,scss,styl}' --color --cache
+
+# formats your markdown files with prettier
+lint-md:
+	@prettier '**/*.md' --parser markdown --single-quote --write
+
+# formats your json files with prettier
+lint-json:
+	@prettier '**/*.json' --parser json --write
 
 # run unit tests
 test:

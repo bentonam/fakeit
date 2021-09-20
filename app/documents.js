@@ -107,8 +107,8 @@ export default class Documents extends Base {
       })
       .catch((err) => {
         exit = true;
-        process.exit(2);
         this.emit('error', err);
+        process.exit(2);
       });
   }
 }
@@ -148,7 +148,7 @@ export class Document extends Base {
     }
 
     const spinner = this.spinner(`Documents ${model.name}`);
-    spinner.text = `${model.name}`;
+    spinner.text = model.name;
     const update = () => {
       spinner.text = `${model.name} documents (${this.documents[model.name].length}/${model.data.count})`;
     };

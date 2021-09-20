@@ -1,12 +1,14 @@
 import { extend } from 'lodash';
 import default_options from './default-options';
 import Base from '../base';
-import couchbase from 'couchbase';
+import * as couchbase from 'couchbase';
 
 /// @name Couchbase
 /// @page api
 /// @description This is used to output data to the Couchbase
 export default class Couchbase extends Base {
+  couchbaseOptions = {};
+
   ///# @name constructor
   ///# @arg {object} options - The base options
   ///# @arg {object} output_options - The output options
@@ -15,22 +17,27 @@ export default class Couchbase extends Base {
     this.output_options = extend({}, default_options, output_options);
 
     const { username, password } = this.output_options;
-    let couchbaseOptions = {};
-
     if (username && password) {
-      couchbaseOptions = {
+      this.couchbaseOptions = {
         username,
         password
       };
     }
 
-    this.cluster = new couchbase.Cluster(
-      this.output_options.server,
-      couchbaseOptions
-    );
-
     this.collection = null;
     this.prepared = false;
+  }
+
+  ///# @name connect
+  ///# @description
+  ///# Establishes a connection to Couchbase
+  ///# @returns {promise} - The setup function that was called
+  ///# @async
+  async connect() {
+    this.cluster = await couchbase.connect(
+      this.output_options.server,
+      this.couchbaseOptions
+    );
   }
 
   ///# @name prepare
@@ -44,6 +51,7 @@ export default class Couchbase extends Base {
   ///# @async
   async prepare() {
     this.preparing = true;
+    await this.connect();
     this.preparing = await this.setup();
     return this.preparing;
   }

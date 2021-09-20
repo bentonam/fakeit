@@ -3,6 +3,7 @@
 *.log
 *.DS_Store
 *.bak
+.eslintcache
 .TemporaryItems
 dist/
 Thumbs.db
