@@ -632,6 +632,14 @@ test.group('parseModelSeed', (test) => {
     t.is(model.seed, toNumber(seed));
   });
 
+  test('uses passed seed 10', (t) => {
+    const model = {};
+    const seed = 10;
+    parseModelSeed(model, seed);
+    t.is(typeof model.seed, 'number');
+    t.is(model.seed, seed);
+  });
+
   test('uses passed seed def when model has a seed set', (t) => {
     const original_seed = 'abc';
     const model = { seed: original_seed };
@@ -642,6 +650,16 @@ test.group('parseModelSeed', (test) => {
     t.is(model.seed, toNumber(seed));
   });
 
+  test('uses passed seed of 5 when model has a seed set', (t) => {
+    const original_seed = 8;
+    const model = { seed: original_seed };
+    const seed = 5;
+    parseModelSeed(model, seed);
+    t.is(typeof model.seed, 'number');
+    t.not(model.seed, original_seed);
+    t.is(model.seed, seed);
+  });
+
   test('set seed ghi', (t) => {
     const seed = 'ghi';
     const model = { seed };
@@ -650,7 +668,7 @@ test.group('parseModelSeed', (test) => {
     t.is(model.seed, toNumber(seed));
   });
 
-  test('seed us set to null when it\'s not defined or passed', (t) => {
+  test('seed is set to null when it\'s not defined or passed', (t) => {
     const model = {};
     parseModelSeed(model);
     t.truthy(model.seed == null);

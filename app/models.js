@@ -124,7 +124,7 @@ export default class Models extends Base {
     // get list of files
     const files = this.filterModelFiles(await utils.findFiles(this.resolvePaths(models)));
 
-    // if no modle files are found
+    // if no model files are found
     if (!files.length) {
       // If the models being registered aren't dependencies then throw an error
       if (!dependency) {

@@ -204,16 +204,24 @@ test.group('build', (test) => {
     const min = 2;
     const max = 10;
     const expected_phone_lengths = [ 2, 1, 3, 3, 3, 3, 3, 1, 1, 1 ];
+
     // used to generate a new model
     function getModel(is_expected) {
       if (typeof is_expected !== 'boolean') {
         is_expected = false;
       }
+
       return {
         name: 'test',
         type: 'object',
         seed: 123456789,
-        data: { min, max, count: is_expected ? max : to.random(2, 10), inputs: {}, dependencies: [], },
+        data: {
+          min,
+          max,
+          count: is_expected ? max : to.random(2, 10),
+          inputs: {},
+          dependencies: [],
+        },
         properties: {
           phones: {
             type: 'array',
@@ -267,7 +275,6 @@ test.group('build', (test) => {
       }
     });
 
-
     test('none of the items in phones array are the same', async (t) => {
       const model = getModel();
       const actual = await t.context.document.build(model);
@@ -317,6 +324,371 @@ test.group('build', (test) => {
   });
 });
 
+test('faker seed', (t) => {
+  t.context.document.faker.seed(123);
+
+  const firstRandom = t.context.document.faker.datatype.number();
+
+  // Setting the seed again resets the sequence.
+  t.context.document.faker.seed(123);
+
+  const secondRandom = t.context.document.faker.datatype.number();
+
+  t.is(firstRandom, secondRandom);
+});
+
+test('chance seed', (t) => {
+  t.context.document.chance = new Chance(123);
+
+  const firstRandom = t.context.document.chance.integer();
+
+  // Setting the seed again resets the sequence.
+  t.context.document.chance = new Chance(123);
+
+  const secondRandom = t.context.document.chance.integer();
+
+  t.is(firstRandom, secondRandom);
+});
+
+test('seed > existing document properties should match when a new field is added to one of the documents', async (t) => {
+  const fakeModelOne = {
+    name: 'test',
+    seed: 1,
+    data: {
+      count: 1
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return 'Home';
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return '(333) 333 - 3333';
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const fakeModelTwo = {
+    name: 'test',
+    seed: 1,
+    data: {
+      count: 1
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return 'Home';
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return '(333) 333 - 3333';
+              }
+            }
+          },
+          email: {
+            type: 'string',
+            data: {
+              build() {
+                return 'john.doe@test.com';
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  let actual = [];
+  const models = [ fakeModelOne, fakeModelTwo ];
+
+  for (let model of models) {
+    let result = await t.context.document.build(model);
+
+    actual = result;
+  }
+
+  t.is(actual[0].phone.type, actual[1].phone.type);
+  t.is(actual[0].phone.phone_number, actual[1].phone.phone_number);
+  t.is(actual[0].phone.email, undefined);
+  t.is(actual[1].phone.email, 'john.doe@test.com');
+});
+
+test('seed > document properties should match when generating random data for document properties', async (t) => {
+  const fakeModelOne = {
+    name: 'test',
+    seed: 1,
+    data: {
+      count: 1
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return 'Home';
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return '(333) 333 - 3333';
+              }
+            }
+          },
+          description: {
+            type: 'string',
+            data: {
+              build() {
+                return t.context.document.faker.random.words();
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const fakeModelTwo = {
+    name: 'test',
+    seed: 1,
+    data: {
+      count: 1
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return 'Home';
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return '(333) 333 - 3333';
+              }
+            }
+          },
+          description: {
+            type: 'string',
+            data: {
+              build() {
+                return t.context.document.faker.random.words();
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  let actual = [];
+  const models = [ fakeModelOne, fakeModelTwo ];
+
+  for (let model of models) {
+    let result = await t.context.document.build(model);
+
+    actual = result;
+  }
+
+  t.is(actual[0].phone.type, actual[1].phone.type);
+  t.is(actual[0].phone.phone_number, actual[1].phone.phone_number);
+  t.is(actual[0].phone.description, actual[1].phone.description);
+});
+
+test('seed > document properties should NOT match when the seeds do not match', async (t) => {
+  const fakeModelOne = {
+    name: 'test',
+    seed: 1,
+    data: {
+      count: 1
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return 'Home';
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return '(333) 333 - 3333';
+              }
+            }
+          },
+          description: {
+            type: 'string',
+            data: {
+              build() {
+                return t.context.document.faker.random.words();
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const fakeModelTwo = {
+    name: 'test',
+    seed: 2,
+    data: {
+      count: 1
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return 'Home';
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return '(333) 333 - 3333';
+              }
+            }
+          },
+          description: {
+            type: 'string',
+            data: {
+              build() {
+                return t.context.document.faker.random.words();
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  let actual = [];
+  const models = [ fakeModelOne, fakeModelTwo ];
+
+  for (let model of models) {
+    let result = await t.context.document.build(model);
+
+    actual = result;
+  }
+
+  t.is(actual[0].phone.type, actual[1].phone.type);
+  t.is(actual[0].phone.phone_number, actual[1].phone.phone_number);
+  t.not(actual[0].phone.description, actual[1].phone.description);
+});
+
+test('seed > only the modified property should change when the seed stays the same', async (t) => {
+  let fakeModelOne = {
+    name: 'test',
+    seed: 1,
+    data: {
+      count: 1
+    },
+    properties: {
+      phone: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            data: {
+              build() {
+                return t.context.document.faker.datatype.uuid();
+              }
+            }
+          },
+          type: {
+            type: 'string',
+            data: {
+              build() {
+                return 'Home';
+              }
+            }
+          },
+          phone_number: {
+            type: 'string',
+            data: {
+              build() {
+                return t.context.document.chance.phone();
+              }
+            }
+          },
+          description: {
+            type: 'string',
+            data: {
+              build() {
+                return t.context.document.chance.sentence({ words: 3 });
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+
+  await t.context.document.build(fakeModelOne);
+
+  fakeModelOne.properties.phone.properties.type = {
+    type: 'string',
+    data: {
+      build() {
+        return t.context.document.faker.random.arrayElement([ 'Home', 'Office', 'Mobile', 'Fax', 'Voip' ]);
+      }
+    }
+  };
+
+  let result = await t.context.document.build(fakeModelOne);
+
+  t.is(result[0].phone.id, result[1].phone.id);
+  t.not(result[0].phone.type, result[1].phone.type);
+  t.is(result[0].phone.phone_number, result[1].phone.phone_number);
+  t.is(result[0].phone.description, result[1].phone.description);
+});
 
 test.group('runData', (test) => {
   test('function wasn\'t passed', (t) => {
