@@ -731,6 +731,10 @@ To see more examples of some of the things you can do take a look at the [test c
 
 ### Changelog
 
+#### 2.1.1
+
+- Update package dependencies to resolve yarn audit issues
+
 #### 2.0.10
 
 - Set `stream` argument to ORA to be `process.stdout`
