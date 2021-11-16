@@ -4,7 +4,7 @@
   "contributors": [
     "Tyler Benton <tjbenton21@gmail.com> (https://github.com/tjbenton)"
   ],
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Command-line utility that generates fake data which can be output as JSON, YAML, CSON, or CSV formats based on models defined in YAML.",
   "scripts": {
     "dependency:update": "yarn upgrade-interactive --latest",

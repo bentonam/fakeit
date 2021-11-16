@@ -731,7 +731,7 @@ To see more examples of some of the things you can do take a look at the [test c
 
 ### Changelog
 
-#### 2.1.1
+#### 2.1.2
 
 - Update package dependencies to resolve yarn audit issues
 
