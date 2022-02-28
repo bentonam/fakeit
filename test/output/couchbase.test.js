@@ -32,16 +32,12 @@ test.serial('without args', (t) => {
 
 test.serial('prepare', async (t) => {
   t.context.cluster.bucket = sinon.fake.returns({
-    defaultCollection: sinon.stub().callsFake(() => {
-      return {
-        upsert: sinon.stub().callsFake(() => {
-          return Promise.resolve({
-            cas: 23423497,
-            token: 'asldfj923249-asdf2bh234-2kchadr',
-          });
-        }),
-      };
-    })
+    defaultCollection: sinon.stub().callsFake(() => ({
+      upsert: sinon.stub().callsFake(() => Promise.resolve({
+        cas: 23423497,
+        token: 'asldfj923249-asdf2bh234-2kchadr',
+      })),
+    })),
   });
 
   t.is(t.context.prepared, false);
@@ -114,13 +110,13 @@ test.group('output', (test) => {
         id: 302672,
         code: 'AD',
         name: 'Andorra',
-        continent: 'EU'
+        continent: 'EU',
       },
       {
         id: 302618,
         code: 'AE',
         name: 'United Arab Emirates',
-        continent: 'AS'
+        continent: 'AS',
       },
     ]),
     yaml: to.normalize(`
@@ -139,30 +135,25 @@ test.group('output', (test) => {
         code: AF
         name: Afghanistan
         continent: AS
-    `)
+    `),
   };
 
-  for (let language of to.keys(languages)) {
+  for (const language of to.keys(languages)) {
     const data = languages[language];
     test.serial(language, async (t) => {
       t.context.cluster.bucket = sinon.fake.returns({
-        defaultCollection: sinon.stub().callsFake(() => {
-          return {
-            get: sinon.stub().callsFake(() => {
-              // GetResult: https://docs.couchbase.com/sdk-api/couchbase-node-client/global.html#GetResult
-              return Promise.resolve({
-                content: data,
-                cas: 12345487634,
-              });
-            }),
-            upsert: sinon.stub().callsFake(() => {
-              return Promise.resolve({
-                cas: 23423497,
-                token: 'asldfj923249-asdf2bh234-2kchadr',
-              });
-            }),
-          };
-        })
+        defaultCollection: sinon.stub().callsFake(() => ({
+          get: sinon.stub().callsFake(() =>
+          // GetResult: https://docs.couchbase.com/sdk-api/couchbase-node-client/global.html#GetResult
+            Promise.resolve({
+              content: data,
+              cas: 12345487634,
+            })),
+          upsert: sinon.stub().callsFake(() => Promise.resolve({
+            cas: 23423497,
+            token: 'asldfj923249-asdf2bh234-2kchadr',
+          })),
+        })),
       });
 
       t.context.output_options.bucket = `output-${language}`;
@@ -182,23 +173,18 @@ test.group('output', (test) => {
     const data = languages[language];
 
     t.context.cluster.bucket = sinon.fake.returns({
-      defaultCollection: sinon.stub().callsFake(() => {
-        return {
-          get: sinon.stub().callsFake(() => {
-            // GetResult: https://docs.couchbase.com/sdk-api/couchbase-node-client/global.html#GetResult
-            return Promise.resolve({
-              content: data,
-              cas: 12345487634,
-            });
-          }),
-          upsert: sinon.stub().callsFake(() => {
-            return Promise.resolve({
-              cas: 23423497,
-              token: 'asldfj923249-asdf2bh234-2kchadr',
-            });
-          }),
-        };
-      })
+      defaultCollection: sinon.stub().callsFake(() => ({
+        get: sinon.stub().callsFake(() =>
+        // GetResult: https://docs.couchbase.com/sdk-api/couchbase-node-client/global.html#GetResult
+          Promise.resolve({
+            content: data,
+            cas: 12345487634,
+          })),
+        upsert: sinon.stub().callsFake(() => Promise.resolve({
+          cas: 23423497,
+          token: 'asldfj923249-asdf2bh234-2kchadr',
+        })),
+      })),
     });
 
     t.context.output_options.bucket = `output-${language}`;
@@ -221,14 +207,11 @@ test.group('finalize', (test) => {
   });
 
   test.serial('disconnected', async (t) => {
-    t.context.cluster.close = sinon.stub().callsFake(() => {
-      return '';
-    });
+    t.context.cluster.close = sinon.stub().callsFake(() => '');
     t.context.cluster.bucket = sinon.fake.returns({
-      connected: sinon.stub().onFirstCall().resolves(true).onSecondCall().resolves(false),
-      defaultCollection: sinon.stub().callsFake(() => {
-        return {};
-      })
+      connected: sinon.stub().onFirstCall().resolves(true).onSecondCall()
+        .resolves(false),
+      defaultCollection: sinon.stub().callsFake(() => ({})),
     });
 
     t.context.output_options.bucket = 'finalize';

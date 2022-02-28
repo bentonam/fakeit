@@ -51,26 +51,9 @@ docs-build docs-compile:
 watch:
 	make build-source-maps -- --watch $(args)
 
-# formats and lints all the files
+# Lints all the files
 lint:
-	@make lint-js lint-style lint-json lint-md --jobs
-
-# formats your js code with prettier, then lints them with eslint
-lint-js:
-	@eslint --cache --fix '+(app|src|test)/**/*.{js,jsx}'
-
-# formats your style code with prettier, then lints them with stylelint
-lint-style:
-	@prettier-stylelint-formatter '+(app|src|test)/**/*.+{css,scss,styl}' --write
-	@stylelint '+(app|src|test)/**/*.{css,scss,styl}' --color --cache
-
-# formats your markdown files with prettier
-lint-md:
-	@prettier '**/*.md' --parser markdown --single-quote --write
-
-# formats your json files with prettier
-lint-json:
-	@prettier '**/*.json' --parser json --write
+	./node_modules/.bin/eslint --cache --fix 'app/**/*.{js,jsx}'
 
 # run unit tests
 test:

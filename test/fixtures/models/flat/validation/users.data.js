@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   user_id: 1,
@@ -9,9 +9,9 @@ module.exports = is.object({
   home_phone: utils.phone,
   mobile_phone: utils.phone,
   address_1: is.string(),
-  address_2: [ is.string(), null ],
+  address_2: [is.string(), null],
   locality: is.string(),
   region: is.string().uppercase().length(2),
   postal_code: utils.postal_code,
-  country: is.string().uppercase().length(2)
+  country: is.string().uppercase().length(2),
 });

@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   name: 'AirportRunways',
@@ -19,10 +19,10 @@ module.exports = is.object({
     pre_run: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    airport_id: utils.check('integer', 'The airport id', { build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    airport_ident: utils.check('string', 'The airports identifer', { build: is.func(), }),
-    runways: utils.check('array', 'An array of runway ids that belong to the airport', { build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    airport_id: utils.check('integer', 'The airport id', { build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    airport_ident: utils.check('string', 'The airports identifer', { build: is.func() }),
+    runways: utils.check('array', 'An array of runway ids that belong to the airport', { build: is.func() }),
   },
 });

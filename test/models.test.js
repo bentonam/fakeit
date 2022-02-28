@@ -1,6 +1,15 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undefined */
 
+import path, { join as p } from 'path';
+import ava from 'ava-spec';
+import to from 'to-js';
+import Joi from 'joi';
+import _ from 'lodash';
+import fs from 'fs-extra-promisify';
+import AdmZip from 'adm-zip';
+import { stdout } from 'test-console';
+import stripAnsi from 'strip-ansi';
 import Models, {
   parseModelInputs,
   parseModelFunctions,
@@ -11,19 +20,12 @@ import Models, {
   parseModelSeed,
   resolveDependenciesOrder,
 } from '../dist/models.js';
-import path, { join as p } from 'path';
-import ava from 'ava-spec';
-import to from 'to-js';
-import Joi from 'joi';
-import _ from 'lodash';
-import fs from 'fs-extra-promisify';
-import AdmZip from 'adm-zip';
+
 const test = ava.group('models');
 const models_root = p(__dirname, 'fixtures', 'models');
-import { stdout } from 'test-console';
-import stripAnsi from 'strip-ansi';
 /* istanbul ignore next */
 const utils = require('./utils');
+
 const models = utils.models({
   root: models_root,
   // Get the models to test. This is used by the `models` function located at the bottom of this file
@@ -31,10 +33,11 @@ const models = utils.models({
   // this gets the correct validation file to use on a per test basis
   validation(model) {
     return model.replace(/models(.*)\.yaml/g, 'validation$1.model.js');
-  }
+  },
 });
 
-let babel_config, contents;
+let babel_config; let
+  contents;
 
 test.before(async () => {
   babel_config = await fs.readJson(p(__dirname, '..', '.babelrc'));
@@ -45,10 +48,9 @@ test.before(async () => {
 test.beforeEach((t) => {
   t.context = new Models({
     root: models_root,
-    log: false
+    log: false,
   });
 });
-
 
 test('without args', (t) => {
   t.context.options.log = true;
@@ -67,7 +69,7 @@ test('without args', (t) => {
       timestamp: true,
       count: 0,
       seed: 0,
-      babel_config: '+(.babelrc|package.json)'
+      babel_config: '+(.babelrc|package.json)',
     },
     log_types: {
       error: 'red',
@@ -75,7 +77,7 @@ test('without args', (t) => {
       log: 'gray',
       success: 'green',
       verbose: 'magenta',
-      warning: 'yellow'
+      warning: 'yellow',
     },
     inputs: {},
     models: [],
@@ -96,7 +98,6 @@ test('without args', (t) => {
   t.deepEqual(t.context.spinners, expected.spinners);
 });
 
-
 test('prepare', async (t) => {
   t.is(t.context.prepared, false);
   t.is(t.context.preparing, undefined);
@@ -109,7 +110,6 @@ test('prepare', async (t) => {
   t.is(typeof t.context.options.babel_config, 'object');
   t.deepEqual(t.context.options.babel_config, babel_config);
 });
-
 
 test.serial.group('setup', (test) => {
   test('babel_config as a string', async (t) => {
@@ -169,7 +169,6 @@ test.serial.group('setup', (test) => {
   });
 });
 
-
 test.group('registerModels', (test) => {
   test('without args', async (t) => {
     // you can run registerModels and nothing will happen
@@ -200,15 +199,14 @@ test.group('registerModels', (test) => {
     t.truthy(t.context.registered_models.length >= min);
     t.truthy(t.context.models.length >= min);
     file = t.context.resolvePaths(file)[0];
-    const actual = _.find(t.context.models, [ 'file', file ]);
+    const actual = _.find(t.context.models, ['file', file]);
     const dependencies = _.without(t.context.models, actual);
     t.is(actual.is_dependency, false);
     t.is(actual.root, path.resolve(t.context.options.root, path.dirname(actual.file)));
     // ensure the dependencies are set as dependencies
-    for (let dependency of dependencies) {
+    for (const dependency of dependencies) {
       t.is(dependency.is_dependency, true);
     }
-
 
     // helper to create test
     // for (let key in actual.properties) {
@@ -245,26 +243,23 @@ test.group('registerModels', (test) => {
   });
 });
 
-
 test('parseModel', (t) => {
   t.is(typeof t.context.parseModel, 'function');
 });
 
-
 test.group('filterModelFiles', (test) => {
   test('filter none', (t) => {
     t.deepEqual(t.context.registered_models, []);
-    t.deepEqual(t.context.filterModelFiles([ 'foo.yaml', 'bar.yaml' ]), [ 'foo.yaml', 'bar.yaml' ]);
+    t.deepEqual(t.context.filterModelFiles(['foo.yaml', 'bar.yaml']), ['foo.yaml', 'bar.yaml']);
   });
   test('filter files that aren\'t yaml', (t) => {
-    t.deepEqual(t.context.filterModelFiles([ 'foo.yaml', 'bar.yaml', 'baz.zip', 'qux.json', 'quxx.cson' ]), [ 'foo.yaml', 'bar.yaml' ]);
+    t.deepEqual(t.context.filterModelFiles(['foo.yaml', 'bar.yaml', 'baz.zip', 'qux.json', 'quxx.cson']), ['foo.yaml', 'bar.yaml']);
   });
   test('filter files that have been registered already', (t) => {
     t.context.registered_models.push('foo.yaml');
-    t.deepEqual(t.context.filterModelFiles([ 'foo.yaml', 'bar.yaml', 'baz.zip', 'qux.json', 'quxx.cson' ]), [ 'bar.yaml' ]);
+    t.deepEqual(t.context.filterModelFiles(['foo.yaml', 'bar.yaml', 'baz.zip', 'qux.json', 'quxx.cson']), ['bar.yaml']);
   });
 });
-
 
 test.group('parseModelDependencies', models(async (t, file) => {
   const model = to.clone(contents[file]);
@@ -275,7 +270,7 @@ test.group('parseModelDependencies', models(async (t, file) => {
   if (model.data.dependencies.length === 0) {
     t.plan(0);
   } else {
-    const length = t.context.models.length;
+    const { length } = t.context.models;
     t.is(length, to.unique(t.context.registered_models).length);
   }
 
@@ -287,9 +282,9 @@ test.group('parseModelDependencies', models(async (t, file) => {
       return;
     }
 
-    for (let dependency_path of dependencies) {
+    for (const dependency_path of dependencies) {
       t.truthy(t.context.registered_models.includes(dependency_path));
-      const dependency = _.find(t.context.models, [ 'file', dependency_path ]);
+      const dependency = _.find(t.context.models, ['file', dependency_path]);
       if (dependency_path === file) {
         t.falsy(dependency.is_dependency);
       } else {
@@ -303,7 +298,6 @@ test.group('parseModelDependencies', models(async (t, file) => {
 
   check(model.data.dependencies);
 }));
-
 
 test.group('parseModelInputs', models(async (t, file) => {
   t.deepEqual(to.keys(t.context.inputs).length, 0);
@@ -330,9 +324,9 @@ test.group('parseModelInputs', models(async (t, file) => {
 
   t.is(to.type(model.data.inputs), 'array');
 
-  const tests = [ t.context.inputs, actual ];
+  const tests = [t.context.inputs, actual];
 
-  for (let item of tests) {
+  for (const item of tests) {
     const { error } = Joi.object(expected).validate(item);
     if (error) {
       t.fail(error);
@@ -342,7 +336,6 @@ test.group('parseModelInputs', models(async (t, file) => {
   }
 }));
 
-
 test.group('parseModelFunctions', (test) => {
   test.group('ensure all `pre` and `post` instances are functions', models((t, file) => {
     const model = to.clone(contents[file]);
@@ -350,8 +343,8 @@ test.group('parseModelFunctions', (test) => {
     const obj = _.pick(model, paths);
     parseModelFunctions(obj, babel_config);
 
-    for (let str of paths) {
-      let fn = _.get(obj, str);
+    for (const str of paths) {
+      const fn = _.get(obj, str);
       t.is(typeof fn, 'function');
       t.is(fn.name, to.camelCase(str));
     }
@@ -391,7 +384,7 @@ test.group('parseModelFunctions', (test) => {
   });
 
   test('babel failed to compile', async (t) => {
-    let actual = {
+    const actual = {
       file: __dirname,
       build: 'cons { countries } = woohoo\nreturn `${this.contact_id}${countries[0]}`',
     };
@@ -402,7 +395,7 @@ test.group('parseModelFunctions', (test) => {
   });
 
   test('failed to create function', async (t) => {
-    let actual = {
+    const actual = {
       file: __dirname,
       build: 'var shoot = "woohoo"',
     };
@@ -429,7 +422,7 @@ test.group('parseModelFunctions', (test) => {
         const expected = `function build(_documents, _globals, _inputs, _faker, _chance, _document_index, _require) {\n  function __result(documents, globals, inputs, faker, chance, document_index, require) {\n    return "".concat(${name}, \"[${i}]\");\n  }\n  return __result.apply(this, [].slice.call(arguments));\n}`; // eslint-disable-line max-len
         let actual = {
           name,
-          build: `\`\$\{${name}\}[${i}]\``
+          build: `\`\$\{${name}\}[${i}]\``,
         };
         parseModelFunctions(actual, babel_config);
         actual = actual.build;
@@ -441,7 +434,6 @@ test.group('parseModelFunctions', (test) => {
   });
 });
 
-
 test.group('parseModelReferences', models((t, file) => {
   const model = to.clone(contents[file]);
   const original_model = to.clone(contents[file]);
@@ -449,7 +441,7 @@ test.group('parseModelReferences', models((t, file) => {
   const paths = utils.getPaths(model, pattern);
   parseModelReferences(model);
   t.plan(paths.length);
-  for (let ref of paths) {
+  for (const ref of paths) {
     let set_location = ref.replace(pattern, '');
     if (ref.includes('.items.')) {
       set_location += '.items';
@@ -468,13 +460,12 @@ test.group('parseModelReferences', models((t, file) => {
   }
 }));
 
-
 test.group('parseModelTypes', models((t, file) => {
   const model = to.clone(contents[file]);
   const pattern = /.*properties\.[^.]+(\.items)?$/;
   const paths = utils.getPaths(model, pattern);
   const to_check = [];
-  for (let str of paths) {
+  for (const str of paths) {
     if (_.get(model, str).type == null) {
       to_check.push(str);
     }
@@ -482,11 +473,10 @@ test.group('parseModelTypes', models((t, file) => {
 
   parseModelTypes(model);
 
-  for (let str of to_check) {
+  for (const str of to_check) {
     t.is(_.get(model, str).type, 'null');
   }
 }, models.files));
-
 
 test.group('parseModelDefaults', models((t, file) => {
   const test_model = to.clone(contents[file]);
@@ -502,8 +492,8 @@ test.group('parseModelDefaults', models((t, file) => {
   t.is(model.data.max, test_model.data.max);
   t.is(model.data.count, test_model.data.count);
 
-  for (let data_path of paths) {
-    let property = _.get(model, data_path);
+  for (const data_path of paths) {
+    const property = _.get(model, data_path);
     t.is(typeof property, 'object');
     if (property.type === 'array' && property.items) {
       t.is(typeof property.items.data, 'object');
@@ -515,7 +505,6 @@ test.group('parseModelDefaults', models((t, file) => {
     }
   }
 }));
-
 
 test.group('parseModelCount', (test) => {
   function getContext() {
@@ -607,18 +596,17 @@ test.group('parseModelCount', (test) => {
     parseModelDefaults(model);
     parseModelCount(model);
     t.truthy(model.data.count > 0);
-    if (!!model.data.max) {
+    if (model.data.max) {
       t.truthy(model.data.count <= model.data.max);
       t.truthy(model.data.count >= model.data.min);
     }
   }));
 });
 
-
 test.group('parseModelSeed', (test) => {
   function toNumber(str) {
     let result = '';
-    for (let char of str) {
+    for (const char of str) {
       result += char.charCodeAt(0);
     }
     return parseInt(result);
@@ -681,7 +669,6 @@ test.group('parseModelSeed', (test) => {
   });
 });
 
-
 test.group('resolveDependenciesOrder', (test) => {
   const tests = [];
 
@@ -709,94 +696,101 @@ test.group('resolveDependenciesOrder', (test) => {
     'one level of dependencies already in order',
     [
       'one',
-      [ 'two', 'one' ],
-    ]
+      ['two', 'one'],
+    ],
   );
 
-  create('one level of dependencies in reverse order',
+  create(
+    'one level of dependencies in reverse order',
     // actual
     [
-      [ 'one', 'two' ],
-      [ 'two' ],
+      ['one', 'two'],
+      ['two'],
     ],
     // expected
-    [ 1, 0 ],
+    [1, 0],
   );
 
-  create('one level of multiple dependencies',
+  create(
+    'one level of multiple dependencies',
     // actual
     [
-      [ 'one', 'two', 'three' ],
+      ['one', 'two', 'three'],
       'two',
       'three',
     ],
     // expected
-    [ 1, 2, 0 ],
+    [1, 2, 0],
   );
 
-  create('multiple levels of dependencies',
+  create(
+    'multiple levels of dependencies',
     // actual
     [
-      [ 'one', 'two' ],
-      [ 'two', 'three' ],
+      ['one', 'two'],
+      ['two', 'three'],
       'three',
     ],
     // expected
-    [ 2, 1, 0 ],
+    [2, 1, 0],
   );
 
-  create('multiple levels of multiple dependencies',
+  create(
+    'multiple levels of multiple dependencies',
     // actual
     [
-      [ 'one', 'two', 'four' ],
-      [ 'two', 'three' ],
+      ['one', 'two', 'four'],
+      ['two', 'three'],
       'three',
       'four',
     ],
     // expected
-    [ 2, 3, 1, 0 ],
+    [2, 3, 1, 0],
   );
 
-  create('multiple levels of multiple dependencies reversed',
+  create(
+    'multiple levels of multiple dependencies reversed',
     // actual
     [
       'four',
       'three',
-      [ 'two', 'three' ],
-      [ 'one', 'two', 'four' ],
+      ['two', 'three'],
+      ['one', 'two', 'four'],
     ],
     // expected
-    [ 0, 1, 2, 3 ],
+    [0, 1, 2, 3],
   );
 
-  create('multiple levels of multiple dependencies with same dependencies',
+  create(
+    'multiple levels of multiple dependencies with same dependencies',
     // actual
     [
-      [ 'one', 'two', 'four' ],
-      [ 'two', 'three' ],
-      [ 'three', 'four' ],
-      [ 'four', 'five' ],
+      ['one', 'two', 'four'],
+      ['two', 'three'],
+      ['three', 'four'],
+      ['four', 'five'],
       'five',
       'six',
       'seven',
     ],
     // expected
-    [ 4, 5, 6, 3, 2, 1, 0 ],
+    [4, 5, 6, 3, 2, 1, 0],
   );
 
-  create('multiple levels of multiple dependencies with same dependencies variation',
+  create(
+    'multiple levels of multiple dependencies with same dependencies variation',
     // actual
     [
-      [ 'two', 'three' ],
-      [ 'three', 'four' ],
-      [ 'four', 'five' ],
+      ['two', 'three'],
+      ['three', 'four'],
+      ['four', 'five'],
       'five',
       'six',
       'seven',
-      [ 'one', 'two', 'four' ],
+      ['one', 'two', 'four'],
     ],
     // expected
-    [ 3, 4, 5, 2, 1, 0, 6 ],
+    [3, 4, 5, 2, 1, 0, 6],
   );
 
   tests.forEach(({ title, actual, expected }, i) => {

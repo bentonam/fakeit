@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   name: 'Auth',
@@ -19,10 +19,10 @@ module.exports = is.object({
     pre_run: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    username: utils.check('string', 'The users username', { fake: is.string(), }),
-    password: utils.check('string', 'The users password', { fake: is.string(), }),
-    user_id: utils.check('integer', 'The users id', { build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    username: utils.check('string', 'The users username', { fake: is.string() }),
+    password: utils.check('string', 'The users password', { fake: is.string() }),
+    user_id: utils.check('integer', 'The users id', { build: is.func() }),
   },
 });

@@ -1,7 +1,7 @@
 /* eslint-disable id-length, no-shadow */
 
-import default_options from '../../dist/output/default-options';
 import ava from 'ava-spec';
+import default_options from '../../dist/output/default-options';
 
 const test = ava.group('output:default-options');
 

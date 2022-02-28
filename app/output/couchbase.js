@@ -1,26 +1,26 @@
 import { extend } from 'lodash';
+import * as couchbase from 'couchbase';
 import default_options from './default-options';
 import Base from '../base';
-import * as couchbase from 'couchbase';
 
 /// @name Couchbase
 /// @page api
 /// @description This is used to output data to the Couchbase
 export default class Couchbase extends Base {
-  couchbaseOptions = {};
-
-  ///# @name constructor
-  ///# @arg {object} options - The base options
-  ///# @arg {object} output_options - The output options
+  /// # @name constructor
+  /// # @arg {object} options - The base options
+  /// # @arg {object} output_options - The output options
   constructor(options = {}, output_options = {}) {
     super(options);
+
+    this.couchbaseOptions = {};
     this.output_options = extend({}, default_options, output_options);
 
     const { username, password } = this.output_options;
     if (username && password) {
       this.couchbaseOptions = {
         username,
-        password
+        password,
       };
     }
 
@@ -28,27 +28,27 @@ export default class Couchbase extends Base {
     this.prepared = false;
   }
 
-  ///# @name connect
-  ///# @description
-  ///# Establishes a connection to Couchbase
-  ///# @returns {promise} - The setup function that was called
-  ///# @async
+  /// # @name connect
+  /// # @description
+  /// # Establishes a connection to Couchbase
+  /// # @returns {promise} - The setup function that was called
+  /// # @async
   async connect() {
     this.cluster = await couchbase.connect(
       this.output_options.server,
-      this.couchbaseOptions
+      this.couchbaseOptions,
     );
   }
 
-  ///# @name prepare
-  ///# @description
-  ///# This is used to prepare the saving functionality that is determined by the
-  ///# options that were passed to the constructor.
-  ///# It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
-  ///# This way when you go to save data it, that function will know if the setup is complete or not and
-  ///# wait for it to be done before it starts saving data.
-  ///# @returns {promise} - The setup function that was called
-  ///# @async
+  /// # @name prepare
+  /// # @description
+  /// # This is used to prepare the saving functionality that is determined by the
+  /// # options that were passed to the constructor.
+  /// # It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
+  /// # This way when you go to save data it, that function will know if the setup is complete or not and
+  /// # wait for it to be done before it starts saving data.
+  /// # @returns {promise} - The setup function that was called
+  /// # @async
   async prepare() {
     this.preparing = true;
     await this.connect();
@@ -56,9 +56,9 @@ export default class Couchbase extends Base {
     return this.preparing;
   }
 
-  ///# @name setup
-  ///# @description
-  ///# This is used to setup the saving function that will be used.
+  /// # @name setup
+  /// # @description
+  /// # This is used to setup the saving function that will be used.
   async setup() {
     // if this.prepare hasn't been called then run it first.
     if (this.preparing == null) {
@@ -84,13 +84,13 @@ export default class Couchbase extends Base {
     });
   }
 
-  ///# @name output
-  ///# @description
-  ///# This is used to output the data that's passed to it
-  ///# @arg {string} id - The id to use for this data
-  ///# @arg {object, array, string} data - The data that you want to be saved
-  ///# @arg {object} options - Options from the original YAML file definition to be used by the output logic
-  ///# @async
+  /// # @name output
+  /// # @description
+  /// # This is used to output the data that's passed to it
+  /// # @arg {string} id - The id to use for this data
+  /// # @arg {object, array, string} data - The data that you want to be saved
+  /// # @arg {object} options - Options from the original YAML file definition to be used by the output logic
+  /// # @async
   async output(id, data, options = {}) {
     if (this.prepared !== true) {
       if (this.preparing == null) {
@@ -113,10 +113,10 @@ export default class Couchbase extends Base {
     return collection.upsert(id, data, { timeout: 5000 });
   }
 
-  ///# @name finalize
-  ///# @description
-  ///# This disconnect from couchbase if it is connected
-  ///# @async
+  /// # @name finalize
+  /// # @description
+  /// # This disconnect from couchbase if it is connected
+  /// # @async
   async finalize() {
     if (this.bucket && this.bucket.connected) {
       await this.cluster.close();

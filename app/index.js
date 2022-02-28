@@ -1,11 +1,11 @@
+import to from 'to-js';
+import { uniqueId } from 'lodash';
+import { success } from 'log-symbols';
 import Models from './models';
 import Output from './output/index';
 import Base from './base';
-import to from 'to-js';
-import { uniqueId } from 'lodash';
 import Documents from './documents';
 import DocumentsStream from './documents-stream';
-import { success } from 'log-symbols';
 
 /// @name Fakeit
 /// @page api
@@ -61,12 +61,12 @@ export default class Fakeit extends Base {
       total_dependants += value.dependants.length;
     });
     await output.preparing;
-    let result, documents;
+    let documents;
     // only use streams if outputting to couchbase, the user has asked for it and there aren't any dependants
     if (
-      output_options.output === 'couchbase' &&
-      output_options.useStreams &&
-      !total_dependants
+      output_options.output === 'couchbase'
+      && output_options.useStreams
+      && !total_dependants
     ) { // we're outtputting to couchbase and there aren't any dependants use streams
       documents = new DocumentsStream(this.options, this.globals, model.inputs, output);
     } else {
@@ -79,7 +79,7 @@ export default class Fakeit extends Base {
         return output.output(data, options);
       });
     }
-    result = await documents.build(model.models);
+    const result = await documents.build(model.models);
     delete model.inputs;
     await output.finalize();
     const time = this.timeEnd(label);

@@ -1,10 +1,10 @@
 /* eslint-disable id-length, no-shadow */
 
-import Console from '../../dist/output/console';
-import default_options from '../../dist/output/default-options';
 import to from 'to-js';
 import stripAnsi from 'strip-ansi';
 import ava from 'ava-spec';
+import default_options from '../../dist/output/default-options';
+import Console from '../../dist/output/console';
 
 const test = ava.group('output:console');
 
@@ -82,13 +82,13 @@ test.group('output', (test) => {
         id: 302672,
         code: 'AD',
         name: 'Andorra',
-        continent: 'EU'
+        continent: 'EU',
       },
       {
         id: 302618,
         code: 'AE',
         name: 'United Arab Emirates',
-        continent: 'AS'
+        continent: 'AS',
       },
     ]),
     yaml: to.normalize(`
@@ -107,10 +107,10 @@ test.group('output', (test) => {
         code: AF
         name: Afghanistan
         continent: AS
-    `)
+    `),
   };
 
-  for (let language of to.keys(languages)) {
+  for (const language of to.keys(languages)) {
     const data = languages[language];
     test(`${language}`, async (t) => {
       t.context.output_options.format = language;

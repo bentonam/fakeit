@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   name: 'Chats',
@@ -19,10 +19,10 @@ module.exports = is.object({
     pre_run: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    chat_id: utils.check('string', 'The chat id as a GUID', { build: is.func(), }),
-    created_on: utils.check('integer', 'The date of the post', { build: is.func(), }),
-    users: utils.check('array', 'An array of user ids who are in the chat', { post_build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    chat_id: utils.check('string', 'The chat id as a GUID', { build: is.func() }),
+    created_on: utils.check('integer', 'The date of the post', { build: is.func() }),
+    users: utils.check('array', 'An array of user ids who are in the chat', { post_build: is.func() }),
   },
 });

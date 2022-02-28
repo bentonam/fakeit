@@ -1,28 +1,28 @@
-////
+/// /
 /// @page api
-////
+/// /
 
 import path from 'path';
 import { extend, mean, uniqueId } from 'lodash';
 import to, { is } from 'to-js';
+import perfy from 'perfy';
 import Base from '../base';
 import { parsers, pool } from '../utils';
 import default_options from './default-options';
-import perfy from 'perfy';
 
-export const output_types = [ 'return', 'console', 'couchbase', 'sync-gateway' ];
+export const output_types = ['return', 'console', 'couchbase', 'sync-gateway'];
 
 /// @name Output
 /// @description
 /// This is used to output data into different environments
 export default class Output extends Base {
-  ///# @name constructor
-  ///# @arg {object} options [{}] - The options that apply to Base
-  ///# @arg {object} output_options - The options for how you want save data
-  ///# {
-  ///#
-  ///# }
-  ///# @todo update the output_options to have the final options and descriptions of each
+  /// # @name constructor
+  /// # @arg {object} options [{}] - The options that apply to Base
+  /// # @arg {object} output_options - The options for how you want save data
+  /// # {
+  /// #
+  /// # }
+  /// # @todo update the output_options to have the final options and descriptions of each
   constructor(options = {}, output_options = {}) {
     super(options);
 
@@ -33,33 +33,34 @@ export default class Output extends Base {
     this.prepared = false;
   }
 
-  ///# @name prepare
-  ///# @description
-  ///# This is used to prepare the saving functionality that is determined by the
-  ///# options that were passed to the constructor.
-  ///# It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
-  ///# This way when you go to save data it, that function will know if the setup is complete or not and
-  ///# wait for it to be done before it starts saving data.
-  ///# @returns {promise} - The setup function that was called
-  ///# @async
+  /// # @name prepare
+  /// # @description
+  /// # This is used to prepare the saving functionality that is determined by the
+  /// # options that were passed to the constructor.
+  /// # It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
+  /// # This way when you go to save data it, that function will know if the setup is complete or not and
+  /// # wait for it to be done before it starts saving data.
+  /// # @returns {promise} - The setup function that was called
+  /// # @async
   prepare() {
     this.preparing = true;
     this.preparing = this.setup();
     return this.preparing;
   }
 
-  ///# @name setup
-  ///# @description
-  ///# This is used to setup the saving function that will be used.
+  /// # @name setup
+  /// # @description
+  /// # This is used to setup the saving function that will be used.
   async setup() {
     // if this.prepare hasn't been called then run it first.
     if (this.preparing == null) {
       return this.prepare();
     }
-    let { output, archive } = this.output_options;
+    let { output } = this.output_options;
+    const { archive } = this.output_options;
 
     if (!output_types.includes(output)) {
-      output = !!archive ? 'zip' : 'folder';
+      output = archive ? 'zip' : 'folder';
     }
 
     // get the outputter to use
@@ -81,13 +82,13 @@ export default class Output extends Base {
     });
   }
 
-  ///# @name output
-  ///# @description
-  ///# This is used to save data to any place that was passed in the constructor
-  ///# @arg {array, object} documents - The data that you want to be saved
-  ///# @arg {object} options - Options needed by the output such as scope or collection
-  ///# @returns {array, object, string} - This is determined by the output type that's passed and the format that's used.
-  ///# @async
+  /// # @name output
+  /// # @description
+  /// # This is used to save data to any place that was passed in the constructor
+  /// # @arg {array, object} documents - The data that you want to be saved
+  /// # @arg {object} options - Options needed by the output such as scope or collection
+  /// # @returns {array, object, string} - This is determined by the output type that's passed and the format that's used.
+  /// # @async
   // eslint-disable-next-line max-statements
   async output(documents, outputOptions = {}) {
     let count = 0;
@@ -104,7 +105,9 @@ export default class Output extends Base {
       await this.preparing;
     }
 
-    const { format, spacing, limit, output } = this.output_options;
+    const {
+      format, spacing, limit, output,
+    } = this.output_options;
     const name = documents[0].__name; // eslint-disable-line
     const spinner = this.spinner(`Outputting ${name}`);
     const times = [];
@@ -119,7 +122,7 @@ export default class Output extends Base {
 
     // if the output type is `return` or `console` then this will return the complete
     // data set instead of running them individually
-    if ([ 'return', 'console' ].includes(output)) {
+    if (['return', 'console'].includes(output)) {
       const parsed = await parser(documents, spacing);
       // hack to get around the console outputting before the spinner
       if (output === 'console') {
@@ -136,7 +139,7 @@ export default class Output extends Base {
     // if the output isn't `return` or `console` and the `format` is `csv`
     // then it needs to be updated
     if (format === 'csv') {
-      documents = [ documents ];
+      documents = [documents];
     }
 
     // reformat the data into the output type
@@ -160,23 +163,23 @@ export default class Output extends Base {
       });
   }
 
-  ///# @name finalize
-  ///# @description
-  ///# This is used to clean up anything that needs to be cleaned up
-  ///# like a connection to a data base, any event listeners, or finish outputting a zip file.
-  ///# @async
+  /// # @name finalize
+  /// # @description
+  /// # This is used to clean up anything that needs to be cleaned up
+  /// # like a connection to a data base, any event listeners, or finish outputting a zip file.
+  /// # @async
   async finalize() {
     if (
-      this.outputter &&
-      is.function(this.outputter.finalize)
+      this.outputter
+      && is.function(this.outputter.finalize)
     ) {
       await this.outputter.finalize();
     }
   }
 
-  ///# @name validateOutputOptions
-  ///# @description This is used to validate the output options
-  ///# @throws {error} - If an option that was passed is invalid.
+  /// # @name validateOutputOptions
+  /// # @description This is used to validate the output options
+  /// # @throws {error} - If an option that was passed is invalid.
   validateOutputOptions() {
     to.each(this.output_options, ({ key, value }) => {
       try {
@@ -187,15 +190,15 @@ export default class Output extends Base {
     });
   }
 
-  ///# @name getParser
-  ///# @description Returns a parser function for the given output type and format
-  ///# @arg {string} output - Output type
-  ///# @arg {string} format - Output format
-  ///# @returns {function} - Function to format a document
+  /// # @name getParser
+  /// # @description Returns a parser function for the given output type and format
+  /// # @arg {string} output - Output type
+  /// # @arg {string} format - Output format
+  /// # @returns {function} - Function to format a document
   getParser(output, format) {
     if (
-      output === 'couchbase' &&
-      format === 'json'
+      output === 'couchbase'
+      && format === 'json'
     ) {
       return (obj) => obj;
     }
@@ -203,30 +206,29 @@ export default class Output extends Base {
   }
 }
 
-
 /// @name Output validate
 /// @description This holds the different options that can be passed to the Output constructor
 /// @type {object}
 export const validate = {
-  ///# @name format
-  ///# @description Used to validate the format option
-  ///# @arg {string} option - The option to validate against
-  ///# @throws {error} - If the format option that was pass was invalid
+  /// # @name format
+  /// # @description Used to validate the format option
+  /// # @arg {string} option - The option to validate against
+  /// # @throws {error} - If the format option that was pass was invalid
   format(option) {
-    const formats = [ 'json', 'csv', 'yaml', 'yml', 'cson' ];
+    const formats = ['json', 'csv', 'yaml', 'yml', 'cson'];
     if (
-      isString(option, 'format') &&
-      formats.includes(option)
+      isString(option, 'format')
+      && formats.includes(option)
     ) {
       return;
     }
     throw new Error(`You must use one of the following formats ${formats}. You passed ${option}`);
   },
 
-  ///# @name spacing
-  ///# @description Used to validate the spacing option
-  ///# @arg {number} option - The option to validate against
-  ///# @throws {error} - If the spacing option that was pass was invalid
+  /// # @name spacing
+  /// # @description Used to validate the spacing option
+  /// # @arg {number} option - The option to validate against
+  /// # @throws {error} - If the spacing option that was pass was invalid
   spacing(option) {
     if (option === '0' || option === 'null') {
       option = 0;
@@ -236,16 +238,16 @@ export const validate = {
     }
   },
 
-  ///# @name output
-  ///# @description Used to validate the output option
-  ///# @arg {string} option - The option to validate against
-  ///# @throws {error} - If the output option that was pass was invalid
+  /// # @name output
+  /// # @description Used to validate the output option
+  /// # @arg {string} option - The option to validate against
+  /// # @throws {error} - If the output option that was pass was invalid
   output(option) {
     if (!isString(option, 'output')) return;
 
     if (
-      output_types.includes(option) ||
-      !path.extname(option)
+      output_types.includes(option)
+      || !path.extname(option)
     ) {
       return;
     }
@@ -253,30 +255,30 @@ export const validate = {
     throw new Error(`The output option must be ${output_types.join(', ')}, or a folder path`);
   },
 
-  ///# @name highlight
-  ///# @description Used to validate the highlight option
-  ///# @arg {boolean} option - The option to validate against
-  ///# @throws {error} - If the highlight option that was pass was invalid
+  /// # @name highlight
+  /// # @description Used to validate the highlight option
+  /// # @arg {boolean} option - The option to validate against
+  /// # @throws {error} - If the highlight option that was pass was invalid
   highlight(option) {
     if (!is.boolean(option)) {
       throw new Error('The highlight option must be a boolean');
     }
   },
 
-  ///# @name limit
-  ///# @description Used to validate the limit option
-  ///# @arg {number} option - The option to validate against
-  ///# @throws {error} - If the limit option that was pass was invalid
+  /// # @name limit
+  /// # @description Used to validate the limit option
+  /// # @arg {number} option - The option to validate against
+  /// # @throws {error} - If the limit option that was pass was invalid
   limit(option) {
     if (!is.number(option)) {
       throw new Error('The limit option must be a number');
     }
   },
 
-  ///# @name archive
-  ///# @description Used to validate the archive option
-  ///# @arg {boolean} option - The option to validate against
-  ///# @throws {error} - If the archive option that was pass was invalid
+  /// # @name archive
+  /// # @description Used to validate the archive option
+  /// # @arg {boolean} option - The option to validate against
+  /// # @throws {error} - If the archive option that was pass was invalid
   archive(option, { output }) {
     if (!is.string(option)) {
       throw new Error('The archive option must be a string');
@@ -286,20 +288,20 @@ export const validate = {
     if (!option.length) return;
 
     if (
-      option &&
-      [ 'return', 'console' ].includes(output)
+      option
+      && ['return', 'console'].includes(output)
     ) {
-      throw new Error(`You can\'t have an archive file when you have the output option set to ${output}`);
+      throw new Error(`You can't have an archive file when you have the output option set to ${output}`);
     } else if (path.extname(option) !== '.zip') {
       throw new Error('The archive file must have a file extention of `.zip`');
     }
   },
 
-  ///# @name server
-  ///# @description Used to validate the server option
-  ///# @arg {string} option - The option to validate against
-  ///# @arg {object} options - The other options for that are being validated
-  ///# @throws {error} - If the server option that was pass was invalid
+  /// # @name server
+  /// # @description Used to validate the server option
+  /// # @arg {string} option - The option to validate against
+  /// # @arg {object} options - The other options for that are being validated
+  /// # @throws {error} - If the server option that was pass was invalid
   server(option, { output, archive }) {
     // ignore this validation if the output isn't one of these
     if (!isServer(output)) return;
@@ -311,11 +313,11 @@ export const validate = {
     isString(option, 'server');
   },
 
-  ///# @name bucket
-  ///# @description Used to validate the bucket option
-  ///# @arg {string} option - The option to validate against
-  ///# @arg {object} options - The other options for that are being validated
-  ///# @throws {error} - If the bucket option that was pass was invalid
+  /// # @name bucket
+  /// # @description Used to validate the bucket option
+  /// # @arg {string} option - The option to validate against
+  /// # @arg {object} options - The other options for that are being validated
+  /// # @throws {error} - If the bucket option that was pass was invalid
   bucket(option, { output }) {
     // ignore this validation if the output isn't one of these
     if (!isServer(output)) return;
@@ -323,66 +325,65 @@ export const validate = {
     isString(option, 'bucket');
   },
 
-  ///# @name username
-  ///# @description Used to validate the username option
-  ///# @arg {string} option - The option to validate against
-  ///# @arg {object} options - The other options for that are being validated
-  ///# @throws {error} - If the username option that was pass was invalid
+  /// # @name username
+  /// # @description Used to validate the username option
+  /// # @arg {string} option - The option to validate against
+  /// # @arg {object} options - The other options for that are being validated
+  /// # @throws {error} - If the username option that was pass was invalid
   username(option) {
     if (!is.string(option)) {
       throw new Error('The username option must be a string');
     }
   },
 
-  ///# @name password
-  ///# @description Used to validate the password option
-  ///# @arg {string} option - The option to validate against
-  ///# @arg {object} options - The other options for that are being validated
-  ///# @throws {error} - If the password option that was pass was invalid
+  /// # @name password
+  /// # @description Used to validate the password option
+  /// # @arg {string} option - The option to validate against
+  /// # @arg {object} options - The other options for that are being validated
+  /// # @throws {error} - If the password option that was pass was invalid
   password(option) {
     if (!is.string(option)) {
       throw new Error('The password option must be a string');
     }
   },
 
-  ///# @name limit
-  ///# @description Used to validate the limit option
-  ///# @arg {number} option - The option to validate against
-  ///# @throws {error} - If the limit option that was pass was invalid
+  /// # @name limit
+  /// # @description Used to validate the limit option
+  /// # @arg {number} option - The option to validate against
+  /// # @throws {error} - If the limit option that was pass was invalid
   timeout(option) {
     if (!is.number(option)) {
       throw new Error('The timeout option must be a number');
     }
   },
 
-  ///# @name useStreams
-  ///# @description Used to validate the useStreams option
-  ///# @arg {boolean} option - The option to validate against
-  ///# @throws {error} - If the useStreams option that was pass was invalid
+  /// # @name useStreams
+  /// # @description Used to validate the useStreams option
+  /// # @arg {boolean} option - The option to validate against
+  /// # @throws {error} - If the useStreams option that was pass was invalid
   useStreams(option) {
     if (!is.boolean(option)) {
       throw new Error('The useStreams option must be a boolean');
     }
   },
 
-  ///# @name highWaterMark
-  ///# @description Used to validate the highWaterMark option
-  ///# @arg {number} option - The option to validate against
-  ///# @throws {error} - If the highWaterMark option that was pass was invalid
+  /// # @name highWaterMark
+  /// # @description Used to validate the highWaterMark option
+  /// # @arg {number} option - The option to validate against
+  /// # @throws {error} - If the highWaterMark option that was pass was invalid
   highWaterMark(option) {
     if (!is.number(option)) {
       throw new Error('The highWaterMark option must be a number');
     }
-  }
+  },
 };
-
 
 /// @name isServer
 /// @description This is used to check if the output is `sync-gateway` or `couchbase`
 /// @arg {string} output - The output that's being used
 /// @returns {boolean} - If true the output option is a server
 export function isServer(output) {
-  return [ 'sync-gateway', 'couchbase' ].includes(output);
+  return ['sync-gateway', 'couchbase'].includes(output);
 }
 
 /// @name isString
@@ -393,14 +394,14 @@ export function isServer(output) {
 /// @throws {error} - If the option isn't a string
 /// @throws {error} - If the option is a string and doesn't have a length
 export function isString(option, name = '') {
-  if (!!name) {
+  if (name) {
     name = ` ${name} `;
   }
   if (!is.string(option)) {
     throw new Error(`The${name}option must be a string`);
   } else if (
-    is.string(option) &&
-    !option.length
+    is.string(option)
+    && !option.length
   ) {
     throw new Error(`The${name}option must have a length`);
   }

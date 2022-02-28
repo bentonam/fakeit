@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   _id: 'user_1',
@@ -20,7 +20,7 @@ module.exports = is.object({
     .items({
       type: is.string(),
       phone_number: utils.phone,
-      extension: [ utils.phone, null ],
+      extension: [utils.phone, null],
     })
     .min(1)
     .max(3),
@@ -28,7 +28,7 @@ module.exports = is.object({
     .items({
       type: is.string(),
       address_1: is.string(),
-      address_2: [ is.string(), null ],
+      address_2: [is.string(), null],
       locality: is.string(),
       region: is.string(),
       postal_code: utils.postal_code,

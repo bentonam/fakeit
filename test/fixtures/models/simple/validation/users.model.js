@@ -1,4 +1,4 @@
-var is = require('joi');
+const is = require('joi');
 
 module.exports = is.object({
   name: 'Users',
@@ -19,41 +19,40 @@ module.exports = is.object({
   properties: {
     id: {
       type: 'null',
-      data: { post_build: is.func(), },
+      data: { post_build: is.func() },
     },
     type: {
       type: 'null',
-      data: { value: is.string(), },
+      data: { value: is.string() },
     },
     user_id: {
       type: 'null',
-      data: { build: is.func(), },
+      data: { build: is.func() },
     },
     first_name: {
       type: 'null',
-      data: { fake: is.string(), },
+      data: { fake: is.string() },
     },
     last_name: {
       type: 'null',
       description: 'The users last name',
-      data: { fake: is.string(), },
+      data: { fake: is.string() },
     },
     email_address: {
       type: 'null',
-      data: { fake: is.string(), },
+      data: { fake: is.string() },
     },
     phone: {
       type: 'null',
-      data: { build: is.func(), },
+      data: { build: is.func() },
     },
     active: {
       type: 'null',
-      data: { build: is.func(), },
+      data: { build: is.func() },
     },
     created_on: {
       type: 'null',
-      data: { fake: is.string(), post_build: is.func(), },
+      data: { fake: is.string(), post_build: is.func() },
     },
   },
 });
-

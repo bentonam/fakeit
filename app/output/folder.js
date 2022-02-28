@@ -1,16 +1,16 @@
 import { extend } from 'lodash';
 import path from 'path';
+import fs from 'fs-extra-promisify';
 import default_options from './default-options';
 import Base from '../base';
-import fs from 'fs-extra-promisify';
 
 /// @name Folder
 /// @page api
 /// @description This is used to output data to the Folder
 export default class Folder extends Base {
-  ///# @name constructor
-  ///# @arg {object} options - The base options
-  ///# @arg {object} output_options - The output options
+  /// # @name constructor
+  /// # @arg {object} options - The base options
+  /// # @arg {object} output_options - The output options
   constructor(options = {}, output_options = {}) {
     super(options);
     this.output_options = extend({}, default_options, output_options);
@@ -18,24 +18,24 @@ export default class Folder extends Base {
     this.prepared = false;
   }
 
-  ///# @name prepare
-  ///# @description
-  ///# This is used to prepare the saving functionality that is determined by the
-  ///# options that were passed to the constructor.
-  ///# It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
-  ///# This way when you go to save data it, that function will know if the setup is complete or not and
-  ///# wait for it to be done before it starts saving data.
-  ///# @returns {promise} - The setup function that was called
-  ///# @async
+  /// # @name prepare
+  /// # @description
+  /// # This is used to prepare the saving functionality that is determined by the
+  /// # options that were passed to the constructor.
+  /// # It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
+  /// # This way when you go to save data it, that function will know if the setup is complete or not and
+  /// # wait for it to be done before it starts saving data.
+  /// # @returns {promise} - The setup function that was called
+  /// # @async
   prepare() {
     this.preparing = true;
     this.preparing = this.setup();
     return this.preparing;
   }
 
-  ///# @name setup
-  ///# @description
-  ///# This is used to setup the saving function that will be used.
+  /// # @name setup
+  /// # @description
+  /// # This is used to setup the saving function that will be used.
   async setup() {
     // if this.prepare hasn't been called then run it first.
     if (this.preparing == null) {
@@ -43,7 +43,7 @@ export default class Folder extends Base {
     }
 
     // Resolve the output path to make sure it's absolute
-    this.output_options.output = this.resolvePaths(this.output_options.output)[0];
+    this.output_options.output = this.resolvePaths(this.output_options.output)[0]; // eslint-disable-line
 
     // Ensure there is a directory to write to. This way we can use `fs.writeFile`
     // instead of `fs.outputFile` which has extra checks that we can skip over
@@ -52,12 +52,12 @@ export default class Folder extends Base {
     this.prepared = true;
   }
 
-  ///# @name output
-  ///# @description
-  ///# This is used to output the data that is passed to it
-  ///# @arg {string} id - The id to use for this data
-  ///# @arg {object, array, string} data - The data that you want to be saved
-  ///# @async
+  /// # @name output
+  /// # @description
+  /// # This is used to output the data that is passed to it
+  /// # @arg {string} id - The id to use for this data
+  /// # @arg {object, array, string} data - The data that you want to be saved
+  /// # @async
   async output(id, data) {
     if (this.prepared !== true) {
       if (this.preparing == null) {

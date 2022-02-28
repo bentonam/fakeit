@@ -1,4 +1,4 @@
-var is = require('joi');
+const is = require('joi');
 
 module.exports = is.object({
   _id: is.string().regex(/^post_[a-z0-9-]+$/),
@@ -7,7 +7,7 @@ module.exports = is.object({
   user_id: is.number().min(0).max(6),
   post_date: is.date(),
   post: is.string(),
-  visibility: [ 'public', 'private' ],
+  visibility: ['public', 'private'],
   post_access: is.array()
-    .items(is.number())
+    .items(is.number()),
 });

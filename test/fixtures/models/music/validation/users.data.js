@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   _id: is.string().regex(/user_.+/),
@@ -8,7 +8,7 @@ module.exports = is.object({
   title: is.string(),
   firstName: is.string(),
   lastName: is.string(),
-  gender: [ 'male', 'female' ],
+  gender: ['male', 'female'],
   email: is.string().email(),
   pwd: is.string(),
   address: {
@@ -20,7 +20,7 @@ module.exports = is.object({
   },
   phones: is.array()
     .items({
-      type: [ 'home', 'work', 'mobile', 'other', 'main' ],
+      type: ['home', 'work', 'mobile', 'other', 'main'],
       verified: is.date(),
       number: utils.phone,
     })
@@ -31,7 +31,7 @@ module.exports = is.object({
     .min(3)
     .max(18),
   dateOfBirth: is.date(),
-  status: [ 'active', 'inactive' ],
+  status: ['active', 'inactive'],
   created: is.date().iso(),
   updated: is.date().iso(),
   picture: {

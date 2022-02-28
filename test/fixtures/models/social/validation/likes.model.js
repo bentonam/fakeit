@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   name: 'Likes',
@@ -19,11 +19,11 @@ module.exports = is.object({
     pre_run: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    like_id: utils.check('string', 'The post id as a GUID', { build: is.func(), }),
-    post_id: utils.check('string', 'The post id as a GUID', { build: is.func(), }),
-    user_id: utils.check('integer', 'The user_id that liked the post', { build: is.func(), }),
-    like_date: utils.check('integer', 'The date of the like', { build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    like_id: utils.check('string', 'The post id as a GUID', { build: is.func() }),
+    post_id: utils.check('string', 'The post id as a GUID', { build: is.func() }),
+    user_id: utils.check('integer', 'The user_id that liked the post', { build: is.func() }),
+    like_date: utils.check('integer', 'The date of the like', { build: is.func() }),
   },
 });

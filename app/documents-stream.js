@@ -1,23 +1,22 @@
+import faker from 'faker';
+import Chance from 'chance';
+import { set, get } from 'lodash';
+import to from 'to-js';
+
+import { Readable, Writable } from 'stream';
+import { objectSearch } from './utils';
+import Base from './base';
+
 let exit = false;
 process.on('SIGINT', () => {
   exit = true;
   process.exit(2);
 });
 
-import faker from 'faker';
-import Chance from 'chance';
-import Base from './base';
-import { objectSearch } from './utils';
-import { set, get } from 'lodash';
-import to from 'to-js';
-
-import { Readable, Writable } from 'stream';
-
-
-////
+/// /
 /// @name Documents
 /// @page api/documents
-////
+/// /
 
 /// @name DocumentsStream
 /// @description This class is used to generate all the documents for the passed models
@@ -33,16 +32,16 @@ export default class DocumentsStream extends Base {
     this.output = output;
   }
 
-  ///# @name build
-  ///# @description
-  ///# This takes an array of models and builds them
-  ///# @arg {array} models - Array of models
-  ///# @returns {array} of documents
-  ///# @async
+  /// # @name build
+  /// # @description
+  /// # This takes an array of models and builds them
+  /// # @arg {array} models - Array of models
+  /// # @returns {array} of documents
+  /// # @async
   build(models) {
     models = to.clone(models);
     const self = this; // hold reference to the instance
-    let spinners = {};
+    const spinners = {};
     for (const { name } of models) {
       spinners[name] = this.spinner(name);
     }
@@ -90,9 +89,7 @@ export default class DocumentsStream extends Base {
       objectMode: true,
     });
     // helper to properly display large #
-    const commaify = (value) => {
-      return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    };
+    const commaify = (value) => value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     // setup writer
     const writer = new Writable({
       write(chunk, encoding, callback) {
@@ -147,11 +144,11 @@ export class DocumentBuilder extends Base {
     this.updateFakers(this.options.seed);
   }
 
-  ///# @name updateFakers
-  ///# @description
-  ///# If a usable seed is passed then this updates the instances of chance and faker to use a seed version
-  ///# @arg {number, null} seed - The seed to use for this instance
-  ///# @arg {number} modifier
+  /// # @name updateFakers
+  /// # @description
+  /// # If a usable seed is passed then this updates the instances of chance and faker to use a seed version
+  /// # @arg {number, null} seed - The seed to use for this instance
+  /// # @arg {number} modifier
   updateFakers(seed) {
     // if the seed is a number then update
     // the instance of chance and faker
@@ -161,12 +158,12 @@ export class DocumentBuilder extends Base {
     }
   }
 
-  ///# @name runData
-  ///# @description used to run the different functions that the users can pass in into the data object
-  ///# @arg {function} fn - The function to run
-  ///# @arg {*} context - The `this` context
-  ///# @arg {number} index [0] - The current index of the generated items
-  ///# @returns {*} - What ever the function that runs returns
+  /// # @name runData
+  /// # @description used to run the different functions that the users can pass in into the data object
+  /// # @arg {function} fn - The function to run
+  /// # @arg {*} context - The `this` context
+  /// # @arg {number} index [0] - The current index of the generated items
+  /// # @returns {*} - What ever the function that runs returns
   runData(fn, context, index = 0) {
     if (to.type(fn) === 'function') {
       try {
@@ -178,11 +175,11 @@ export class DocumentBuilder extends Base {
     }
   }
 
-  ///# @name buildDocument
-  ///# @description
-  ///# builds a document
-  ///# @arg {object} model - The model to build the document from
-  ///# @arg {number} index [0] - The place in the list this item is being run from
+  /// # @name buildDocument
+  /// # @description
+  /// # builds a document
+  /// # @arg {object} model - The model to build the document from
+  /// # @arg {number} index [0] - The place in the list this item is being run from
   buildDocument(model, index = 0, sub_doc = false) {
     index = index || this.generated || 0;
     const key_type = to.type(model.key);
@@ -220,18 +217,18 @@ export class DocumentBuilder extends Base {
     return doc;
   }
 
-  ///# @name initializeDocument
-  ///# @description initializes a documents default values
-  ///# @arg {object} model - The model to parse
-  ///# @arg {object} paths - The paths to loop over
-  ///# @returns {object} - The document with the defaults
+  /// # @name initializeDocument
+  /// # @description initializes a documents default values
+  /// # @arg {object} model - The model to parse
+  /// # @arg {object} paths - The paths to loop over
+  /// # @returns {object} - The document with the defaults
   initializeDocument(model, paths) {
     if (!paths || !paths.model || !paths.document) {
       paths = getPaths(model);
     }
     const doc = {};
-    for (let [ i, str ] of to.entries(paths.model)) {
-      let key = paths.document[i]; // set a key for error messaging
+    for (const [i, str] of to.entries(paths.model)) {
+      const key = paths.document[i]; // set a key for error messaging
       try {
         set(doc, key, typeToValue(get(model, str).type));
       } catch (e) {
@@ -241,16 +238,16 @@ export class DocumentBuilder extends Base {
     return doc;
   }
 
-  ///# @name buildObject
-  ///# @description builds an object based on a model
-  ///# @arg {object} model - The model to parse
-  ///# @arg {object} doc - The document to update
-  ///# @arg {object} paths - The paths to loop over
-  ///# @arg {number} index - The current index
-  ///# @returns {object} - The document with the defaults
+  /// # @name buildObject
+  /// # @description builds an object based on a model
+  /// # @arg {object} model - The model to parse
+  /// # @arg {object} doc - The document to update
+  /// # @arg {object} paths - The paths to loop over
+  /// # @arg {number} index - The current index
+  /// # @returns {object} - The document with the defaults
   buildObject(model, doc, paths, index) {
-    for (let [ i, str ] of to.entries(paths.model)) {
-      let key = paths.document[i]; // set a key for error messaging
+    for (const [i, str] of to.entries(paths.model)) {
+      const key = paths.document[i]; // set a key for error messaging
       try {
         const value = this.buildValue(get(model, str), get(doc, key), doc, index);
         set(doc, key, value);
@@ -262,40 +259,40 @@ export class DocumentBuilder extends Base {
     return doc;
   }
 
-  ///# @name buildValue
-  ///# @description builds a single value based on a property definition
-  ///# @arg {object} property - The property to run
-  ///# To build a normal value
-  ///# ```js
-  ///# {
-  ///#   type: '',  // 'object', 'structure', 'string', 'number', 'float', 'integer', etc..
-  ///#   data: {
-  ///#     pre_build() {}, // optional
-  ///#     value: '', // optional
-  ///#     build() {}, // optional
-  ///#     fake: '', // optional
-  ///#   }
-  ///# }
-  ///# ```
-  ///# To build an array
-  ///# ```js
-  ///# {
-  ///#   type: 'array',
-  ///#   items: {
-  ///#     type: '',  // 'object', 'structure', 'string', 'number', 'float', 'integer', etc..
-  ///#     data: {
-  ///#       pre_build() {}, // optional
-  ///#       value: '', // optional
-  ///#       build() {}, // optional
-  ///#       fake: '', // optional
-  ///#     }
-  ///#   }
-  ///# }
-  ///# ```
-  ///# @arg {*} value - The default value
-  ///# @arg {object} doc [{}] - The current document
-  ///# @arg {number} index [0] - The place in the list this item is being run from
-  ///# @return {*} - The result
+  /// # @name buildValue
+  /// # @description builds a single value based on a property definition
+  /// # @arg {object} property - The property to run
+  /// # To build a normal value
+  /// # ```js
+  /// # {
+  /// #   type: '',  // 'object', 'structure', 'string', 'number', 'float', 'integer', etc..
+  /// #   data: {
+  /// #     pre_build() {}, // optional
+  /// #     value: '', // optional
+  /// #     build() {}, // optional
+  /// #     fake: '', // optional
+  /// #   }
+  /// # }
+  /// # ```
+  /// # To build an array
+  /// # ```js
+  /// # {
+  /// #   type: 'array',
+  /// #   items: {
+  /// #     type: '',  // 'object', 'structure', 'string', 'number', 'float', 'integer', etc..
+  /// #     data: {
+  /// #       pre_build() {}, // optional
+  /// #       value: '', // optional
+  /// #       build() {}, // optional
+  /// #       fake: '', // optional
+  /// #     }
+  /// #   }
+  /// # }
+  /// # ```
+  /// # @arg {*} value - The default value
+  /// # @arg {object} doc [{}] - The current document
+  /// # @arg {number} index [0] - The place in the list this item is being run from
+  /// # @return {*} - The result
   buildValue(property, value, doc = {}, index = 0) {
     if (property.data) {
       if (property.data.pre_build) {
@@ -303,16 +300,17 @@ export class DocumentBuilder extends Base {
       }
       if (property.data.value) {
         return property.data.value;
-      } else if (property.data.build) {
+      } if (property.data.build) {
         return this.runData(property.data.build, doc, index);
-      } else if (property.data.fake) {
+      } if (property.data.fake) {
         return this.faker.fake(property.data.fake);
       }
     } else if (
-      property.type === 'array' &&
-      property.items
+      property.type === 'array'
+      && property.items
     ) {
-      let { count, min, max } = property.items.data;
+      let { count } = property.items.data;
+      const { min, max } = property.items.data;
       if (count <= 0 && !!max) {
         count = this.chance.integer({ min, max });
       }
@@ -338,32 +336,32 @@ export class DocumentBuilder extends Base {
     return value;
   }
 
-  ///# @name postProcess
-  ///# @description Post process a document after generation
-  ///# @arg {object} model - The model to parse
-  ///# @arg {object} doc - The document to update
-  ///# @arg {object} paths - The paths to loop over
-  ///# @arg {number} index [0] - The current index
-  ///# @returns {object} - The updated document
+  /// # @name postProcess
+  /// # @description Post process a document after generation
+  /// # @arg {object} model - The model to parse
+  /// # @arg {object} doc - The document to update
+  /// # @arg {object} paths - The paths to loop over
+  /// # @arg {number} index [0] - The current index
+  /// # @returns {object} - The updated document
   postProcess(model, doc, paths, index = 0) {
-    for (let [ i, str ] of to.entries(paths.model)) {
-      let key = paths.document[i]; // set a key for error messaging
+    for (const [i, str] of to.entries(paths.model)) {
+      const key = paths.document[i]; // set a key for error messaging
       try {
         const { data = {}, items = {}, type } = get(model, str);
         let value = get(doc, key);
 
         // if there is a post_build block
         if (data.post_build) {
-          let temp = this.runData(data.post_build, doc, index);
+          const temp = this.runData(data.post_build, doc, index);
           if (temp != null) {
             value = temp;
           }
         } else if (
-          (items.data || {}).post_build &&
-          items.type !== 'object' // if the type is an object it will run each item through this function already
+          (items.data || {}).post_build
+          && items.type !== 'object' // if the type is an object it will run each item through this function already
         ) {
           for (let a = 0; a < value.length; a++) {
-            let temp = transformValueToType(items.type, this.runData(items.data.post_build, doc[key][a], index));
+            const temp = transformValueToType(items.type, this.runData(items.data.post_build, doc[key][a], index));
             if (temp != null) {
               value[a] = temp;
             }
@@ -387,9 +385,9 @@ export class DocumentBuilder extends Base {
 /// @returns {*} - The converted value
 export function transformValueToType(type, value) {
   if (
-    type == null ||
-    value == null ||
-    type === 'array'
+    type == null
+    || value == null
+    || type === 'array'
   ) {
     return value;
   }
@@ -413,10 +411,10 @@ export function transformValueToType(type, value) {
     // if the value is a string that is 'false', '0', 'undefined', or 'null' as a string set a boolean false
     if (
       typeof value === 'string' && (
-        value === 'false' ||
-        value === '0' ||
-        value === 'undefined' ||
-        value === 'null'
+        value === 'false'
+        || value === '0'
+        || value === 'undefined'
+        || value === 'null'
       )
     ) {
       return false;
@@ -426,7 +424,6 @@ export function transformValueToType(type, value) {
 
   return value;
 }
-
 
 /// @name getPaths
 /// @description finds all the paths to be used

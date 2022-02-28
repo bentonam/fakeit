@@ -2,13 +2,14 @@
 import to from 'to-js';
 import proxyquire from 'proxyquire';
 import req from 'request';
+import ava from 'ava-spec';
+import default_options from '../../dist/output/default-options';
+
 function mockRequest(options, callback) {
   callback(null, { headers: { 'set-cookie': true } }, { ok: true });
 }
 to.extend(mockRequest, req);
 const { request, default: SyncGateway } = proxyquire('../../dist/output/sync-gateway', { request: mockRequest });
-import default_options from '../../dist/output/default-options';
-import ava from 'ava-spec';
 
 const test = ava.group('output:sync-gateway');
 

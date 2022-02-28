@@ -731,6 +731,11 @@ To see more examples of some of the things you can do take a look at the [test c
 
 ### Changelog
 
+#### 2.1.3
+
+- Update package dependencies to resolve yarn audit issues
+- Update make file to remove lint commands that do not apply
+
 #### 2.1.2
 
 - Update package dependencies to resolve yarn audit issues

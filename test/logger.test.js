@@ -1,45 +1,49 @@
 /* eslint-disable no-undefined */
 import ava from 'ava-spec';
-import Logger from '../dist/logger';
 import to from 'to-js';
 import { stdout } from 'test-console';
 import stripAnsi from 'strip-ansi';
 import { PassThrough as PassThroughStream } from 'stream';
 import _ from 'lodash';
 import getStream from 'get-stream';
-const test = ava.group('logger:');
 import formatSeconds from 'format-seconds';
+import Logger from '../dist/logger';
+
+const test = ava.group('logger:');
 const delay = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
 
 test.beforeEach((t) => {
   t.context = new Logger();
 });
 
-
 test('functions', (t) => {
   t.deepEqual(
     to.keys(Logger.prototype).sort(),
-    [ 'constructor', 'log', 'spinner', 'stamp', 'time', 'timeEnd' ].sort()
+    ['constructor', 'log', 'spinner', 'stamp', 'time', 'timeEnd'].sort(),
   );
 });
 
-
 test.group('options', (test) => {
   test('none', (t) => {
-    t.deepEqual(t.context.options, { log: true, verbose: false, spinners: true, timestamp: true });
+    t.deepEqual(t.context.options, {
+      log: true, verbose: false, spinners: true, timestamp: true,
+    });
   });
 
   test('log is false', (t) => {
     const logger = new Logger({ log: false });
-    t.deepEqual(logger.options, { log: false, verbose: false, spinners: false, timestamp: true });
+    t.deepEqual(logger.options, {
+      log: false, verbose: false, spinners: false, timestamp: true,
+    });
   });
 
   test('log is false and verbose is true', (t) => {
     const logger = new Logger({ log: false, verbose: true });
-    t.deepEqual(logger.options, { log: true, verbose: true, spinners: true, timestamp: true });
+    t.deepEqual(logger.options, {
+      log: true, verbose: true, spinners: true, timestamp: true,
+    });
   });
 });
-
 
 test.serial.group('log', (test) => {
   test('returns this', (t) => {
@@ -49,7 +53,7 @@ test.serial.group('log', (test) => {
     t.is(actual.constructor.name, 'Logger');
   });
 
-  const log_types = [ 'warning', 'success', 'info', 'verbose', 'log' ];
+  const log_types = ['warning', 'success', 'info', 'verbose', 'log'];
 
   log_types.forEach((type) => {
     test(type, (t) => {
@@ -59,7 +63,7 @@ test.serial.group('log', (test) => {
       inspect.restore();
       t.is(inspect.output.length, 2);
       t.is(inspect.output[1].trim(), `${type} test`);
-      if (![ 'warning', 'info' ].includes(type)) {
+      if (!['warning', 'info'].includes(type)) {
         type = '';
       }
       t.truthy(new RegExp(`^\\[[0-9]+:[0-9]+:[0-9]+\\]\\s(?:.+)?\\s*${type}:?\\s*$`).test(stripAnsi(inspect.output[0])));
@@ -84,7 +88,7 @@ test.serial.group('log', (test) => {
       t.throws(tester);
       inspect.restore();
       t.is(inspect.output.length, 2);
-      let [ message, ...err_lines ] = inspect.output[1].split('\n');
+      const [message, ...err_lines] = inspect.output[1].split('\n');
       t.truthy(/\[?Error: woohoo\]?/.test(message.trim()));
       err_lines.forEach((line) => {
         line = stripAnsi(line.trim());
@@ -105,7 +109,6 @@ test.serial.group('log', (test) => {
     t.truthy(woohoo > 190);
   });
 });
-
 
 test.serial.group('time', (test) => {
   test('throws when no label is passed (time)', (t) => {
@@ -148,17 +151,16 @@ test.serial.group('time', (test) => {
         const actual = t.context.timeEnd(expected);
         t.truthy(actual);
         t.is(typeof actual, 'string');
-        const [ number, unit ] = stripAnsi(actual).trim().match(/\+?([0-9\.]+)\s*([µmsn]+)?/).slice(1);
+        const [number, unit] = stripAnsi(actual).trim().match(/\+?([0-9\.]+)\s*([µmsn]+)?/).slice(1);
         if (number !== '0') {
           t.is(typeof unit, 'string');
-          t.truthy([ 'µs', 'ns', 'ms', 's', ].includes(unit));
+          t.truthy(['µs', 'ns', 'ms', 's'].includes(unit));
         }
         t.is(typeof parseFloat(number), 'number');
       });
     });
   });
 });
-
 
 test.serial.group('spinner', (test) => {
   function getPassThroughStream() {
@@ -194,14 +196,16 @@ test.serial.group('spinner', (test) => {
 
   test('start/stop custom stream', async (t) => {
     const stream = getPassThroughStream();
-    const actual = t.context.spinner({ stream, text: 'stop__', color: false, isEnabled: true });
+    const actual = t.context.spinner({
+      stream, text: 'stop__', color: false, isEnabled: true,
+    });
     actual.start();
     await delay(200);
     actual.stop();
     stream.end();
     const output = await getStream(stream);
     output.trim().split('__').filter(Boolean).forEach((state) => {
-      const [ frame, text ] = state.split(/\s+/);
+      const [frame, text] = state.split(/\s+/);
       t.truthy(actual.spinner.frames.includes(frame));
       t.is(text, 'stop');
     });
@@ -211,23 +215,26 @@ test.serial.group('spinner', (test) => {
     const inspect = stdout.inspect();
     const stream = getPassThroughStream();
     t.context.options.verbose = true;
-    const actual = t.context.spinner({ stream, text: 'stop__', color: false, isEnabled: true });
+    const actual = t.context.spinner({
+      stream, text: 'stop__', color: false, isEnabled: true,
+    });
     actual.start();
     await delay(200);
     actual.stop();
     stream.end();
     inspect.restore();
 
-    const states = stripAnsi(inspect.output).toString().trim().replace(/,/g, '').split('__');
+    const states = stripAnsi(inspect.output).toString().trim().replace(/,/g, '')
+      .split('__');
 
     const last_state = states.splice(-2, 2).join('');
     states.filter(Boolean).forEach((state) => {
-      const [ frame, text ] = state.split(/\s+/);
+      const [frame, text] = state.split(/\s+/);
       t.truthy(actual.spinner.frames.includes(frame));
       t.is(text, 'stop');
     });
     {
-      const [ check, text, time, unit ] = last_state.split(/\s+/);
+      const [check, text, time, unit] = last_state.split(/\s+/);
       t.is(check, '✔');
       t.is(text, 'stop');
       t.truthy(/^\+2[0-9]{2}\sms$/.test(`${time} ${unit}`));
@@ -238,9 +245,9 @@ test.serial.group('spinner', (test) => {
   test.serial('fail custom stream', async (t) => {
     const stream = getPassThroughStream();
     t.context.options.verbose = true;
-    const [ one, two, three ] = [ 'one', 'two', 'three' ].map((str) => {
-      return t.context.spinner({ stream, text: `${str}__`, color: false, isEnabled: true });
-    });
+    const [one, two, three] = ['one', 'two', 'three'].map((str) => t.context.spinner({
+      stream, text: `${str}__`, color: false, isEnabled: true,
+    }));
     const inspect = stdout.inspect();
     one.start();
     two.start();
@@ -257,18 +264,19 @@ test.serial.group('spinner', (test) => {
     t.is(three.id, undefined);
     t.truthy(/error: failed/.test(stripAnsi(inspect.output.join(''))));
 
-    const states = stripAnsi(inspect.output).toString().trim().replace(/,/g, '').split('__');
+    const states = stripAnsi(inspect.output).toString().trim().replace(/,/g, '')
+      .split('__');
     states.pop();
 
     states.forEach((state) => {
-      const [ frame, text ] = state.split(/\s+/);
+      const [frame, text] = state.split(/\s+/);
       t.truthy(frame);
-      t.truthy([ 'one', 'two', 'three' ].includes(text));
+      t.truthy(['one', 'two', 'three'].includes(text));
     });
 
     const last_state = states.pop();
     {
-      const [ check, text ] = last_state.split(/\s+/);
+      const [check, text] = last_state.split(/\s+/);
       t.is(check, '✖');
       t.is(text, 'three');
     }
@@ -277,6 +285,6 @@ test.serial.group('spinner', (test) => {
   test('spinner already exists so return it', (t) => {
     t.deepEqual(t.context.spinners, {});
     _.times(2, () => t.context.spinner('exists'));
-    t.deepEqual(_.keys(t.context.spinners), [ 'exists' ]);
+    t.deepEqual(_.keys(t.context.spinners), ['exists']);
   });
 });

@@ -1,13 +1,18 @@
 import { createCommand } from 'commander';
-import Fakeit from './index.js';
 import updateNotifier from 'update-notifier';
-import pkg from './../package.json';
 import path from 'path';
-import { extend, flattenDeep, pick, find } from 'lodash';
+import {
+  extend,
+  flattenDeep,
+  pick,
+  find,
+} from 'lodash';
 import chalk from 'chalk';
+import pkg from '../package.json';
+import Fakeit from './index.js';
 
 // this is not a function that is to be called by anything other than the `bin/fakeit` file in the project
-export default async function() {
+export default async function () {
   // check for update and notify
   updateNotifier({ pkg }).notify();
 
@@ -69,7 +74,7 @@ export default async function() {
     // these are all the base options across the different actions
     .option('--root <directory>', `Defines the root directory from which paths are resolve from (${dim('process.cwd()')})`, process.cwd())
     .option('--babel <glob>', `The location to the babel config (${dim('+(.babelrc|package.json)')})`, '+(.babelrc|package.json)')
-    .option('-c, --count <n>', 'Overrides the number of documents to generate specified by the model. Defaults to model defined count', parseInt)
+    .option('-c, --count <n>', 'Overrides the number of documents to generate specified by the model. Defaults to model defined count', parseInt) // eslint-disable-line
     .option('-v, --verbose', `Enables verbose logging mode (${dim(false)})`)
     .option('-S, --no-spinners', 'Disables progress spinners', false)
     .option('-L, --no-log', 'Disables all logging except for errors', false)
@@ -144,7 +149,6 @@ export default async function() {
       await run({ archive, output });
     });
 
-
   // i.e. `fakeit help`
   program
     .command('help')
@@ -157,7 +161,6 @@ export default async function() {
   if (!program.args.length) {
     program.help();
   }
-
 
   // this function is used as a helper to run the different actions
   async function run(output = {}, opts = {}) {
@@ -174,20 +177,20 @@ export default async function() {
     const output_path = path.join(output.output, output.archive || '');
 
     // eslint-disable-next-line max-len
-    const regex = /^(\-\-(?:program|root|babel|count|format|spacing|seed|limit|bucket|username|password|timeout|server|useStreams|highWaterMark)|(?:\-[cfnxl]{1,}))$/;
+    const regex = /^(--(?:program|root|babel|count|format|spacing|seed|limit|bucket|username|password|timeout|server|useStreams|highWaterMark)|(?:-[cfnxl]{1,}))$/;
 
     // get the model files that have been passed into fakeit
     const models = program.args.filter((str, i, args) => {
       const prev = args[i - 1] || '';
 
       if (
-        typeof str !== 'string' ||
+        typeof str !== 'string'
         // if the previous str was one of these commands that has options then remove it
-        regex.test(prev) ||
+        || regex.test(prev)
         // if the str is one of the commands then remove it
-        /^(([-]{1,2}[a-zA-Z]+)|\-\-no\-[a-z]+)$/.test(str) ||
+        || /^(([-]{1,2}[a-zA-Z]+)|--no-[a-z]+)$/.test(str)
         // if the str is the same as the output path then remove it
-        str === output_path
+        || str === output_path
       ) {
         return false;
       }
@@ -198,7 +201,7 @@ export default async function() {
     const fakeit = new Fakeit(opts);
     if (!models.length) {
       fakeit.log('warning', 'you must pass in models to use');
-      find(program.commands, [ '_name', output.output ]).help();
+      find(program.commands, ['_name', output.output]).help();
       return;
     }
 

@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   _id: is.string().regex(/^order_[0-9]+$/),
@@ -7,19 +7,19 @@ module.exports = is.object({
   order_id: 1,
   user_id: is.number(),
   order_date: is.date(),
-  order_status: [ 'Pending', 'Processing', 'Cancelled', 'Shipped' ],
+  order_status: ['Pending', 'Processing', 'Cancelled', 'Shipped'],
   billing_name: is.string(),
   billing_phone: utils.phone,
   billing_email: is.string().email(),
   billing_address_1: is.string(),
-  billing_address_2: [ is.string(), null ],
+  billing_address_2: [is.string(), null],
   billing_locality: is.string(),
   billing_region: is.string(),
   billing_postal_code: is.string(),
   billing_country: 'US',
   shipping_name: is.string(),
   shipping_address_1: is.string(),
-  shipping_address_2: [ is.string(), null ],
+  shipping_address_2: [is.string(), null],
   shipping_locality: is.string(),
   shipping_region: is.string().uppercase().length(2),
   shipping_postal_code: utils.postal_code,
