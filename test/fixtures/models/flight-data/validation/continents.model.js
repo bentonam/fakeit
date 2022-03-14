@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   name: 'Continents',
@@ -19,9 +19,9 @@ module.exports = is.object({
     pre_run: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    continent_code: utils.check('string', 'The ISO continent code', { build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    continent_name: utils.check('string', 'The continent name', { build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    continent_code: utils.check('string', 'The ISO continent code', { build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    continent_name: utils.check('string', 'The continent name', { build: is.func() }),
   },
 });

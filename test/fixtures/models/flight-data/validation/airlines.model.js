@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   name: 'Airlines',
@@ -20,14 +20,14 @@ module.exports = is.object({
     post_build: is.func(),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    doc_type: utils.check('string', 'The document type', { value: is.string(), }),
-    airline_id: utils.check('integer', 'The airlines id', { pre_build: is.func(), }),
-    airline_name: utils.check('string', 'The name of the airline', { build: is.func(), }),
-    airline_iata: utils.check('string', 'The airlines iata code if availabe, otherwise null', { build: is.func(), }),
-    airline_icao: utils.check('string', 'The airlines icao code if available, otherwise null', { build: is.func(), }),
-    callsign: utils.check('string', 'The airlines callsign if available', { build: is.func(), }),
-    iso_country: utils.check('string', 'The ISO country code the airline is based in', { build: is.func(), }),
-    active: utils.check('boolean', 'Whether or not the airline is active', { pre_build: is.func(), post_build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    doc_type: utils.check('string', 'The document type', { value: is.string() }),
+    airline_id: utils.check('integer', 'The airlines id', { pre_build: is.func() }),
+    airline_name: utils.check('string', 'The name of the airline', { build: is.func() }),
+    airline_iata: utils.check('string', 'The airlines iata code if availabe, otherwise null', { build: is.func() }),
+    airline_icao: utils.check('string', 'The airlines icao code if available, otherwise null', { build: is.func() }),
+    callsign: utils.check('string', 'The airlines callsign if available', { build: is.func() }),
+    iso_country: utils.check('string', 'The ISO country code the airline is based in', { build: is.func() }),
+    active: utils.check('boolean', 'Whether or not the airline is active', { pre_build: is.func(), post_build: is.func() }),
   },
 });

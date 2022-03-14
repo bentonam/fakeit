@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   name: 'Playlists',
@@ -18,13 +18,13 @@ module.exports = is.object({
     inputs: is.array().items(is.string()).length(0),
   },
   properties: {
-    _id: utils.check('string', 'The document id', { post_build: is.func(), }),
-    type: utils.check('string', 'The document type', { value: is.string(), }),
-    id: utils.check('string', 'Unique identifier representing a specific playlist', { build: is.func(), }),
-    created: utils.check('string', 'The date the track was created', { fake: is.string(), post_build: is.func(), }),
-    updated: utils.check('string', 'The date the track was updated', { fake: is.string(), post_build: is.func(), }),
-    visibility: utils.check('string', 'The playlist visibility', { build: is.func(), }),
-    owner: utils.check('object', 'The user that the playlist belongs to', { build: is.func(), }),
+    _id: utils.check('string', 'The document id', { post_build: is.func() }),
+    type: utils.check('string', 'The document type', { value: is.string() }),
+    id: utils.check('string', 'Unique identifier representing a specific playlist', { build: is.func() }),
+    created: utils.check('string', 'The date the track was created', { fake: is.string(), post_build: is.func() }),
+    updated: utils.check('string', 'The date the track was updated', { fake: is.string(), post_build: is.func() }),
+    visibility: utils.check('string', 'The playlist visibility', { build: is.func() }),
+    owner: utils.check('object', 'The user that the playlist belongs to', { build: is.func() }),
     tracks: {
       type: 'array',
       description: 'An array of track id\'s',

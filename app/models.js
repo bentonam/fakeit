@@ -2,18 +2,20 @@ import { map, forEach } from 'async-array-methods';
 import fs from 'fs-extra-promisify';
 import path from 'path';
 import DependencyResolver from 'dependency-resolver';
-import * as utils from './utils';
-import Base from './base';
-import { set, get, find } from 'lodash';
+import {
+  set, get, find, sortBy,
+} from 'lodash';
 import to, { is } from 'to-js';
-import { transform } from 'babel-core';
+import { transform } from '@babel/core';
 import globby from 'globby';
 import findRoot from 'find-root';
+import Base from './base';
+import * as utils from './utils';
 
-////
+/// /
 /// @name Models
 /// @page api/models
-////
+/// /
 
 export default class Models extends Base {
   constructor(options = {}) {
@@ -32,32 +34,32 @@ export default class Models extends Base {
     this.prepared = false;
   }
 
-  ///# @name prepare
-  ///# @description
-  ///# This is used to prepare the saving functionality that is determined by the
-  ///# options that were passed to the constructor.
-  ///# It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
-  ///# This way when you go to save data it, that function will know if the setup is complete or not and
-  ///# wait for it to be done before it starts saving data.
-  ///# @returns {promise} - The setup function that was called
-  ///# @async
+  /// # @name prepare
+  /// # @description
+  /// # This is used to prepare the saving functionality that is determined by the
+  /// # options that were passed to the constructor.
+  /// # It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
+  /// # This way when you go to save data it, that function will know if the setup is complete or not and
+  /// # wait for it to be done before it starts saving data.
+  /// # @returns {promise} - The setup function that was called
+  /// # @async
   prepare() {
     this.preparing = true;
     this.preparing = this.setup();
     return this.preparing;
   }
 
-  ///# @name setup
-  ///# @description
-  ///# This is used to setup the saving function that will be used.
-  ///# @async
+  /// # @name setup
+  /// # @description
+  /// # This is used to setup the saving function that will be used.
+  /// # @async
   async setup() {
     // if this.prepare hasn't been called then run it first.
     if (this.preparing == null) {
       return this.prepare();
     }
 
-    let { babel_config } = this.options;
+    const { babel_config } = this.options;
 
     if (!is.string(babel_config)) {
       process.nextTick(() => {
@@ -66,7 +68,7 @@ export default class Models extends Base {
       return;
     }
 
-    let file = [ process.cwd(), this.options.root ]
+    let file = [process.cwd(), this.options.root]
       .reduce((prev, next) => {
         try {
           return prev.concat(path.join(findRoot(next), babel_config));
@@ -76,7 +78,7 @@ export default class Models extends Base {
       }, []);
 
     file = await globby(to.unique(file), { dot: true });
-    file = file[0];
+    file = file[0]; // eslint-disable-line
 
     if (file) {
       let config = await fs.readJson(file);
@@ -90,9 +92,9 @@ export default class Models extends Base {
     this.prepared = true;
   }
 
-  ///# @name update
-  ///# @description
-  ///# This updates the progress spinner to show how many models have been parsed and how many are left
+  /// # @name update
+  /// # @description
+  /// # This updates the progress spinner to show how many models have been parsed and how many are left
   update() {
     this.progress.text = `Models (${this.models.length}/${this.registered_models.length})`;
   }
@@ -101,9 +103,7 @@ export default class Models extends Base {
   /// @description This is used to filter out valid and unregistered model files
   /// @returns {array}
   filterModelFiles(files) {
-    return to.flatten(files).filter((file) => {
-      return !!file && /\.(ya?ml)$/i.test(file) && !this.registered_models.includes(file);
-    });
+    return to.flatten(files).filter((file) => !!file && /\.(ya?ml)$/i.test(file) && !this.registered_models.includes(file));
   }
 
   async registerModels(models, dependency = false) {
@@ -124,20 +124,20 @@ export default class Models extends Base {
     // get list of files
     const files = this.filterModelFiles(await utils.findFiles(this.resolvePaths(models)));
 
-    // if no modle files are found
+    // if no model files are found
     if (!files.length) {
       // If the models being registered aren't dependencies then throw an error
       if (!dependency) {
         throw new Error('No valid model files found.');
       }
       return;
-    };
+    }
 
     await forEach(files, async (file) => {
       // if the model aready exists then return
       if (this.registered_models.includes(file)) {
         if (!dependency) {
-          const model = find(this.models, [ 'file', file ]);
+          const model = find(this.models, ['file', file]);
           model.is_dependency = dependency;
         }
         return;
@@ -162,7 +162,7 @@ export default class Models extends Base {
 
       /* istanbul ignore if : currently hard to test */
       if (!model.name) {
-        model.name = path.basename(file).split('.')[0];
+        model.name = path.basename(file).split('.')[0]; // eslint-disable-line
       }
 
       // validate the model
@@ -195,11 +195,11 @@ export default class Models extends Base {
     return this;
   }
 
-  ///# @name parseModel
-  ///# @description
-  ///# This is used to parse the model that was passed and add the functions, and fix the types, data, and defaults
-  ///# @arg {object} model - The model to parse.
-  ///# @returns {object} - The model that's been updated
+  /// # @name parseModel
+  /// # @description
+  /// # This is used to parse the model that was passed and add the functions, and fix the types, data, and defaults
+  /// # @arg {object} model - The model to parse.
+  /// # @returns {object} - The model that's been updated
   async parseModel(model) {
     // resolve the input paths
     parseModelDefaults(model);
@@ -220,15 +220,15 @@ export default class Models extends Base {
     return model;
   }
 
-  ///# @name parseModel
-  ///# @description
-  ///# This is used to parse model dependencies if they have any
-  ///# @arg {object} model - The model to parse.
-  ///# @async
+  /// # @name parseModel
+  /// # @description
+  /// # This is used to parse model dependencies if they have any
+  /// # @arg {object} model - The model to parse.
+  /// # @async
   async parseModelDependencies(model) {
     if (
-      !model.data.dependencies ||
-      !model.data.dependencies.length
+      !model.data.dependencies
+      || !model.data.dependencies.length
     ) {
       model.data.dependencies = [];
       return;
@@ -246,7 +246,6 @@ export default class Models extends Base {
   }
 }
 
-
 /// @name parseModelInputs
 /// @description
 /// This is used to parse files that are used to generate specific data
@@ -256,8 +255,8 @@ export default class Models extends Base {
 /// @note {5} The `model.data.input` paths must already be resolved to be a absolute path.
 export async function parseModelInputs(model) {
   if (
-    !model.data.inputs ||
-    !model.data.inputs.length
+    !model.data.inputs
+    || !model.data.inputs.length
   ) {
     model.data.inputs = [];
     return {};
@@ -267,7 +266,7 @@ export async function parseModelInputs(model) {
 
   // get list of files, flatten the array of files and filter files for valid input formats: csv, json, cson, yaml and zip
   let files = to.flatten(await utils.findFiles(model.data.inputs))
-   .filter((file) => !!file && /\.(csv|json|cson|ya?ml|zip)$/i.test(file));
+    .filter((file) => !!file && /\.(csv|json|cson|ya?ml|zip)$/i.test(file));
 
   if (!files.length) throw new Error(`No valid input files found for ${model.file}`);
 
@@ -296,7 +295,7 @@ export async function parseModelInputs(model) {
 export function parseModelFunctions(model, babel_config = {}) {
   const paths = utils.objectSearch(model, /((pre|post)_run)|(pre_|post_)?build$/);
   paths.forEach((function_path) => {
-    let name = to.camelCase(function_path);
+    const name = to.camelCase(function_path);
 
     // get the function
     let fn = get(model, function_path).trim().split('\n').filter(Boolean);
@@ -304,7 +303,7 @@ export function parseModelFunctions(model, babel_config = {}) {
     // if it's a single line function then ensure that the value is returned
     // just like normal es6 arrow functions
     if (fn.length === 1) {
-      fn = [ `return ${fn[0].replace(/^return\s+/, '')}` ];
+      fn = [`return ${fn[0].replace(/^return\s+/, '')}`];
     }
 
     // indent each line and create a string
@@ -315,8 +314,8 @@ export function parseModelFunctions(model, babel_config = {}) {
 
     // if a babel config exists then transform the function
     if (
-      is.plainObject(babel_config) &&
-      !is.empty(babel_config)
+      is.plainObject(babel_config)
+      && !is.empty(babel_config)
     ) {
       try {
         // transform the function and remove the `'use strict';\n` part that babel adds if it exists
@@ -335,7 +334,7 @@ export function parseModelFunctions(model, babel_config = {}) {
         // indent each line and create a string
         fn.split('\n').map((line) => `  ${line}`).filter(Boolean).join('\n'),
         '  return __result.apply(this, [].slice.call(arguments));',
-      '}'
+      '}',
     ].join('\n');
     /* eslint-enable indent */
 
@@ -356,7 +355,7 @@ export function parseModelReferences(model) {
   const pattern = /\.(schema|items).\$ref$/;
   // sort the array so definitions come first before properties, this allows definitions to have definitions
   const paths = utils.objectSearch(model, pattern).sort();
-  for (let ref of paths) {
+  for (const ref of paths) {
     let set_location = ref.replace(pattern, '');
     if (ref.includes('.items.')) {
       set_location += '.items';
@@ -374,7 +373,7 @@ export function parseModelReferences(model) {
 /// sure the default types exist
 /// @arg {object} model - The model to update
 export function parseModelTypes(model) {
-  for (let type_path of utils.objectSearch(model, /.*properties\.[^.]+(\.items)?$/)) {
+  for (const type_path of utils.objectSearch(model, /.*properties\.[^.]+(\.items)?$/)) {
     const property = get(model, type_path);
     // make sure there is a type property set
     if (property.type == null) {
@@ -393,7 +392,7 @@ export function parseModelDefaults(model) {
   model.data = to.extend({ min: 0, max: 0, count: 0 }, model.data);
 
   // find properties or items that do not have a data block and assign it
-  for (let data_path of utils.objectSearch(model, /^(.*properties\.[^.]+)$/)) {
+  for (const data_path of utils.objectSearch(model, /^(.*properties\.[^.]+)$/)) {
     let property = get(model, data_path) || {};
     // if it's an array and has items ensure it has defaults
     if (property.type === 'array' && property.items) {
@@ -406,9 +405,8 @@ export function parseModelDefaults(model) {
   }
 }
 
-
 /// @name parseModelCount
-/// @description Determins the total number of documents to run
+/// @description Determines the total number of documents to run
 /// @arg {object} model - The model to update
 /// @arg {undefined, null, number} count - The count to override the model settings
 export function parseModelCount(model, count) {
@@ -430,24 +428,22 @@ export function parseModelCount(model, count) {
   model.data.count = value;
 }
 
-
 /// @name parseModelSeed
 /// @description Resolves the seed that was passed in
 /// @arg {object} model - The model to update
 /// @arg {undefined, null, number, string} seed - The seed to override the model settings
 /// @note {2} - The resolved seed will either be null or a number since faker requires the seed to be a number
 export function parseModelSeed(model, seed) {
-  model.seed = !!seed ? seed : model.seed;
+  model.seed = seed || model.seed;
 
   if (typeof model.seed === 'string') {
     seed = '';
-    for (let char of model.seed) {
+    for (const char of model.seed) {
       seed += char.charCodeAt(0);
     }
     model.seed = parseInt(seed);
   }
 }
-
 
 /// @name resolveDependenciesOrder
 /// @description Resolves the dependency order that file models need to run in.
@@ -461,21 +457,22 @@ export function resolveDependenciesOrder(models = []) {
   const resolver = new DependencyResolver();
   const order = {};
 
-  // mode models that don't have dependencies up to be first
-  models = models.sort((a, b) => !b.data.dependencies.length && !!a.data.dependencies.length ? 1 : 0);
+  function sortByFunction(item) {
+    return item.data.dependencies.length;
+  }
+  models = sortBy(models, [sortByFunction]);
 
-  for (let [ i, { file, data } ] of to.entries(models)) {
+  for (const [i, { file, data }] of to.entries(models)) {
     order[file] = i;
     resolver.add(file);
     const dependencies = to.array(data && data.dependencies);
-    for (let dependency of dependencies) {
+    for (const dependency of dependencies) {
       resolver.setDependency(file, dependency);
     }
   }
 
   return resolver.sort().map((file) => models[order[file]]);
 }
-
 
 /// @name resolveDependenciesOf
 /// @description Figures out which models use the model as a dependency
@@ -487,9 +484,9 @@ export function resolveDependants(models = []) {
     model.dependants = models.reduce((prev, next) => {
       if (
         // the next file in the loop doesn't matche the current models file
-        model.file !== next.file &&
+        model.file !== next.file
         // the next models dependencies includes the current models files
-        next.data.dependencies.includes(model.file)
+        && next.data.dependencies.includes(model.file)
       ) {
         prev.push(next.file);
       }

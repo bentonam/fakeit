@@ -1,17 +1,17 @@
 import { extend } from 'lodash';
-import default_options from './default-options';
-import Base from '../base';
 import to from 'to-js';
 import req from 'request';
 import cookieParser from 'set-cookie-parser';
+import Base from '../base';
+import default_options from './default-options';
 
 /// @name SyncGateway
 /// @page api
 /// @description This is used to output data to the SyncGateway
 export default class SyncGateway extends Base {
-  ///# @name constructor
-  ///# @arg {object} options - The base options
-  ///# @arg {object} output_options - The output options
+  /// # @name constructor
+  /// # @arg {object} options - The base options
+  /// # @arg {object} output_options - The output options
   constructor(options = {}, output_options = {}) {
     super(options);
     this.output_options = extend({}, default_options, output_options);
@@ -19,15 +19,15 @@ export default class SyncGateway extends Base {
     this.prepared = false;
   }
 
-  ///# @name prepare
-  ///# @description
-  ///# This is used to prepare the saving functionality that is determined by the
-  ///# options that were passed to the constructor.
-  ///# It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
-  ///# This way when you go to save data it, that function will know if the setup is complete or not and
-  ///# wait for it to be done before it starts saving data.
-  ///# @returns {promise} - The setup function that was called
-  ///# @async
+  /// # @name prepare
+  /// # @description
+  /// # This is used to prepare the saving functionality that is determined by the
+  /// # options that were passed to the constructor.
+  /// # It sets a variable of `this.preparing` that ultimately calls `this.setup` that returns a promise.
+  /// # This way when you go to save data it, that function will know if the setup is complete or not and
+  /// # wait for it to be done before it starts saving data.
+  /// # @returns {promise} - The setup function that was called
+  /// # @async
   /* istanbul ignore next */
   prepare() {
     this.preparing = true;
@@ -35,10 +35,10 @@ export default class SyncGateway extends Base {
     return this.preparing;
   }
 
-  ///# @name setup
-  ///# @description
-  ///# This is used to setup the saving function that will be used.
-  ///# @async
+  /// # @name setup
+  /// # @description
+  /// # This is used to setup the saving function that will be used.
+  /// # @async
   /* istanbul ignore next */
   setup() {
     // if this.prepare hasn't been called then run it first.
@@ -46,7 +46,9 @@ export default class SyncGateway extends Base {
       return this.prepare();
     }
 
-    const { username: name, password, server, bucket } = this.output_options;
+    const {
+      username: name, password, server, bucket,
+    } = this.output_options;
 
     // If there's no `name`, and `password` there's no need to
     // run authentication if the sync db is allowing guest
@@ -63,12 +65,12 @@ export default class SyncGateway extends Base {
       headers: { 'Content-Type': 'application/json' },
       body: to.json({ name, password }),
     })
-      .then(([ res, body ]) => {
+      .then(([res, body]) => {
         body = to.object(body);
 
         if (
-          body.ok &&
-          res.headers['set-cookie']
+          body.ok
+          && res.headers['set-cookie']
         ) {
           const cookie = cookieParser.parse(res);
           this.session = {
@@ -88,12 +90,12 @@ export default class SyncGateway extends Base {
       });
   }
 
-  ///# @name output
-  ///# @description
-  ///# This is used to output the data that's passed to it
-  ///# @arg {string} id - The id to use for this data
-  ///# @arg {object, array, string} data - The data that you want to be saved
-  ///# @async
+  /// # @name output
+  /// # @description
+  /// # This is used to output the data that's passed to it
+  /// # @arg {string} id - The id to use for this data
+  /// # @arg {object, array, string} data - The data that you want to be saved
+  /// # @async
   async output(id, data) {
     if (this.prepared !== true) {
       if (this.preparing == null) {
@@ -104,7 +106,7 @@ export default class SyncGateway extends Base {
 
     const { server, bucket } = this.output_options;
 
-    const options = {
+    const config = {
       url: `${server}/${bucket}/${encodeURIComponent(id)}`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -116,10 +118,10 @@ export default class SyncGateway extends Base {
       const jar = req.jar();
       const cookie = req.cookie(`${this.session.name}=${this.session.id}`);
       jar.setCookie(cookie, server);
-      options.jar = jar;
+      config.jar = jar;
     }
 
-    const body = to.object((await request(options))[1]);
+    const body = to.object((await request(config))[1]);
 
     if (body.error) {
       if (body.reason === 'Document exists') {
@@ -129,7 +131,6 @@ export default class SyncGateway extends Base {
     }
   }
 }
-
 
 /// @name request
 /// @description
@@ -142,7 +143,7 @@ export function request(options = {}) {
     req(options, (err, res, body) => {
       /* istanbul ignore next : to hard to mock test */
       if (err) return reject(err);
-      resolve([ res, body ]);
+      resolve([res, body]);
     });
   });
 }

@@ -1,11 +1,11 @@
 /* eslint-disable id-length, no-shadow */
 
-import Folder from '../../dist/output/folder';
 import { join as p } from 'path';
 import to from 'to-js';
 import fs from 'fs-extra-promisify';
-import default_options from '../../dist/output/default-options';
 import ava from 'ava-spec';
+import default_options from '../../dist/output/default-options';
+import Folder from '../../dist/output/folder';
 
 default_options.output = 'test';
 
@@ -88,13 +88,13 @@ test.serial.group('output', (test) => {
         id: 302672,
         code: 'AD',
         name: 'Andorra',
-        continent: 'EU'
+        continent: 'EU',
       },
       {
         id: 302618,
         code: 'AE',
         name: 'United Arab Emirates',
-        continent: 'AS'
+        continent: 'AS',
       },
     ]),
     yaml: to.normalize(`
@@ -113,10 +113,10 @@ test.serial.group('output', (test) => {
         code: AF
         name: Afghanistan
         continent: AS
-    `)
+    `),
   };
 
-  for (let language of to.keys(languages)) {
+  for (const language of to.keys(languages)) {
     const data = languages[language];
     test(`${language}`, async (t) => {
       const id = '1234567890';

@@ -3,6 +3,11 @@
 import path, { join as p } from 'path';
 import ava from 'ava-spec';
 import fs from 'fs-extra-promisify';
+import { map } from 'async-array-methods';
+import to from 'to-js';
+import AdmZip from 'adm-zip';
+import { stdout } from 'test-console';
+import _ from 'lodash';
 import {
   objectSearch,
   findFiles,
@@ -10,11 +15,6 @@ import {
   pool,
   parsers,
 } from '../dist/utils';
-import { map } from 'async-array-methods';
-import to from 'to-js';
-import AdmZip from 'adm-zip';
-import { stdout } from 'test-console';
-import _ from 'lodash';
 
 async function touch(...files) {
   return map(to.flatten(files), (file) => {
@@ -32,48 +32,47 @@ test.group('objectSearch', (test) => {
   const obj = {
     one: {
       two: {
-        three: 'woohoo'
-      }
-    }
+        three: 'woohoo',
+      },
+    },
   };
 
   test('no pattern', (t) => {
     const actual = objectSearch(obj);
     t.is(actual.length, 3);
-    t.deepEqual(actual, [ 'one', 'one.two', 'one.two.three' ]);
+    t.deepEqual(actual, ['one', 'one.two', 'one.two.three']);
   });
 
   test('match first instance of `one`', (t) => {
     const actual = objectSearch(obj, /^one$/);
     t.is(actual.length, 1);
-    t.deepEqual(actual, [ 'one' ]);
+    t.deepEqual(actual, ['one']);
   });
 
-  test('match first instance of `two`', (t) => {
+  test('match first instance of `two` when an object is provided', (t) => {
     const actual = objectSearch(obj, /^.*two$/);
     t.is(actual.length, 1);
-    t.deepEqual(actual, [ 'one.two' ]);
+    t.deepEqual(actual, ['one.two']);
   });
 
-  test('match first instance of `two`', (t) => {
-    const arr = [ obj, obj ];
+  test('match first instance of `two` when an array is provided and the regex is word based', (t) => {
+    const arr = [obj, obj];
     const actual = objectSearch(arr, /^.*two$/);
     t.is(actual.length, 2);
-    t.deepEqual(actual, [ '0.one.two', '1.one.two' ]);
+    t.deepEqual(actual, ['0.one.two', '1.one.two']);
     // ensure it works with lodash get method
     t.deepEqual(_.get(arr, actual[0]), { three: 'woohoo' });
   });
 
-  test('match first instance of `two`', (t) => {
-    const arr = [ obj, obj ];
+  test('match first instance of `two` when an array is provided and the regex is number based', (t) => {
+    const arr = [obj, obj];
     const actual = objectSearch(arr, /^[0-9]$/);
     t.is(actual.length, 2);
-    t.deepEqual(actual, [ '0', '1' ]);
+    t.deepEqual(actual, ['0', '1']);
     // ensure it works with lodash get method
     t.deepEqual(_.get(arr, actual[0]), obj);
   });
 });
-
 
 test.group('findFiles', (test) => {
   const root = p(utils_root, 'find-files');
@@ -111,7 +110,6 @@ test.group('findFiles', (test) => {
   test.after.always(() => fs.remove(root));
 });
 
-
 test.group('readFiles', (test) => {
   const root = p(utils_root, 'read-files');
   /* eslint-disable max-len */
@@ -129,7 +127,7 @@ test.group('readFiles', (test) => {
 
   // creating archives
   const zip_file = p(root, 'zip-test.zip');
-  let zip = new AdmZip();
+  const zip = new AdmZip();
   /* eslint-enable max-len */
 
   test.before(async () => {
@@ -154,10 +152,10 @@ test.group('readFiles', (test) => {
     t.is(actual.length, 5);
     t.is(to.type(actual), 'array');
     t.is(to.type(actual[0]), 'object');
-    t.deepEqual(to.keys(actual[0]), [ ...to.keys(path.parse(root_plain_files[0].path)), 'path', 'content' ]);
+    t.deepEqual(to.keys(actual[0]), [...to.keys(path.parse(root_plain_files[0].path)), 'path', 'content']);
     for (let i = 0; i < root_plain_files.length; i++) {
-      let plain_file = root_plain_files[i];
-      let actual_file = actual[i];
+      const plain_file = root_plain_files[i];
+      const actual_file = actual[i];
       t.is(actual_file.path, plain_file.path);
       t.is(actual_file.content, plain_file.content);
     }
@@ -168,10 +166,10 @@ test.group('readFiles', (test) => {
     t.is(actual.length, 5);
     t.is(to.type(actual), 'array');
     t.is(to.type(actual[0]), 'object');
-    t.deepEqual(to.keys(actual[0]), [ ...to.keys(path.parse(plain_files[0].path)), 'path', 'content' ]);
+    t.deepEqual(to.keys(actual[0]), [...to.keys(path.parse(plain_files[0].path)), 'path', 'content']);
     for (let i = 0; i < plain_files.length; i++) {
-      let plain_file = plain_files[i];
-      let actual_file = actual[i];
+      const plain_file = plain_files[i];
+      const actual_file = actual[i];
       t.is(actual_file.path, plain_file.path);
       t.is(actual_file.content, plain_file.content);
     }
@@ -179,7 +177,6 @@ test.group('readFiles', (test) => {
 
   test.after.always(() => fs.remove(root));
 });
-
 
 test.serial.group('pool', async (test) => {
   const delay = (duration) => {
@@ -192,7 +189,7 @@ test.serial.group('pool', async (test) => {
       }, duration);
     });
   };
-  const items = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
+  const items = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
   test('no limit', async (t) => {
     const inspect = stdout.inspect();
     let result = pool(items, async (item, i, array) => {
@@ -263,11 +260,10 @@ test.serial.group('pool', async (test) => {
       '900 start',
       '700 end',
       '800 end',
-      '900 end'
+      '900 end',
     ]);
   });
 });
-
 
 test.serial.group('parsers', (test) => {
   const expected = {
@@ -279,7 +275,7 @@ test.serial.group('parsers', (test) => {
     airport_name: 'Goroka',
     geo: {
       latitude: -6.081689835,
-      longitude: 145.3919983
+      longitude: 145.3919983,
     },
     elevation: 5282,
     iso_continent: 'OC',
@@ -291,7 +287,7 @@ test.serial.group('parsers', (test) => {
     airport_gps_code: 'AYGA',
     timezone_offset: 10,
     dst: 'U',
-    timezone: 'Pacific/Port_Moresby'
+    timezone: 'Pacific/Port_Moresby',
   };
 
   // stores the tests for each of the parsers
@@ -348,26 +344,26 @@ test.serial.group('parsers', (test) => {
   /* eslint-enable */
 
   tests.cson = `
-    _id: "airport_56"
+    _id: 'airport_56'
     airport_id: 56
-    doc_type: "airport"
-    airport_ident: "AYGA"
-    airport_type: "medium_airport"
-    airport_name: "Goroka"
+    doc_type: 'airport'
+    airport_ident: 'AYGA'
+    airport_type: 'medium_airport'
+    airport_name: 'Goroka'
     geo:
       latitude: -6.081689835
       longitude: 145.3919983
     elevation: 5282
-    iso_continent: "OC"
-    iso_country: "PG"
-    iso_region: "PG-EHG"
-    municipality: "Goroka"
-    airport_icao: "AYGA"
-    airport_iata: "GKA"
-    airport_gps_code: "AYGA"
+    iso_continent: 'OC'
+    iso_country: 'PG'
+    iso_region: 'PG-EHG'
+    municipality: 'Goroka'
+    airport_icao: 'AYGA'
+    airport_iata: 'GKA'
+    airport_gps_code: 'AYGA'
     timezone_offset: 10
-    dst: "U"
-    timezone: "Pacific/Port_Moresby"
+    dst: 'U'
+    timezone: 'Pacific/Port_Moresby'
   `;
 
   tests.csv = `
@@ -380,7 +376,7 @@ test.serial.group('parsers', (test) => {
   const available = to.keys(tests);
 
   // generate tests for each parser in the list
-  for (var parser in parsers) {
+  for (const parser in parsers) {
     if (parsers.hasOwnProperty(parser)) {
       parserTest(parser);
     }
@@ -404,9 +400,9 @@ test.serial.group('parsers', (test) => {
         t.is(to.type(parser), 'object');
         t.is(to.type(parser.parse), 'function');
         t.is(to.type(parser.stringify), 'function');
-        for (let fn in parser) {
+        for (const fn in parser) {
           if (parser.hasOwnProperty(fn)) {
-            t.truthy([ 'parse', 'stringify' ].includes(fn));
+            t.truthy(['parse', 'stringify'].includes(fn));
           }
         }
       });

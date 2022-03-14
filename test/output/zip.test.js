@@ -1,11 +1,11 @@
 /* eslint-disable id-length, no-shadow */
 
-import Zip from '../../dist/output/zip';
 import { join as p } from 'path';
 import fs from 'fs-extra-promisify';
-import default_options from '../../dist/output/default-options';
 import ava from 'ava-spec';
 import to from 'to-js';
+import default_options from '../../dist/output/default-options';
+import Zip from '../../dist/output/zip';
 
 const test = ava.group('output:zip');
 
@@ -97,13 +97,13 @@ test.group((test) => {
         id: 302672,
         code: 'AD',
         name: 'Andorra',
-        continent: 'EU'
+        continent: 'EU',
       },
       {
         id: 302618,
         code: 'AE',
         name: 'United Arab Emirates',
-        continent: 'AS'
+        continent: 'AS',
       },
     ]),
     yaml: to.normalize(`
@@ -122,11 +122,11 @@ test.group((test) => {
         code: AF
         name: Afghanistan
         continent: AS
-    `)
+    `),
   };
 
   test.group('output', (test) => {
-    for (let language of to.keys(languages)) {
+    for (const language of to.keys(languages)) {
       const data = languages[language];
       test(`${language}`, async (t) => {
         t.is(t.context.prepared, false);
@@ -141,7 +141,7 @@ test.group((test) => {
   });
 
   test.group('finalize', (test) => {
-    for (let language of to.keys(languages)) {
+    for (const language of to.keys(languages)) {
       const data = languages[language];
       test(`${language}`, async (t) => {
         t.is(t.context.prepared, false);

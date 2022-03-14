@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   _id: is.string().regex(/^product_[a-z0-9\-]+$/),
@@ -15,7 +15,7 @@ module.exports = is.object({
     .sparse(false)
     .min(0)
     .max(10),
-  availability: [ 'Preorder', 'In-Stock', 'Out of Stock', 'Discontinued' ],
+  availability: ['Preorder', 'In-Stock', 'Out of Stock', 'Discontinued'],
   availability_date: is.date(),
   product_slug: utils.slug,
   category: is.string().max(25),

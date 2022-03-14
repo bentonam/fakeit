@@ -1,18 +1,23 @@
-////
+/* eslint-disable max-len */
+
+/// /
 /// @name Utils
 /// @page api/utils
 /// @description These are all the utility functions used throughout the application
-////
+/// /
 
 import path from 'path';
 import globby from 'globby';
 import { map } from 'async-array-methods';
 import to, { is } from 'to-js';
 import AdmZip from 'adm-zip';
-import promisify from 'es6-promisify';
+import { promisify } from 'es6-promisify';
 import fs from 'fs-extra-promisify';
 import PromisePool from 'es6-promise-pool';
-
+import yaml from 'yamljs';
+import cson from 'cson';
+import csvParse from 'csv-parse';
+import csvStringify from 'csv-stringify';
 
 /// @name objectSearch
 /// @description Recursively looks through objects and finds the pattern provided
@@ -23,7 +28,7 @@ import PromisePool from 'es6-promise-pool';
 /// @returns {array} - With the paths that have been matched
 export function objectSearch(data, pattern, current_path, paths = []) {
   function appendPath(opath, index) {
-    opath = opath ? opath + '.' + index : '' + index;
+    opath = opath ? `${opath}.${index}` : `${index}`;
     opath = opath.replace(/^\.|\.$|\.{2,}/, '');
     return opath;
   }
@@ -31,23 +36,23 @@ export function objectSearch(data, pattern, current_path, paths = []) {
     for (let i = 0; i < data.length; i++) {
       const test_path = appendPath(current_path, i);
       if (
-        test_path.match(pattern) &&
-        !paths.includes(test_path)
+        test_path.match(pattern)
+        && !paths.includes(test_path)
       ) {
         paths.push(test_path);
       }
       objectSearch(data[i], pattern, test_path, paths);
     }
   } else if (
-    typeof data === 'object' &&
-    data !== null
+    typeof data === 'object'
+    && data !== null
   ) {
-    for (let key in data) {
+    for (const key in data) {
       if (data.hasOwnProperty(key)) {
         const test_path = appendPath(current_path, key);
         if (
-          test_path.match(pattern) &&
-          !paths.includes(test_path)
+          test_path.match(pattern)
+          && !paths.includes(test_path)
         ) {
           paths.push(test_path);
         }
@@ -70,8 +75,8 @@ export async function findFiles(globs) {
   const sort = (list) => {
     const to_search = [];
     list = to.flatten(list);
-    for (let item of list) {
-      if (!!path.extname(item)) {
+    for (const item of list) {
+      if (path.extname(item)) {
         files.push(item);
       } else {
         to_search.push(item);
@@ -81,14 +86,14 @@ export async function findFiles(globs) {
   };
 
   const find = async (items) => {
-    items = sort(await map(items, (item) => {
+    items = sort(await map(items, async (item) => {
       if (globby.hasMagic(item)) {
-        return globby(item);
-      } else if (!!path.extname(item)) {
+        return await globby(item);
+      } if (path.extname(item)) {
         return item;
       }
 
-      return globby(path.join(item, '*'));
+      return await globby(item);
     }));
     if (items.length) {
       return find(items);
@@ -98,7 +103,6 @@ export async function findFiles(globs) {
   await find(to.array(globs));
   return files;
 }
-
 
 /// @name readFiles
 /// @description
@@ -126,7 +130,7 @@ export async function readFiles(files) {
 
   files = await map(files, async (file) => {
     file = path.resolve(file); // resolve the full path
-    let info = path.parse(file); // parse the full path to get the name and extension
+    const info = path.parse(file); // parse the full path to get the name and extension
     if (info.ext === '.zip') {
       const zip = new AdmZip(file);
       return map(zip.getEntries(), async (entry) => {
@@ -170,9 +174,9 @@ export async function pool(items, fn, limit = 100) {
     if (i < length) {
       const index = i;
       return fn(items[index] || i, i++, items)
-      .then((result) => {
-        results[index] = result;
-      });
+        .then((result) => {
+          results[index] = result;
+        });
     }
 
     return null;
@@ -184,7 +188,6 @@ export async function pool(items, fn, limit = 100) {
   return results;
 }
 
-
 /// @name parsers
 /// @description
 /// This holds all the parsers that this project uses and normalizes
@@ -192,87 +195,81 @@ export async function pool(items, fn, limit = 100) {
 /// Each parser in this object has 2 functions `parse`, and `stringify`.
 /// @type {object}
 const parsers = {};
-import yaml from 'yamljs';
-import cson from 'cson';
-import csvParse from 'csv-parse';
-import csvStringify from 'csv-stringify';
 
 const csv = {
   parse: promisify(csvParse),
-  stringify: promisify(csvStringify)
+  stringify: promisify(csvStringify),
 };
 
-///# @name parsers.yaml
-///# @alias parsers.yml
-///# @type {object}
+/// # @name parsers.yaml
+/// # @alias parsers.yml
+/// # @type {object}
 parsers.yaml = parsers.yml = {
-  ///# @name parsers.yaml.parse
-  ///# @alias parsers.yml.parse
-  ///# @arg {string, object} obj
-  ///# @returns {object} - The javascript object
-  ///# @async
+  /// # @name parsers.yaml.parse
+  /// # @alias parsers.yml.parse
+  /// # @arg {string, object} obj
+  /// # @returns {object} - The javascript object
+  /// # @async
   parse: (obj) => Promise.resolve(yaml.parse(obj)),
 
-  ///# @name parsers.yaml.stringify
-  ///# @alias parsers.yml.stringify
-  ///# @arg {object} obj
-  ///# @arg {number} indent [2] The indent level
-  ///# @returns {string} - The yaml string
-  ///# @async
-  stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj, null, indent).trim())
+  /// # @name parsers.yaml.stringify
+  /// # @alias parsers.yml.stringify
+  /// # @arg {object} obj
+  /// # @arg {number} indent [2] The indent level
+  /// # @returns {string} - The yaml string
+  /// # @async
+  stringify: (obj, indent = 2) => Promise.resolve(yaml.stringify(obj, null, indent).trim()),
 };
 
-///# @name parsers.json
-///# @type {object}
+/// # @name parsers.json
+/// # @type {object}
 parsers.json = {
-  ///# @name parsers.json.parse
-  ///# @arg {string, object} obj
-  ///# @returns {object} - The javascript object
-  ///# @async
+  /// # @name parsers.json.parse
+  /// # @arg {string, object} obj
+  /// # @returns {object} - The javascript object
+  /// # @async
   parse: (obj) => Promise.resolve(JSON.parse(obj)),
 
-  ///# @name parsers.json.stringify
-  ///# @arg {object} obj
-  ///# @arg {number} indent [2] The indent level
-  ///# @returns {string} - The yaml string
-  ///# @async
-  stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, !parseInt(indent) ? null : indent))
+  /// # @name parsers.json.stringify
+  /// # @arg {object} obj
+  /// # @arg {number} indent [2] The indent level
+  /// # @returns {string} - The yaml string
+  /// # @async
+  stringify: (obj, indent = 2) => Promise.resolve(JSON.stringify(obj, null, !parseInt(indent) ? null : indent)),
 };
 
-///# @name parsers.cson
-///# @type {object}
+/// # @name parsers.cson
+/// # @type {object}
 parsers.cson = {
-  ///# @name parsers.cson.parse
-  ///# @arg {string, object} obj
-  ///# @returns {object} - The javascript object
-  ///# @async
-  parse: (obj) => {
-    return new Promise((resolve, reject) => {
-      cson.parse(obj, {}, (err, result) => {
-        /* istanbul ignore next */
-        if (err) {
-          return reject(err);
-        }
-        resolve(result);
-      });
+  /// # @name parsers.cson.parse
+  /// # @arg {string, object} obj
+  /// # @returns {object} - The javascript object
+  /// # @async
+  parse: (obj) => new Promise((resolve, reject) => {
+    cson.parse(obj, {}, (err, result) => {
+      /* istanbul ignore next */
+      if (err) {
+        return reject(err);
+      }
+      resolve(result);
     });
-  },
+  }),
 
-  ///# @name parsers.cson.stringify
-  ///# @arg {object} obj
-  ///# @arg {number} indent [2] The indent level
-  ///# @returns {string} - The yaml string
-  ///# @async
-  stringify: (obj, indent = 2) => Promise.resolve(cson.stringify(obj, null, indent))
+  /// # @name parsers.cson.stringify
+  /// # @arg {object} obj
+  /// # @arg {number} indent [2] The indent level
+  /// # @returns {string} - The yaml string
+  /// # @async
+  stringify: (obj, indent = 2) => Promise.resolve(cson.stringify(obj, null, indent)),
 };
 
-///# @name parsers.csv
-///# @type {object}
+/// # @name parsers.csv
+/// # @type {object}
 parsers.csv = {
-  ///# @name parsers.csv.parse
-  ///# @arg {string, object}
-  ///# @returns {array} - The javascript object
-  ///# @async
+  /// # @name parsers.csv.parse
+  /// # @arg {string, object}
+  /// # @returns {array} - The javascript object
+  /// # @async
   async parse(obj) {
     const result = await csv.parse(obj, { columns: true });
 
@@ -308,11 +305,11 @@ parsers.csv = {
     return result.map((item) => fix({}, item));
   },
 
-  ///# @name parsers.csv.stringify
-  ///# @arg {object} obj
-  ///# @arg {object} options [{ header: true, quotedString: true }] The csv options
-  ///# @returns {string} - The yaml string
-  ///# @async
+  /// # @name parsers.csv.stringify
+  /// # @arg {object} obj
+  /// # @arg {object} options [{ header: true, quotedString: true }] The csv options
+  /// # @returns {string} - The yaml string
+  /// # @async
   async stringify(obj, options) {
     if (typeof options !== 'object') {
       options = {};
@@ -320,7 +317,7 @@ parsers.csv = {
     options = to.extend({ header: true, quotedString: true }, options);
     const result = await csv.stringify(to.array(obj), options);
     return result.trim();
-  }
+  },
 };
 
 export { parsers };

@@ -1,4 +1,4 @@
-var is = require('joi');
+const is = require('joi');
 
 module.exports = is.object({
   _id: is.string().regex(/track_[A-Z0-9]+/).length(46),

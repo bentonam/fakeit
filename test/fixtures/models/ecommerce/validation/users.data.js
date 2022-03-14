@@ -1,5 +1,5 @@
-var utils = require('../../../../utils.js');
-var is = require('joi');
+const is = require('joi');
+const utils = require('../../../../utils.js');
 
 module.exports = is.object({
   _id: is.string().regex(/^user_[a-z0-9\-]+$/),
@@ -14,9 +14,9 @@ module.exports = is.object({
   mobile_phone: utils.phone,
   addresses: is.array()
     .items({
-      type: [ 'Home', 'Work', 'Other' ],
+      type: ['Home', 'Work', 'Other'],
       address_1: is.string(),
-      address_2: [ is.string(), null ],
+      address_2: [is.string(), null],
       locality: is.string(),
       region: is.string().uppercase().length(2),
       postal_code: utils.postal_code,

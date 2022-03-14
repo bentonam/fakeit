@@ -1,4 +1,4 @@
-var is = require('joi');
+const is = require('joi');
 
 module.exports = is.object({
   _id: is.string().regex(/^user_[0-6]_emails$/),

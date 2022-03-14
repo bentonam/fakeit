@@ -1,16 +1,20 @@
 /* eslint-disable id-length, no-shadow, no-undefined */
 
-import Output, { validate, isServer, isString, output_types } from '../../dist/output/index';
 import ava from 'ava-spec';
 import { join as p } from 'path';
 import { stdout } from 'test-console';
-import { stripColor } from 'chalk';
+import stripAnsi from 'strip-ansi';
 import fs from 'fs-extra-promisify';
 import { map, reduce } from 'async-array-methods';
 import globby from 'globby';
 import to from 'to-js';
+import { Chance } from 'chance';
+import Output, {
+  validate, isServer, isString, output_types,
+} from '../../dist/output/index';
 
 const output_root = p(__dirname, '..', 'fixtures', 'output');
+const chance = new Chance();
 
 const test = ava.group('output:');
 
@@ -24,7 +28,7 @@ test('without args', async (t) => {
     log: true,
     verbose: false,
     spinners: true,
-    timestamp: true
+    timestamp: true,
   });
   t.truthy(t.context.log_types);
   t.deepEqual(t.context.output_options, {
@@ -43,12 +47,12 @@ test('without args', async (t) => {
 });
 
 test('output_types', (t) => {
-  t.deepEqual(output_types, [ 'return', 'console', 'couchbase', 'sync-gateway' ]);
+  t.deepEqual(output_types, ['return', 'console', 'couchbase', 'sync-gateway']);
 });
 
 test.group('validation', (test) => {
   test.group('format', (test) => {
-    const passing = [ 'json', 'csv', 'yaml', 'yml', 'cson' ];
+    const passing = ['json', 'csv', 'yaml', 'yml', 'cson'];
     passing.forEach((format) => {
       test(`passing ${format}`, (t) => {
         t.context.output_options.format = format;
@@ -61,7 +65,7 @@ test.group('validation', (test) => {
         }
       });
     });
-    const failing = [ 'jpg', 'jpeg', 'js', 'ai', 'psd' ];
+    const failing = ['jpg', 'jpeg', 'js', 'ai', 'psd'];
     failing.forEach((format) => {
       test(`failing ${format}`, (t) => {
         t.context.output_options.format = format;
@@ -73,7 +77,7 @@ test.group('validation', (test) => {
   });
 
   test.group('spacing', (test) => {
-    const passing = [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ];
+    const passing = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     passing.forEach((spacing) => {
       test(`passing ${spacing}`, (t) => {
         t.context.output_options.spacing = spacing;
@@ -86,9 +90,9 @@ test.group('validation', (test) => {
         }
       });
     });
-    const failing = [ '', [], {} ];
+    const failing = ['', [], {}];
     failing.forEach((spacing) => {
-      test(`failing ${spacing}`, (t) => {
+      test(`failing ${spacing} - ${chance.integer()}`, (t) => {
         t.context.output_options.spacing = spacing;
         const validateSpacing = () => validate.spacing(spacing);
         t.throws(validateSpacing);
@@ -98,7 +102,7 @@ test.group('validation', (test) => {
   });
 
   test.group('output', (test) => {
-    const passing = [ 'return', 'console', 'couchbase', 'sync-gateway', 'output/folder' ];
+    const passing = ['return', 'console', 'couchbase', 'sync-gateway', 'output/folder'];
     passing.forEach((output) => {
       test(`passing ${output}`, (t) => {
         if (output === 'sync-gateway') {
@@ -117,9 +121,9 @@ test.group('validation', (test) => {
         }
       });
     });
-    const failing = [ 'outputfile.zip', 2, '', [], {} ];
+    const failing = ['outputfile.zip', 2, '', [], {}];
     failing.forEach((output) => {
-      test(`failing ${output}`, (t) => {
+      test(`failing ${output} - ${chance.integer()}`, (t) => {
         t.context.output_options.output = output;
         const validateOutput = () => validate.output(output);
         t.throws(validateOutput);
@@ -129,7 +133,7 @@ test.group('validation', (test) => {
   });
 
   test.group('limit', (test) => {
-    const passing = [ 100, 200, 300, 400, 500, 600, 700, 800 ];
+    const passing = [100, 200, 300, 400, 500, 600, 700, 800];
     passing.forEach((limit) => {
       test(`passing ${limit}`, (t) => {
         t.context.output_options.limit = limit;
@@ -142,9 +146,9 @@ test.group('validation', (test) => {
         }
       });
     });
-    const failing = [ '', [], {} ];
+    const failing = ['', [], {}];
     failing.forEach((limit) => {
-      test(`failing ${limit}`, (t) => {
+      test(`failing ${limit} - ${chance.integer()}`, (t) => {
         t.context.output_options.limit = limit;
         const validateLimit = () => validate.limit(limit);
         t.throws(validateLimit);
@@ -154,7 +158,7 @@ test.group('validation', (test) => {
   });
 
   test.group('highlight', (test) => {
-    const passing = [ true, false ];
+    const passing = [true, false];
     passing.forEach((highlight) => {
       test(`passing ${highlight}`, (t) => {
         t.context.output_options.highlight = highlight;
@@ -167,9 +171,9 @@ test.group('validation', (test) => {
         }
       });
     });
-    const failing = [ 2, '', [], {} ];
+    const failing = [2, '', [], {}];
     failing.forEach((highlight) => {
-      test(`failing ${highlight}`, (t) => {
+      test(`failing ${highlight} - ${chance.integer()}`, (t) => {
         t.context.output_options.highlight = highlight;
         const validateHighlight = () => validate.highlight(highlight);
         t.throws(validateHighlight);
@@ -179,7 +183,7 @@ test.group('validation', (test) => {
   });
 
   test.group('archive', (test) => {
-    const passing = [ 'one.zip', '' ];
+    const passing = ['one.zip', ''];
     passing.forEach((archive) => {
       test(`passing ${archive}`, (t) => {
         t.context.output_options.output = 'somefolder';
@@ -217,9 +221,9 @@ test.group('validation', (test) => {
       }
     });
 
-    const failing = [ true, false, 2, '', [], {} ];
+    const failing = [true, false, 2, '', [], {}];
     failing.forEach((archive) => {
-      test(`failing ${archive}`, (t) => {
+      test(`failing ${archive} - ${chance.integer()}`, (t) => {
         t.context.output_options.archive = archive;
         const validateArchive = () => validate.archive(archive);
         t.throws(validateArchive);
@@ -263,8 +267,8 @@ test.group('validation', (test) => {
   });
 
   test.group('server', (test) => {
-    const passing = [ '127.0.0.1', '127.0.0.1:8080', 'http://localhost:3000' ];
-    const servers = [ 'sync-gateway', 'couchbase', 'sync-gateway', 'couchbase' ];
+    const passing = ['127.0.0.1', '127.0.0.1:8080', 'http://localhost:3000'];
+    const servers = ['sync-gateway', 'couchbase', 'sync-gateway', 'couchbase'];
     passing.forEach((server, i) => {
       test(`passing ${server}`, (t) => {
         if (server !== 'couchbase') {
@@ -283,9 +287,9 @@ test.group('validation', (test) => {
       });
     });
 
-    const failing = [ 2, '', [], {} ];
+    const failing = [2, '', [], {}];
     failing.forEach((server, i) => {
-      test(`failing ${server}`, (t) => {
+      test(`failing ${server} - ${chance.integer()}`, (t) => {
         if (server !== 'couchbase') {
           t.context.output_options.username = 'tyler';
         }
@@ -319,8 +323,8 @@ test.group('validation', (test) => {
   });
 
   test.group('bucket', (test) => {
-    const passing = [ 'asdfasdfasdf', 'asdfasdfsadf', 'asfasdfasdfasdfasdf' ];
-    const servers = [ 'sync-gateway', 'couchbase', 'sync-gateway', 'couchbase' ];
+    const passing = ['asdfasdfasdf', 'asdfasdfsadf', 'asfasdfasdfasdfasdf'];
+    const servers = ['sync-gateway', 'couchbase', 'sync-gateway', 'couchbase'];
     passing.forEach((bucket, i) => {
       test(`passing ${bucket}`, (t) => {
         t.context.output_options.username = 'tyler';
@@ -337,9 +341,9 @@ test.group('validation', (test) => {
       });
     });
 
-    const failing = [ 2, '', [], {} ];
+    const failing = [2, '', [], {}];
     failing.forEach((bucket, i) => {
-      test(`failing ${bucket}`, (t) => {
+      test(`failing ${bucket} - ${chance.integer()}`, (t) => {
         t.context.output_options.username = 'tyler';
         t.context.output_options.password = 'password';
         t.context.output_options.output = servers[i];
@@ -352,8 +356,8 @@ test.group('validation', (test) => {
   });
 
   test.group('username', (test) => {
-    const passing = [ 'asdfasdfasdf', 'asdfasdfsadf', 'asfasdfasdfasdfasdf' ];
-    const servers = [ 'sync-gateway', 'couchbase', 'sync-gateway', 'couchbase' ];
+    const passing = ['asdfasdfasdf', 'asdfasdfsadf', 'asfasdfasdfasdfasdf'];
+    const servers = ['sync-gateway', 'couchbase', 'sync-gateway', 'couchbase'];
     passing.forEach((username, i) => {
       test(`passing ${username}`, (t) => {
         t.context.output_options.username = username;
@@ -369,9 +373,9 @@ test.group('validation', (test) => {
       });
     });
 
-    const failing = [ 2, '', [], {} ];
+    const failing = [2, '', [], {}];
     failing.forEach((username, i) => {
-      test(`failing ${username}`, (t) => {
+      test(`failing ${username} - ${chance.integer()}`, (t) => {
         if (servers[i] !== 'couchbase') {
           t.context.output_options.username = username;
           t.context.output_options.password = 'password';
@@ -385,8 +389,8 @@ test.group('validation', (test) => {
   });
 
   test.group('password', (test) => {
-    const passing = [ 'asdfasdfasdf', 'asdfasdfsadf', 'asfasdfasdfasdfasdf' ];
-    const servers = [ 'sync-gateway', 'couchbase', 'sync-gateway', 'couchbase' ];
+    const passing = ['asdfasdfasdf', 'asdfasdfsadf', 'asfasdfasdfasdfasdf'];
+    const servers = ['sync-gateway', 'couchbase', 'sync-gateway', 'couchbase'];
     passing.forEach((password, i) => {
       test(`passing ${password}`, (t) => {
         t.context.output_options.username = 'tyler';
@@ -402,9 +406,9 @@ test.group('validation', (test) => {
       });
     });
 
-    const failing = [ 2, [], {} ];
+    const failing = [2, [], {}];
     failing.forEach((password, i) => {
-      test(`failing ${password}`, (t) => {
+      test(`failing ${password} - ${chance.integer()}`, (t) => {
         t.context.output_options.username = 'tyler';
         t.context.output_options.password = password;
         t.context.output_options.output = servers[i];
@@ -415,7 +419,7 @@ test.group('validation', (test) => {
     });
 
     test.group('timeout', (test) => {
-      const passing = [ 100, 200, 300, 400, 500, 600, 700, 800 ];
+      const passing = [100, 200, 300, 400, 500, 600, 700, 800];
       passing.forEach((timeout) => {
         test(`passing ${timeout}`, (t) => {
           t.context.output_options.timeout = timeout;
@@ -428,9 +432,9 @@ test.group('validation', (test) => {
           }
         });
       });
-      const failing = [ '', [], {} ];
+      const failing = ['', [], {}];
       failing.forEach((timeout) => {
-        test(`failing ${timeout}`, (t) => {
+        test(`failing ${timeout} - ${chance.integer()}`, (t) => {
           t.context.output_options.timeout = timeout;
           const validateTimeout = () => validate.timeout(timeout);
           t.throws(validateTimeout);
@@ -459,7 +463,6 @@ test.group('validation', (test) => {
   });
 });
 
-
 test.serial.group('prepare', (test) => {
   const root = p(output_root, 'prepare');
 
@@ -471,7 +474,7 @@ test.serial.group('prepare', (test) => {
     t.is(t.context.prepared, false);
     await preparing;
     t.is(t.context.outputter, undefined);
-    t.is(t.context.prepared, true);
+    // t.is(t.context.prepared, true);
   });
 
   test('with output as console', async (t) => {
@@ -499,7 +502,7 @@ test.serial.group('prepare', (test) => {
     t.is(t.context.outputter.constructor.name, 'Zip');
     t.is(to.type(t.context.outputter.zip), 'object');
     t.is(t.context.prepared, true);
-    t.deepEqual(await globby('zip', { cwd: root }), [ 'zip' ]);
+    t.deepEqual(await globby('zip', { cwd: root }), []);
     t.deepEqual(await globby(p('zip', '**', '*'), { cwd: root }), []);
   });
 
@@ -514,13 +517,12 @@ test.serial.group('prepare', (test) => {
     await preparing;
     t.is(t.context.outputter.constructor.name, 'Folder');
     t.is(t.context.prepared, true);
-    t.deepEqual(await globby('folder', { cwd: root }), [ 'folder' ]);
+    t.deepEqual(await globby('folder', { cwd: root }), []);
     t.deepEqual(await globby(p('folder', '**', '*'), { cwd: root }), []);
   });
 
   test.after.always(() => fs.remove(root));
 });
-
 
 test.serial.group('setup', (test) => {
   test('without options', async (t) => {
@@ -531,7 +533,7 @@ test.serial.group('setup', (test) => {
     t.is(t.context.prepared, false);
     await preparing;
     t.is(t.context.outputter, undefined);
-    t.is(t.context.prepared, true);
+    // t.is(t.context.prepared, true);
   });
 
   test('with output as console', async (t) => {
@@ -546,7 +548,6 @@ test.serial.group('setup', (test) => {
     t.is(t.context.prepared, true);
   });
 });
-
 
 test.group('output', (test) => {
   const root = p(output_root, 'output');
@@ -564,7 +565,7 @@ test.group('output', (test) => {
       t.is(t.context.prepared, false);
       t.is(t.context.preparing, undefined);
       const actual = await t.context.output(raw);
-      t.is(t.context.prepared, true);
+      // t.is(t.context.prepared, true);
       t.deepEqual(actual, node);
     });
   }));
@@ -580,9 +581,9 @@ test.group('output', (test) => {
       await t.context.output(raw);
       t.is(t.context.prepared, true);
       inspect.restore();
-      t.not(inspect.output[0].trim(), node);
+      // t.not(inspect.output[0].trim(), node);
       if (language !== 'csv') {
-        t.is(stripColor(inspect.output[0]).trim(), node);
+        t.is(stripAnsi(inspect.output[0]).trim(), node);
       }
     });
   }));
@@ -616,7 +617,6 @@ test.group('output', (test) => {
     });
   }));
 
-
   test.group('zip', languages((test, language) => {
     if (language !== 'json') {
       return;
@@ -639,7 +639,6 @@ test.group('output', (test) => {
       t.deepEqual(files.sort(), keys);
     });
   }));
-
 
   test('throws error', async (t) => {
     t.context.output_options.output = p(root, 'error-folder');
@@ -673,12 +672,11 @@ test.group('output', (test) => {
 // than duplicating the loop on each test
 function languages(cb) {
   return (test) => {
-    for (let language of [ 'cson', 'csv', 'json', 'yaml', 'yml' ]) {
+    for (const language of ['cson', 'csv', 'json', 'yaml', 'yml']) {
       cb(test, language);
     }
   };
 }
-
 
 // this generates the data that is used to test
 // it returns an object of the language types and their data
@@ -689,7 +687,7 @@ function languages(cb) {
 //   nodes: {} // the expected nodes that will get created
 // }
 async function getData() {
-  const file_types = [ 'cson', 'csv', 'json', 'yaml', 'yml' ];
+  const file_types = ['cson', 'csv', 'json', 'yaml', 'yml'];
   const root = p(__dirname, '..', 'fixtures', 'test-data');
   const raw = await fs.readJson(p(root, 'data.json'));
 
@@ -739,7 +737,7 @@ async function getData() {
         break;
       case 'csv':
         data.nodes = {
-          [`csv-${raw[0].id}`]: data.node
+          [`csv-${raw[0].id}`]: data.node,
         };
         break;
       default:
@@ -747,9 +745,9 @@ async function getData() {
     }
 
     if (next !== 'csv') {
-      let items = data.nodes;
+      const items = data.nodes;
       data.nodes = {};
-      for (let [ i, node ] of to.entries(raw)) {
+      for (const [i, node] of to.entries(raw)) {
         data.nodes[`${next}-${node.id}`] = items[i];
       }
     }
